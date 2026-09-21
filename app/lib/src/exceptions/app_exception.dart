@@ -2,12 +2,13 @@
 ///
 /// Les couches `data/` traduisent les erreurs de transport (Supabase,
 /// PostgREST, réseau) en sous-classes de [AppException] ; l'interface ne voit
-/// jamais une `PostgrestException` brute. `sealed` rend le `switch` des
-/// messages exhaustif : ajouter un cas sans son texte ne compile pas.
+/// jamais une `AuthException` ou une `PostgrestException` brute. `sealed` rend
+/// le `switch` des messages exhaustif (`app_exception_messages.dart`) :
+/// ajouter un cas sans son texte ne compile pas.
 ///
-/// Invariant : deux échecs que le serveur rend volontairement
-/// indiscernables (compte inexistant / mauvais mot de passe) partagent le même
-/// message côté interface.
+/// Invariant (anti-énumération) : ce que le serveur rend volontairement
+/// indiscernable le reste. Compte inexistant et mauvais mot de passe
+/// produisent tous deux [InvalidCredentialsException].
 library;
 
 sealed class AppException implements Exception {
@@ -21,6 +22,56 @@ sealed class AppException implements Exception {
 
   @override
   String toString() => '$code: $message';
+}
+
+// --- Authentification ---------------------------------------------------------
+
+final class InvalidCredentialsException extends AppException {
+  const InvalidCredentialsException()
+    : super('invalid-credentials', 'Invalid email or password');
+}
+
+final class EmailNotConfirmedException extends AppException {
+  const EmailNotConfirmedException()
+    : super('email-not-confirmed', 'Email address not confirmed yet');
+}
+
+final class EmailAlreadyRegisteredException extends AppException {
+  const EmailAlreadyRegisteredException()
+    : super('email-already-registered', 'An account already uses this email');
+}
+
+final class InvalidCodeException extends AppException {
+  const InvalidCodeException()
+    : super('invalid-code', 'Verification code expired or invalid');
+}
+
+final class WeakPasswordException extends AppException {
+  const WeakPasswordException()
+    : super('weak-password', 'Password does not meet the policy');
+}
+
+final class InvalidEmailException extends AppException {
+  const InvalidEmailException()
+    : super('invalid-email', 'Email address rejected by the server');
+}
+
+final class RateLimitedException extends AppException {
+  const RateLimitedException()
+    : super('rate-limited', 'Too many requests, retry later');
+}
+
+// --- Profil -------------------------------------------------------------------
+
+final class InvalidTimezoneException extends AppException {
+  const InvalidTimezoneException()
+    : super('invalid-timezone', 'Unknown IANA time zone');
+}
+
+// --- Transverse ---------------------------------------------------------------
+
+final class NetworkException extends AppException {
+  const NetworkException() : super('network', 'Server unreachable');
 }
 
 /// Repli quand aucune traduction plus précise n'existe.

@@ -1,11 +1,11 @@
 {
-    "name": "agora",
-    "short_name": "agora",
+    "name": "Agora",
+    "short_name": "Agora",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Agora - agendas partagés en groupe, avec bot Discord.",
+    "description": "Agora — vos agendas, ensemble.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

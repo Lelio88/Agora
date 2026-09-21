@@ -12,10 +12,14 @@ import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/supabase/supabase_config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Sur le web, `push` met aussi l'URL à jour : un rafraîchissement sur le
+  // profil y reste au lieu de revenir à l'accueil.
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   final config = SupabaseConfig.fromEnvironment();
   await Supabase.initialize(
     url: config.url,
@@ -24,7 +28,7 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       observers: [AsyncErrorLogger()],
-      overrides: prodOverrides,
+      overrides: prodOverrides(Supabase.instance.client),
       child: const AgoraApp(),
     ),
   );

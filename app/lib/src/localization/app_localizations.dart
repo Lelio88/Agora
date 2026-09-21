@@ -104,11 +104,335 @@ abstract class AppLocalizations {
   /// **'Agora'**
   String get appTitle;
 
-  /// Accroche de l'écran d'accueil provisoire.
+  /// Accroche de l'écran de connexion et de l'accueil.
   ///
   /// In fr, this message translates to:
   /// **'Vos agendas, ensemble.'**
   String get homeTagline;
+
+  /// Salutation de l'accueil, avec le nom affiché du profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bonjour, {name} !'**
+  String homeGreeting(String name);
+
+  /// Infobulle du bouton qui ouvre le profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get profileTooltip;
+
+  /// Champ adresse e-mail des formulaires de compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse e-mail'**
+  String get emailLabel;
+
+  /// Champ mot de passe de la connexion et de l'inscription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe'**
+  String get passwordLabel;
+
+  /// Règle du mot de passe, rappelée sous le champ.
+  ///
+  /// In fr, this message translates to:
+  /// **'8 caractères minimum, avec des lettres et des chiffres.'**
+  String get passwordHelper;
+
+  /// Champ du nom visible par les autres membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom affiché'**
+  String get displayNameLabel;
+
+  /// Précision sous le champ du nom affiché.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visible par les membres de tes groupes.'**
+  String get displayNameHelper;
+
+  /// Champ du code reçu par e-mail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code à 6 chiffres'**
+  String get codeLabel;
+
+  /// Titre de l'écran de connexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion'**
+  String get signInTitle;
+
+  /// Bouton qui valide la connexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se connecter'**
+  String get signInButton;
+
+  /// Lien vers la réinitialisation du mot de passe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe oublié ?'**
+  String get forgotPasswordLink;
+
+  /// Question avant le lien d'inscription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de compte ?'**
+  String get noAccountPrompt;
+
+  /// Lien vers l'inscription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un compte'**
+  String get createAccountLink;
+
+  /// Bouton proposé quand on se connecte avant d'avoir confirmé son adresse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recevoir un code de confirmation'**
+  String get confirmEmailAction;
+
+  /// Titre de l'écran d'inscription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un compte'**
+  String get signUpTitle;
+
+  /// Bouton qui valide l'inscription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer mon compte'**
+  String get signUpButton;
+
+  /// Question avant le lien de connexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà un compte ?'**
+  String get haveAccountPrompt;
+
+  /// Lien vers la connexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se connecter'**
+  String get signInLink;
+
+  /// Titre de l'écran de saisie du code de confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifie ton adresse'**
+  String get verifyEmailTitle;
+
+  /// Explication sous le titre de la confirmation d'adresse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nous avons envoyé un code à 6 chiffres à {email}.'**
+  String verifyEmailInstructions(String email);
+
+  /// Bouton qui valide le code de confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider'**
+  String get verifyButton;
+
+  /// Bouton qui redemande un code.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renvoyer le code'**
+  String get resendCodeButton;
+
+  /// Confirmation après l'envoi d'un nouveau code.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code envoyé.'**
+  String get codeResent;
+
+  /// Titre de l'écran de demande de réinitialisation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe oublié'**
+  String get forgotPasswordTitle;
+
+  /// Explication de la réinitialisation, volontairement neutre sur l'existence du compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indique ton adresse : si un compte y est associé, tu recevras un code pour choisir un nouveau mot de passe.'**
+  String get forgotPasswordInstructions;
+
+  /// Bouton qui envoie le code de réinitialisation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recevoir un code'**
+  String get sendCodeButton;
+
+  /// Titre de l'écran de choix du nouveau mot de passe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get resetPasswordTitle;
+
+  /// Explication de l'écran de choix du nouveau mot de passe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisis le code reçu à {email} et choisis un nouveau mot de passe.'**
+  String resetPasswordInstructions(String email);
+
+  /// Champ du nouveau mot de passe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get newPasswordLabel;
+
+  /// Bouton qui enregistre le nouveau mot de passe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer le mot de passe'**
+  String get resetPasswordButton;
+
+  /// Titre de l'écran de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get profileTitle;
+
+  /// Réglage de la langue de l'app et des e-mails.
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue'**
+  String get profileLanguageLabel;
+
+  /// Nom de la langue française, écrit dans cette langue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// Nom de la langue anglaise, écrit dans cette langue.
+  ///
+  /// In fr, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// Réglage du fuseau horaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fuseau horaire'**
+  String get profileTimezoneLabel;
+
+  /// Bouton qui reprend le fuseau horaire de l'appareil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser celui de cet appareil'**
+  String get useDeviceTimezone;
+
+  /// Bouton d'enregistrement d'un formulaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get saveButton;
+
+  /// Confirmation après l'enregistrement du profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil enregistré.'**
+  String get profileSaved;
+
+  /// Bouton de déconnexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se déconnecter'**
+  String get signOutButton;
+
+  /// Erreur de saisie : adresse mal formée.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse e-mail invalide.'**
+  String get validationEmail;
+
+  /// Erreur de saisie : mot de passe trop court.
+  ///
+  /// In fr, this message translates to:
+  /// **'8 caractères minimum.'**
+  String get validationPasswordTooShort;
+
+  /// Erreur de saisie : il manque des lettres ou des chiffres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il faut des lettres et des chiffres.'**
+  String get validationPasswordLettersDigits;
+
+  /// Erreur de saisie : code mal formé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le code fait 6 chiffres.'**
+  String get validationCode;
+
+  /// Erreur de saisie : nom affiché vide ou trop long.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entre 1 et 60 caractères.'**
+  String get validationDisplayName;
+
+  /// Échec de connexion. Ne dit jamais si le compte existe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse ou mot de passe incorrect.'**
+  String get errorInvalidCredentials;
+
+  /// Connexion refusée tant que l'adresse n'est pas confirmée.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirme d\'abord ton adresse avec le code reçu par e-mail.'**
+  String get errorEmailNotConfirmed;
+
+  /// Inscription avec une adresse déjà utilisée.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un compte existe déjà avec cette adresse. Connecte-toi, ou passe par « Mot de passe oublié ».'**
+  String get errorEmailAlreadyRegistered;
+
+  /// Code de confirmation ou de réinitialisation refusé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code incorrect ou expiré.'**
+  String get errorInvalidCode;
+
+  /// Mot de passe refusé par le serveur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe trop faible : 8 caractères minimum, avec des lettres et des chiffres.'**
+  String get errorWeakPassword;
+
+  /// Adresse refusée par le serveur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse e-mail invalide.'**
+  String get errorInvalidEmail;
+
+  /// Limite de fréquence atteinte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de tentatives. Réessaie dans quelques minutes.'**
+  String get errorRateLimited;
+
+  /// Fuseau refusé par le serveur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fuseau horaire inconnu.'**
+  String get errorInvalidTimezone;
+
+  /// Serveur injoignable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de joindre le serveur. Vérifie ta connexion.'**
+  String get errorNetwork;
+
+  /// Erreur sans traduction plus précise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une erreur est survenue. Réessaie.'**
+  String get errorUnknown;
 }
 
 class _AppLocalizationsDelegate

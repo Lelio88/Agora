@@ -6,7 +6,7 @@ tests verts et une doc à jour ([`architecture.md`](./architecture.md)).
 | # | Étape | Contenu | État |
 |---|---|---|---|
 | 0 | Fondations | Dépôt, squelettes app + worker, schéma et règle de visibilité (tests pgTAP) | ✅ |
-| 1 | Comptes | Inscription e-mail (Brevo), Google, Discord ; liaison Discord a posteriori ; profil, fuseau, langue | à faire |
+| 1 | Comptes | ✅ e-mail + code à 6 chiffres (inscription, mot de passe oublié), profil (nom, langue app + e-mails, fuseau) · à faire : Google, Discord, liaison Discord a posteriori, suppression du compte (exigée par le Play Store) | en cours |
 | 2 | Agenda perso | Vue semaine/mois, créer/modifier des rdv, récurrence (RRULE), masquage par rdv et par agenda | à faire |
 | 3 | Groupes | Créer, inviter (lien/code), rejoindre, quitter, transmettre ; réglage de partage par groupe ; vue superposée | à faire |
 | 4 | Worker : récurrences | Connexion pgx, dépliage des RRULE sur fenêtre glissante, déclenché par LISTEN/NOTIFY | à faire |
@@ -14,7 +14,7 @@ tests verts et une doc à jour ([`architecture.md`](./architecture.md)).
 | 6 | Rdv de groupe | Agenda du groupe, réponses présent / absent / peut-être | à faire |
 | 7 | Créneaux communs | Recherche des créneaux libres dans l'app (`invisible` = libre, `busy` = pris) | à faire |
 | 8 | Bot Discord | Interactions signées, `/agenda`, `/dispo`, liaison d'un salon, récaps, rappels, réglages dans l'app | à faire |
-| 9 | Mise en ligne | Supabase auto-hébergé + worker sur Hetzner, pages légales, fiche Play Store | à faire |
+| 9 | Mise en ligne | Supabase auto-hébergé + worker sur Hetzner (réglages `GOTRUE_*` et gabarits servis par URL), CAPTCHA sur les formulaires de compte, pages légales, fiche Play Store | à faire |
 
 ## Décisions de cadrage (2026-09-21)
 

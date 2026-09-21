@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture et la feuille de route |
+| `docs/` | Cette architecture, son annexe [`auth-architecture.md`](./auth-architecture.md) (comptes) et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -46,7 +46,9 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/supabase/` | `SupabaseConfig` : URL + clé lues au build, sans valeur par défaut ; `http` limité aux hôtes locaux |
 | `app/lib/src/exceptions/` | `AppException` scellée (switch exhaustif des messages) ; `AsyncErrorLogger` transmet toute erreur de provider à `AppLogger` |
 | `app/lib/src/logging/` | `AppLogger`, seule surface de journalisation (`dart:developer` par défaut) |
-| `app/lib/src/routing/` | GoRouter, navigation par nom (`AppRoute`) |
+| `app/lib/src/routing/` | GoRouter, navigation par nom (`AppRoute` dans `app_route.dart`) ; `auth_redirect.dart` : règle de redirection pure, testée seule |
+| `app/lib/src/device/` | `DeviceTimezone` : fuseau IANA de l'appareil (flutter_timezone), repli `Europe/Paris` |
+| `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` |
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
 | `worker/internal/httpx/` | Routes HTTP du worker (`/healthz`, puis interactions Discord) |
@@ -80,7 +82,9 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom
   vient des métadonnées du fournisseur (`display_name`, `full_name`, `global_name` Discord,
-  `name`), puis « Membre ». Jamais de l'e-mail.
+  `name`), puis « Membre ». Jamais de l'e-mail. La langue (`fr`/`en`) et le fuseau viennent des
+  métadonnées `locale` et `timezone` s'ils sont valides, sinon `fr` et `Europe/Paris` : une valeur
+  invalide ne fait jamais échouer une inscription.
 - **Récurrences** : un rdv ponctuel se lit dans `events` ; un rdv récurrent se lit par ses
   `event_occurrences`, jamais par sa date d'origine. Le worker est la **seule** implémentation des
   RRULE (application, iCal, `/dispo` lisent tous le même dépliage). Une occurrence modifiée est un
@@ -183,7 +187,21 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   Discord se lit dans `auth.identities` : aucune table en double.
 - **Réglage dans l'app** : salon, fréquence et heure du récap, délai des rappels, par groupe.
 
-## 7. Application Flutter
+## 7. Application Flutter et comptes
+
+Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
+
+- **E-mail + mot de passe confirmés par un code à 6 chiffres** (jamais un lien), valable
+  15 minutes ; même principe pour le mot de passe oublié, qui vérifie **toujours** le code.
+- **Anti-énumération** : compte inconnu, mauvais mot de passe et compte non confirmé avec un
+  mauvais mot de passe donnent tous `invalid_credentials`. Seule l'inscription dit « un compte
+  existe déjà » (choix assumé).
+- **Le routeur navigue, pas l'écran**, après une connexion réussie ; `/reset-password` reste
+  ouvert aux deux états ; `AuthScaffold(busy:)` neutralise l'écran pendant une action.
+- **La langue du profil pilote l'app et les e-mails** (recopiée dans `raw_user_meta_data` par
+  `private.sync_profile_locale`) ; **tous** les gabarits GoTrue sont surchargés, bilingues.
+
+### Architecture de l'app
 
 - Riverpod **sans génération de code** (providers écrits à la main), comme DewDrop : la
   génération de code entrait en conflit avec freezed 3. GoRouter avec routes nommées (`AppRoute`).
@@ -215,8 +233,8 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal |
-| App | `flutter_test` | unités (`SupabaseConfig`, `AsyncErrorLogger`), démarrage sous `prodOverrides` en FR et EN |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs) ; parcours complets par `AgoraRobot` sous faux dépôts (connexion, inscription, code, mot de passe oublié, profil, langue) ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role
@@ -224,7 +242,14 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   `reset role` pour vérifier côté serveur. Chaque fichier tourne dans une transaction annulée.
 - **Riverpod 3 relance les providers en échec** : un test d'erreur crée son conteneur avec
   `retry: (_, _) => null`, sinon `.future` ne se termine jamais.
-- **Fakes plutôt que mocks** pour le code du projet (`test/helpers/`).
+- **Fakes plutôt que mocks** pour le code du projet (`test/helpers/fakes.dart`), et un robot
+  (`test/helpers/agora_robot.dart`) qui monte l'app entière et porte tous les sélecteurs. Les
+  écrans exposent des `ValueKey` (`AuthKeys`, `ProfileKeys`, `HomeKeys`) : les tests ne dépendent
+  pas des libellés traduits.
+- **Parcours réel sur le web** : `flutter build web --dart-define-from-file=config/local.json`,
+  servir `build/web`, puis piloter avec Playwright. Flutter dessine sur un canvas ; cliquer
+  `flt-semantics-placeholder` active l'arbre d'accessibilité, qui expose champs et boutons par
+  leur libellé. Les codes se lisent dans Mailpit.
 
 ## 10. Hébergement et dépendances externes
 
@@ -238,6 +263,17 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
 
 Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public.
 
+**`config.toml` ne règle que la pile locale.** Sur le serveur auto-hébergé, GoTrue lit les mêmes
+réglages dans ses variables d'environnement (`GOTRUE_MAILER_AUTOCONFIRM=false`,
+`GOTRUE_MAILER_OTP_EXP=900`, `GOTRUE_PASSWORD_MIN_LENGTH`,
+`GOTRUE_PASSWORD_REQUIRED_CHARACTERS`, SMTP Brevo…). En prod s'ajoute un **CAPTCHA**
+(`GOTRUE_SECURITY_CAPTCHA_*`, hCaptcha ou Turnstile) sur l'inscription, la connexion et la
+réinitialisation : c'est lui, plus que la limite par IP, qui borne la force brute des codes
+depuis de nombreuses adresses. Il charge
+les gabarits **par URL** (`GOTRUE_MAILER_TEMPLATES_CONFIRMATION`, etc.), jamais depuis
+`supabase/templates/`. Le déploiement doit donc servir ces fichiers et reporter chaque réglage :
+un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en anglais) sans erreur.
+
 ## 11. Anti-patterns à éviter
 
 - ❌ Lire des rdv d'autrui ailleurs que par `resolve_group_agenda` (contourne la vie privée).
@@ -250,3 +286,7 @@ Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public.
 - ❌ Afficher, journaliser ou renvoyer une URL iCal.
 - ❌ Contrôler le SSRF sur l'URL seule plutôt que sur l'adresse résolue au moment de la connexion.
 - ❌ Donner une valeur par défaut à `SUPABASE_URL` ou à sa clé.
+- ❌ Ajouter un flux d'e-mail GoTrue sans son gabarit bilingue : il partirait en anglais.
+- ❌ Naviguer soi-même après une connexion réussie : c'est au routeur de le faire, sur
+  l'événement de session.
+- ❌ Écrire l'état d'un contrôleur après un `await` sans vérifier `ref.mounted`.

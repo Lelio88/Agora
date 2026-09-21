@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- Gabarit GoTrue « invite » (invitation par un admin, inutilisée par Agora mais surchargée pour ne jamais partir en anglais). Bilingue : .Data est user_metadata, dont
+     « locale » est posée à l'inscription et resynchronisée depuis le profil.
+     Sans locale connue, le français s'applique. Ne pas retirer {{ .ConfirmationURL }}. -->
+<html lang="{{ if eq .Data.locale "en" }}en{{ else }}fr{{ end }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agora</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f5fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5fb;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:460px;background:#ffffff;border:1px solid #e3e5f0;border-radius:16px;">
+          <tr>
+            <td style="padding:36px 32px 30px;text-align:center;color:#1b1d2b;">
+              <div style="font-size:24px;font-weight:600;letter-spacing:1px;color:#3f51b5;">Agora</div>
+              {{ if eq .Data.locale "en" }}
+              <div style="font-size:18px;font-weight:600;margin:26px 0 10px;">You are invited to Agora</div>
+              <div style="font-size:15px;line-height:1.6;color:#4a4d63;margin-bottom:24px;">Follow the link below to create your account.</div>
+              {{ else }}
+              <div style="font-size:18px;font-weight:600;margin:26px 0 10px;">Tu es invité·e sur Agora</div>
+              <div style="font-size:15px;line-height:1.6;color:#4a4d63;margin-bottom:24px;">Suis le lien ci-dessous pour créer ton compte.</div>
+              {{ end }}
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#3f51b5;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 30px;border-radius:12px;">{{ if eq .Data.locale "en" }}Create my account{{ else }}Créer mon compte{{ end }}</a>
+              <div style="font-size:13px;line-height:1.6;color:#8a8da3;margin-top:24px;">
+                {{ if eq .Data.locale "en" }}Not expecting this invitation? Just ignore this email.{{ else }}Tu ne t'attendais pas à cette invitation&nbsp;? Ignore ce message.{{ end }}
+              </div>
+            </td>
+          </tr>
+        </table>
+        <div style="font-size:11px;color:#8a8da3;margin-top:18px;">Agora · contact@heianenterprise.com</div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,10 +1,11 @@
 /// Widget racine d'Agora : thème, langues (FR par défaut, EN) et routeur.
 ///
-/// [locale] n'est renseigné que par les tests ; en usage réel, la langue suit
-/// celle de l'appareil et retombe sur le français quand elle n'est pas prise
-/// en charge.
+/// Langue retenue, dans l'ordre : [locale] (forcée par les tests), celle du
+/// profil une fois connecté, celle de l'appareil, et le français en dernier
+/// recours.
 library;
 
+import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_router.dart';
 import 'package:flutter/material.dart';
@@ -20,11 +21,16 @@ class AgoraApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profileLanguage = ref.watch(
+      currentProfileProvider.select((profile) => profile.value?.language),
+    );
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
-      locale: locale,
+      locale:
+          locale ??
+          (profileLanguage == null ? null : Locale(profileLanguage.name)),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       localeResolutionCallback: _resolveLocale,

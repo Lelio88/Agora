@@ -1,5 +1,68 @@
 {
   "@@locale": "en",
   "appTitle": "Agora",
-  "homeTagline": "Your calendars, together."
+  "homeTagline": "Your calendars, together.",
+  "homeGreeting": "Hi, {name}!",
+  "profileTooltip": "Profile",
+
+  "emailLabel": "Email address",
+  "passwordLabel": "Password",
+  "passwordHelper": "At least 8 characters, with letters and numbers.",
+  "displayNameLabel": "Display name",
+  "displayNameHelper": "Shown to the members of your groups.",
+  "codeLabel": "6-digit code",
+
+  "signInTitle": "Sign in",
+  "signInButton": "Sign in",
+  "forgotPasswordLink": "Forgot your password?",
+  "noAccountPrompt": "No account yet?",
+  "createAccountLink": "Create an account",
+  "confirmEmailAction": "Get a confirmation code",
+
+  "signUpTitle": "Create an account",
+  "signUpButton": "Create my account",
+  "haveAccountPrompt": "Already have an account?",
+  "signInLink": "Sign in",
+
+  "verifyEmailTitle": "Check your inbox",
+  "verifyEmailInstructions": "We sent a 6-digit code to {email}.",
+  "verifyButton": "Confirm",
+  "resendCodeButton": "Resend the code",
+  "codeResent": "New code sent.",
+
+  "forgotPasswordTitle": "Forgot password",
+  "forgotPasswordInstructions": "Enter your email: if an account uses it, you will receive a code to choose a new password.",
+  "sendCodeButton": "Send me a code",
+
+  "resetPasswordTitle": "New password",
+  "resetPasswordInstructions": "Enter the code sent to {email} and choose a new password.",
+  "newPasswordLabel": "New password",
+  "resetPasswordButton": "Change password",
+
+  "profileTitle": "Profile",
+  "profileLanguageLabel": "Language",
+  "languageFrench": "Français",
+  "languageEnglish": "English",
+  "profileTimezoneLabel": "Time zone",
+  "useDeviceTimezone": "Use this device's",
+  "saveButton": "Save",
+  "profileSaved": "Profile saved.",
+  "signOutButton": "Sign out",
+
+  "validationEmail": "Invalid email address.",
+  "validationPasswordTooShort": "At least 8 characters.",
+  "validationPasswordLettersDigits": "Use both letters and numbers.",
+  "validationCode": "The code has 6 digits.",
+  "validationDisplayName": "Between 1 and 60 characters.",
+
+  "errorInvalidCredentials": "Incorrect email or password.",
+  "errorEmailNotConfirmed": "Confirm your email first with the code we sent you.",
+  "errorEmailAlreadyRegistered": "An account already uses this email. Sign in, or use “Forgot your password?”.",
+  "errorInvalidCode": "Incorrect or expired code.",
+  "errorWeakPassword": "Password too weak: at least 8 characters, with letters and numbers.",
+  "errorInvalidEmail": "Invalid email address.",
+  "errorRateLimited": "Too many attempts. Try again in a few minutes.",
+  "errorInvalidTimezone": "Unknown time zone.",
+  "errorNetwork": "Can't reach the server. Check your connection.",
+  "errorUnknown": "Something went wrong. Please try again."
 }

@@ -11,7 +11,7 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et son annexe [`docs/auth-architecture.md`](./docs/auth-architecture.md) pour les comptes. Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
@@ -23,7 +23,7 @@ Topologie rapide :
 
 *Versions contraintes par `app/pubspec.yaml` et `worker/go.mod`. N'introduisez aucune dépendance alternative sans approbation.*
 
-- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_localizations` + `intl`.
+- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
 - **Worker** : Go 1.26, bibliothèque standard (`net/http`, `log/slog`) ; Postgres en direct (pgx) à l'arrivée de la synchro.
 - **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.
@@ -60,6 +60,7 @@ cd app && flutter analyze && flutter test
 cd app && flutter run -d chrome --dart-define-from-file=config/local.json  # copier local.json.example
 cd worker && go vet ./... && go test -race ./...
 cd worker && go run ./cmd/worker # AGORA_HTTP_ADDR (défaut :8080), santé sur /healthz
+# E-mails locaux (codes de confirmation, réinitialisation) : Mailpit sur http://127.0.0.1:55324
 ```
 
 ## VII. Maintenance documentaire
@@ -71,6 +72,7 @@ cd worker && go run ./cmd/worker # AGORA_HTTP_ADDR (défaut :8080), santé sur /
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
+| Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
 | Étape de la feuille de route livrée | `docs/roadmap.md` (colonne État) |
 | Mise en ligne, sous-domaine, service serveur | `../INFRASTRUCTURE.md` + `docs/architecture.md` §10 |
@@ -79,5 +81,5 @@ cd worker && go run ./cmd/worker # AGORA_HTTP_ADDR (défaut :8080), santé sur /
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : fondations posées — squelettes de l'app et du worker, schéma de base dont la règle de visibilité est couverte par 40 tests pgTAP.
-- **Focus immédiat** : étape 1 de la feuille de route — les comptes (e-mail via Brevo, Google, Discord) et l'écran de profil.
+- **Dernier focus** : comptes par e-mail avec code à 6 chiffres (inscription, mot de passe oublié) et profil (nom, langue de l'app et des e-mails, fuseau), vérifiés dans un navigateur contre le Supabase local.
+- **Focus immédiat** : fin de l'étape 1 — connexion Google et Discord (identifiants OAuth à créer), liaison Discord, suppression du compte.

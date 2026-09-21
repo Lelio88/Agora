@@ -14,4 +14,180 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeTagline => 'Vos agendas, ensemble.';
+
+  @override
+  String homeGreeting(String name) {
+    return 'Bonjour, $name !';
+  }
+
+  @override
+  String get profileTooltip => 'Profil';
+
+  @override
+  String get emailLabel => 'Adresse e-mail';
+
+  @override
+  String get passwordLabel => 'Mot de passe';
+
+  @override
+  String get passwordHelper =>
+      '8 caractères minimum, avec des lettres et des chiffres.';
+
+  @override
+  String get displayNameLabel => 'Nom affiché';
+
+  @override
+  String get displayNameHelper => 'Visible par les membres de tes groupes.';
+
+  @override
+  String get codeLabel => 'Code à 6 chiffres';
+
+  @override
+  String get signInTitle => 'Connexion';
+
+  @override
+  String get signInButton => 'Se connecter';
+
+  @override
+  String get forgotPasswordLink => 'Mot de passe oublié ?';
+
+  @override
+  String get noAccountPrompt => 'Pas encore de compte ?';
+
+  @override
+  String get createAccountLink => 'Créer un compte';
+
+  @override
+  String get confirmEmailAction => 'Recevoir un code de confirmation';
+
+  @override
+  String get signUpTitle => 'Créer un compte';
+
+  @override
+  String get signUpButton => 'Créer mon compte';
+
+  @override
+  String get haveAccountPrompt => 'Déjà un compte ?';
+
+  @override
+  String get signInLink => 'Se connecter';
+
+  @override
+  String get verifyEmailTitle => 'Vérifie ton adresse';
+
+  @override
+  String verifyEmailInstructions(String email) {
+    return 'Nous avons envoyé un code à 6 chiffres à $email.';
+  }
+
+  @override
+  String get verifyButton => 'Valider';
+
+  @override
+  String get resendCodeButton => 'Renvoyer le code';
+
+  @override
+  String get codeResent => 'Nouveau code envoyé.';
+
+  @override
+  String get forgotPasswordTitle => 'Mot de passe oublié';
+
+  @override
+  String get forgotPasswordInstructions =>
+      'Indique ton adresse : si un compte y est associé, tu recevras un code pour choisir un nouveau mot de passe.';
+
+  @override
+  String get sendCodeButton => 'Recevoir un code';
+
+  @override
+  String get resetPasswordTitle => 'Nouveau mot de passe';
+
+  @override
+  String resetPasswordInstructions(String email) {
+    return 'Saisis le code reçu à $email et choisis un nouveau mot de passe.';
+  }
+
+  @override
+  String get newPasswordLabel => 'Nouveau mot de passe';
+
+  @override
+  String get resetPasswordButton => 'Changer le mot de passe';
+
+  @override
+  String get profileTitle => 'Profil';
+
+  @override
+  String get profileLanguageLabel => 'Langue';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get profileTimezoneLabel => 'Fuseau horaire';
+
+  @override
+  String get useDeviceTimezone => 'Utiliser celui de cet appareil';
+
+  @override
+  String get saveButton => 'Enregistrer';
+
+  @override
+  String get profileSaved => 'Profil enregistré.';
+
+  @override
+  String get signOutButton => 'Se déconnecter';
+
+  @override
+  String get validationEmail => 'Adresse e-mail invalide.';
+
+  @override
+  String get validationPasswordTooShort => '8 caractères minimum.';
+
+  @override
+  String get validationPasswordLettersDigits =>
+      'Il faut des lettres et des chiffres.';
+
+  @override
+  String get validationCode => 'Le code fait 6 chiffres.';
+
+  @override
+  String get validationDisplayName => 'Entre 1 et 60 caractères.';
+
+  @override
+  String get errorInvalidCredentials => 'Adresse ou mot de passe incorrect.';
+
+  @override
+  String get errorEmailNotConfirmed =>
+      'Confirme d\'abord ton adresse avec le code reçu par e-mail.';
+
+  @override
+  String get errorEmailAlreadyRegistered =>
+      'Un compte existe déjà avec cette adresse. Connecte-toi, ou passe par « Mot de passe oublié ».';
+
+  @override
+  String get errorInvalidCode => 'Code incorrect ou expiré.';
+
+  @override
+  String get errorWeakPassword =>
+      'Mot de passe trop faible : 8 caractères minimum, avec des lettres et des chiffres.';
+
+  @override
+  String get errorInvalidEmail => 'Adresse e-mail invalide.';
+
+  @override
+  String get errorRateLimited =>
+      'Trop de tentatives. Réessaie dans quelques minutes.';
+
+  @override
+  String get errorInvalidTimezone => 'Fuseau horaire inconnu.';
+
+  @override
+  String get errorNetwork =>
+      'Impossible de joindre le serveur. Vérifie ta connexion.';
+
+  @override
+  String get errorUnknown => 'Une erreur est survenue. Réessaie.';
 }
