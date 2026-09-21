@@ -207,4 +207,125 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleted => 'Your account has been deleted.';
+
+  @override
+  String get agendaTitle => 'Agenda';
+
+  @override
+  String get viewDay => 'Day';
+
+  @override
+  String get viewWeek => 'Week';
+
+  @override
+  String get viewMonth => 'Month';
+
+  @override
+  String get viewSchedule => 'Schedule';
+
+  @override
+  String get todayButton => 'Today';
+
+  @override
+  String get previousPeriod => 'Previous period';
+
+  @override
+  String get nextPeriod => 'Next period';
+
+  @override
+  String get newEventTooltip => 'New event';
+
+  @override
+  String get newEventTitle => 'New event';
+
+  @override
+  String get editEventTitle => 'Edit event';
+
+  @override
+  String get eventTitleLabel => 'Title';
+
+  @override
+  String get eventLocationLabel => 'Location';
+
+  @override
+  String get eventDescriptionLabel => 'Notes';
+
+  @override
+  String get allDayLabel => 'All day';
+
+  @override
+  String get startsLabel => 'Starts';
+
+  @override
+  String get endsLabel => 'Ends';
+
+  @override
+  String get repeatLabel => 'Repeat';
+
+  @override
+  String get repeatNever => 'Never';
+
+  @override
+  String get repeatDaily => 'Every day';
+
+  @override
+  String get repeatWeekly => 'Every week';
+
+  @override
+  String get repeatMonthly => 'Every month';
+
+  @override
+  String get repeatYearly => 'Every year';
+
+  @override
+  String get repeatAdvanced => 'Advanced rule (imported)';
+
+  @override
+  String get visibilityLabel => 'For the members of my groups';
+
+  @override
+  String get visibilityInherit => 'As the group allows';
+
+  @override
+  String get visibilityBusy => 'Busy, no details';
+
+  @override
+  String get visibilityInvisible => 'Invisible';
+
+  @override
+  String get deleteEventButton => 'Delete';
+
+  @override
+  String get validationTitle => 'Between 1 and 200 characters.';
+
+  @override
+  String get validationEndBeforeStart => 'The end must come after the start.';
+
+  @override
+  String get eventSaved => 'Event saved.';
+
+  @override
+  String get eventDeleted => 'Event deleted.';
+
+  @override
+  String get scopeTitle => 'Repeating event';
+
+  @override
+  String get scopeEditBody => 'Edit only this occurrence, or the whole series?';
+
+  @override
+  String get scopeDeleteBody =>
+      'Delete only this occurrence, or the whole series?';
+
+  @override
+  String get scopeThisOccurrence => 'This occurrence';
+
+  @override
+  String get scopeWholeSeries => 'Whole series';
+
+  @override
+  String get noEventsInRange => 'No events in this period.';
+
+  @override
+  String get errorEventNotFound => 'This event no longer exists.';
 }

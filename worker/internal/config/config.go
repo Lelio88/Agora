@@ -4,21 +4,30 @@
 // production), pour que les tests fournissent un environnement sans toucher
 // aux variables du processus.
 //
-// Invariant : une configuration invalide fait échouer le démarrage. Le worker
-// ne démarre jamais sur une valeur devinée.
+// Invariants :
 //
-//	cfg, err := config.Load(os.Getenv)
+//   - une configuration invalide fait échouer le démarrage ; le worker ne
+//     démarre jamais sur une valeur devinée ;
+//
+//   - le mot de passe de la base ne sort jamais d'ici en clair : les journaux
+//     utilisent RedactedDatabaseURL.
+//
+//     cfg, err := config.Load(os.Getenv)
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"net/url"
 )
 
 // Config regroupe les réglages du worker.
 type Config struct {
 	// HTTPAddr est l'adresse d'écoute (/healthz, puis les interactions Discord).
 	HTTPAddr string
+	// DatabaseURL est la connexion Postgres, sous le rôle agora_worker.
+	DatabaseURL string
 }
 
 const defaultHTTPAddr = ":8080"
@@ -32,5 +41,23 @@ func Load(getenv func(string) string) (Config, error) {
 	if _, _, err := net.SplitHostPort(addr); err != nil {
 		return Config{}, fmt.Errorf("AGORA_HTTP_ADDR %q: %w", addr, err)
 	}
-	return Config{HTTPAddr: addr}, nil
+	databaseURL := getenv("AGORA_DATABASE_URL")
+	if databaseURL == "" {
+		return Config{}, errors.New("AGORA_DATABASE_URL is required")
+	}
+	parsed, err := url.Parse(databaseURL)
+	if err != nil || (parsed.Scheme != "postgres" && parsed.Scheme != "postgresql") {
+		return Config{}, errors.New("AGORA_DATABASE_URL must be a postgres:// URL")
+	}
+	return Config{HTTPAddr: addr, DatabaseURL: databaseURL}, nil
+}
+
+// RedactedDatabaseURL renvoie DatabaseURL sans son mot de passe, pour les
+// journaux.
+func (c Config) RedactedDatabaseURL() string {
+	parsed, err := url.Parse(c.DatabaseURL)
+	if err != nil {
+		return "(invalid)"
+	}
+	return parsed.Redacted()
 }

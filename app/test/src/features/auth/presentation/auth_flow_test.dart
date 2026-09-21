@@ -31,7 +31,6 @@ void main() {
     await robot.signIn('zoe@test.local', 'motdepasse1');
 
     robot.expectScreen(HomeKeys.screen);
-    robot.expectText('Bonjour, Zoé !');
   });
 
   testWidgets('wrong credentials show a message that reveals nothing', (

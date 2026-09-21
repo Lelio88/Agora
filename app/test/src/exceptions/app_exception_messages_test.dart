@@ -13,6 +13,8 @@ const _all = <AppException>[
   InvalidEmailException(),
   RateLimitedException(),
   InvalidTimezoneException(),
+  EventNotFoundException(),
+  InvalidRangeException(),
   NetworkException(),
   UnknownException(),
 ];

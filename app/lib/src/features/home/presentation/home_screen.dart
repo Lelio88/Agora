@@ -1,12 +1,10 @@
-/// Écran d'accueil provisoire : salutation et accès au profil. L'agenda de la
-/// semaine le remplacera avec les features `calendar` et `groups`.
+/// Écran d'accueil : l'agenda de la personne, et l'accès au profil.
 library;
 
-import 'package:agora/src/features/profile/application/profile_providers.dart';
+import 'package:agora/src/features/calendar/presentation/calendar_screen.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class HomeKeys {
@@ -14,18 +12,16 @@ abstract final class HomeKeys {
   static const profileButton = ValueKey('home.profileButton');
 }
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
-    final name = ref.watch(currentProfileProvider).value?.displayName;
     return Scaffold(
       key: HomeKeys.screen,
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: Text(l10n.agendaTitle),
         actions: [
           IconButton(
             key: HomeKeys.profileButton,
@@ -36,20 +32,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (name != null)
-                Text(l10n.homeGreeting(name), style: text.headlineSmall),
-              const SizedBox(height: 12),
-              Text(l10n.homeTagline, style: text.titleMedium),
-            ],
-          ),
-        ),
-      ),
+      body: const CalendarScreen(),
     );
   }
 }

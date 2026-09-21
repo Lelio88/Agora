@@ -209,4 +209,126 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountDeleted => 'Ton compte a été supprimé.';
+
+  @override
+  String get agendaTitle => 'Agenda';
+
+  @override
+  String get viewDay => 'Jour';
+
+  @override
+  String get viewWeek => 'Semaine';
+
+  @override
+  String get viewMonth => 'Mois';
+
+  @override
+  String get viewSchedule => 'Planning';
+
+  @override
+  String get todayButton => 'Aujourd\'hui';
+
+  @override
+  String get previousPeriod => 'Période précédente';
+
+  @override
+  String get nextPeriod => 'Période suivante';
+
+  @override
+  String get newEventTooltip => 'Nouveau rendez-vous';
+
+  @override
+  String get newEventTitle => 'Nouveau rendez-vous';
+
+  @override
+  String get editEventTitle => 'Modifier le rendez-vous';
+
+  @override
+  String get eventTitleLabel => 'Titre';
+
+  @override
+  String get eventLocationLabel => 'Lieu';
+
+  @override
+  String get eventDescriptionLabel => 'Notes';
+
+  @override
+  String get allDayLabel => 'Journée entière';
+
+  @override
+  String get startsLabel => 'Début';
+
+  @override
+  String get endsLabel => 'Fin';
+
+  @override
+  String get repeatLabel => 'Répétition';
+
+  @override
+  String get repeatNever => 'Jamais';
+
+  @override
+  String get repeatDaily => 'Tous les jours';
+
+  @override
+  String get repeatWeekly => 'Toutes les semaines';
+
+  @override
+  String get repeatMonthly => 'Tous les mois';
+
+  @override
+  String get repeatYearly => 'Tous les ans';
+
+  @override
+  String get repeatAdvanced => 'Règle avancée (importée)';
+
+  @override
+  String get visibilityLabel => 'Pour les membres de mes groupes';
+
+  @override
+  String get visibilityInherit => 'Selon le groupe';
+
+  @override
+  String get visibilityBusy => 'Occupé, sans détail';
+
+  @override
+  String get visibilityInvisible => 'Invisible';
+
+  @override
+  String get deleteEventButton => 'Supprimer';
+
+  @override
+  String get validationTitle => 'Entre 1 et 200 caractères.';
+
+  @override
+  String get validationEndBeforeStart => 'La fin doit être après le début.';
+
+  @override
+  String get eventSaved => 'Rendez-vous enregistré.';
+
+  @override
+  String get eventDeleted => 'Rendez-vous supprimé.';
+
+  @override
+  String get scopeTitle => 'Rendez-vous répété';
+
+  @override
+  String get scopeEditBody =>
+      'Modifier seulement cette occurrence, ou toute la série ?';
+
+  @override
+  String get scopeDeleteBody =>
+      'Supprimer seulement cette occurrence, ou toute la série ?';
+
+  @override
+  String get scopeThisOccurrence => 'Cette occurrence';
+
+  @override
+  String get scopeWholeSeries => 'Toute la série';
+
+  @override
+  String get noEventsInRange => 'Aucun rendez-vous sur cette période.';
+
+  @override
+  String get errorEventNotFound => 'Ce rendez-vous n\'existe plus.';
 }

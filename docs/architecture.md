@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture, son annexe [`auth-architecture.md`](./auth-architecture.md) (comptes) et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes) et [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -52,6 +52,8 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
 | `worker/internal/httpx/` | Routes HTTP du worker (`/healthz`, puis interactions Discord) |
+| `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage |
+| `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore`, `Listen` — détail dans l'annexe agenda |
 
 ### Règles de couplage
 
@@ -77,8 +79,9 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `group_invites` | code de 8 caractères, expiration, nombre d'usages | `create_invite()` (tout membre) |
 | `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` | l'utilisateur ; `add_ics_calendar()` |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
-| `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `source_uid` + `recurrence_id` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
-| `event_occurrences` | occurrences dépliées des rdv **récurrents** | le worker seul |
+| `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
+| `event_occurrences` | occurrences dépliées des rdv **récurrents** | le worker seul (rôle `agora_worker`) |
+| `series_expansions` | horodatage du dernier dépliage **qui a changé** une série : signal temps réel pour l'app | le worker seul |
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom
   vient des métadonnées du fournisseur (`display_name`, `full_name`, `global_name` Discord,
@@ -88,7 +91,9 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 - **Récurrences** : un rdv ponctuel se lit dans `events` ; un rdv récurrent se lit par ses
   `event_occurrences`, jamais par sa date d'origine. Le worker est la **seule** implémentation des
   RRULE (application, iCal, `/dispo` lisent tous le même dépliage). Une occurrence modifiée est un
-  rdv ponctuel portant `recurrence_id`. Pas de fréquence infra-journalière (contrainte `CHECK`).
+  rdv à part rattaché à sa série (`series_id`, `recurrence_id`) ; une occurrence supprimée est
+  une exception (`exdates`). Pas de fréquence infra-journalière (contrainte `CHECK`). Détail :
+  [`calendar-architecture.md`](./calendar-architecture.md).
 - **Clé de synchro iCal** : index unique partiel `(calendar_id, source_uid, recurrence_id)
   WHERE source_uid IS NOT NULL`. S'il n'était pas partiel, deux rdv natifs d'un même agenda
   entreraient en collision.
@@ -237,8 +242,8 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
 | Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
-| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs) ; parcours complets par `AgoraRobot` sous faux dépôts (connexion, inscription, code, mot de passe oublié, profil, langue) ; branchement de `prodOverrides` |
-| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et service de l'agenda sur faux dépôt ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues) ; branchement de `prodOverrides` |
+| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; `-tags integration` : `PgStore` et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role
   authenticated` + `set local request.jwt.claims = '{"sub": …}'` pour agir en tant qu'un membre, et
@@ -259,7 +264,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Service | Usage | Référence |
 |---|---|---|
 | Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Postgres ; `api.agora.heianenterprise.com` | recette d'Arpente, `../INFRASTRUCTURE.md` |
-| Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) | `../INFRASTRUCTURE.md` |
+| Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé au déploiement | `../INFRASTRUCTURE.md` |
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot | portail développeurs Discord |
 | Google / Discord OAuth | connexion (identité seule, sans accès à l'agenda) | console Google Cloud, portail Discord |
@@ -285,6 +290,20 @@ un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en an
 - ❌ Un index unique sur `source_uid` sans clause `WHERE source_uid IS NOT NULL` : un seul rdv
   natif possible par agenda.
 - ❌ Déplier une RRULE ailleurs que dans le worker (deux implémentations finissent par diverger).
+- ❌ Lire la ligne maîtresse d'une série pour l'afficher : l'agenda se lit par `my_agenda()`.
+- ❌ Un upsert sur `(series_id, recurrence_id)` : l'index est partiel, Postgres le refuse comme
+  cible d'`ON CONFLICT` — passer par `replace_occurrence`.
+- ❌ Publier en temps réel une table dont la clé primaire porte une donnée privée, ou passer une
+  table publiée en `REPLICA IDENTITY FULL` : Realtime diffuse les `DELETE` à **tous** les abonnés
+  sans appliquer la RLS (d'où `event_occurrences` non publiée).
+- ❌ Une colonne non qualifiée dans la sous-requête d'une politique RLS : si la table interrogée a
+  une colonne homonyme (`events.series_id`), c'est elle qui est lue.
+- ❌ `toLocal()` sur un rdv journée entière : c'est une date de calendrier, lue sur ses composants
+  UTC (`AgendaItem.localStart`).
+- ❌ Lire une série hors du verrou de série avant d'en réécrire les occurrences, ou effacer une
+  occurrence dépliée sans prendre ce verrou (`private.lock_series`).
+- ❌ Suivre telle quelle la plage visible de kalender pour charger l'agenda (la vue planning
+  continue publie sa plage totale : rechargement sans fin).
 - ❌ Écrire `events.visibility` depuis la synchro iCal.
 - ❌ Afficher, journaliser ou renvoyer une URL iCal.
 - ❌ Contrôler le SSRF sur l'URL seule plutôt que sur l'adresse résolue au moment de la connexion.

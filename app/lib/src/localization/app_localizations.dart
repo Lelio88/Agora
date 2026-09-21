@@ -469,6 +469,246 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ton compte a été supprimé.'**
   String get accountDeleted;
+
+  /// Titre de l'écran d'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda'**
+  String get agendaTitle;
+
+  /// Bouton de la vue jour.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jour'**
+  String get viewDay;
+
+  /// Bouton de la vue semaine.
+  ///
+  /// In fr, this message translates to:
+  /// **'Semaine'**
+  String get viewWeek;
+
+  /// Bouton de la vue mois.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mois'**
+  String get viewMonth;
+
+  /// Bouton de la vue planning (liste chronologique).
+  ///
+  /// In fr, this message translates to:
+  /// **'Planning'**
+  String get viewSchedule;
+
+  /// Bouton qui ramène l'agenda à la date du jour.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aujourd\'hui'**
+  String get todayButton;
+
+  /// Infobulle du bouton qui recule d'une page.
+  ///
+  /// In fr, this message translates to:
+  /// **'Période précédente'**
+  String get previousPeriod;
+
+  /// Infobulle du bouton qui avance d'une page.
+  ///
+  /// In fr, this message translates to:
+  /// **'Période suivante'**
+  String get nextPeriod;
+
+  /// Infobulle du bouton de création.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau rendez-vous'**
+  String get newEventTooltip;
+
+  /// Titre de l'éditeur à la création.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau rendez-vous'**
+  String get newEventTitle;
+
+  /// Titre de l'éditeur à la modification.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le rendez-vous'**
+  String get editEventTitle;
+
+  /// Champ du titre d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Titre'**
+  String get eventTitleLabel;
+
+  /// Champ du lieu d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu'**
+  String get eventLocationLabel;
+
+  /// Champ de la description d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notes'**
+  String get eventDescriptionLabel;
+
+  /// Interrupteur « journée entière ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Journée entière'**
+  String get allDayLabel;
+
+  /// Libellé du début d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Début'**
+  String get startsLabel;
+
+  /// Libellé de la fin d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fin'**
+  String get endsLabel;
+
+  /// Libellé du choix de répétition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Répétition'**
+  String get repeatLabel;
+
+  /// Répétition : aucune.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jamais'**
+  String get repeatNever;
+
+  /// Répétition quotidienne.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les jours'**
+  String get repeatDaily;
+
+  /// Répétition hebdomadaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les semaines'**
+  String get repeatWeekly;
+
+  /// Répétition mensuelle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les mois'**
+  String get repeatMonthly;
+
+  /// Répétition annuelle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les ans'**
+  String get repeatYearly;
+
+  /// Répétition importée que l'éditeur ne sait pas représenter ; conservée telle quelle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Règle avancée (importée)'**
+  String get repeatAdvanced;
+
+  /// Libellé du réglage de visibilité d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour les membres de mes groupes'**
+  String get visibilityLabel;
+
+  /// Visibilité : hérite du réglage du groupe et de l'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Selon le groupe'**
+  String get visibilityInherit;
+
+  /// Visibilité : créneau visible, sans titre ni lieu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Occupé, sans détail'**
+  String get visibilityBusy;
+
+  /// Visibilité : le rendez-vous n'existe pas pour les autres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Invisible'**
+  String get visibilityInvisible;
+
+  /// Bouton de suppression d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get deleteEventButton;
+
+  /// Erreur de saisie : titre vide ou trop long.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entre 1 et 200 caractères.'**
+  String get validationTitle;
+
+  /// Erreur de saisie : fin avant le début.
+  ///
+  /// In fr, this message translates to:
+  /// **'La fin doit être après le début.'**
+  String get validationEndBeforeStart;
+
+  /// Confirmation après l'enregistrement d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous enregistré.'**
+  String get eventSaved;
+
+  /// Confirmation après la suppression d'un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous supprimé.'**
+  String get eventDeleted;
+
+  /// Titre du choix entre une occurrence et toute la série.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous répété'**
+  String get scopeTitle;
+
+  /// Question posée avant de modifier un rendez-vous répété.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier seulement cette occurrence, ou toute la série ?'**
+  String get scopeEditBody;
+
+  /// Question posée avant de supprimer un rendez-vous répété.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer seulement cette occurrence, ou toute la série ?'**
+  String get scopeDeleteBody;
+
+  /// Choix : une seule occurrence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette occurrence'**
+  String get scopeThisOccurrence;
+
+  /// Choix : toute la série.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toute la série'**
+  String get scopeWholeSeries;
+
+  /// Texte de la vue planning quand elle est vide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun rendez-vous sur cette période.'**
+  String get noEventsInRange;
+
+  /// Le rendez-vous a été supprimé entre-temps.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce rendez-vous n\'existe plus.'**
+  String get errorEventNotFound;
 }
 
 class _AppLocalizationsDelegate

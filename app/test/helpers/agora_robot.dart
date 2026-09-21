@@ -3,6 +3,8 @@ import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/calendar/application/agenda_providers.dart';
+import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
@@ -11,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fake_calendar_repository.dart';
 import 'fakes.dart';
 import 'recording_app_logger.dart';
 
@@ -22,6 +25,7 @@ class AgoraRobot {
   final WidgetTester tester;
   late final FakeAuthRepository auth;
   late final FakeProfileRepository profiles;
+  late final FakeCalendarRepository calendar;
 
   /// Erreurs remontées par les providers, comme en production
   /// (`AsyncErrorLogger`) : un parcours réussi n'en laisse aucune.
@@ -32,12 +36,15 @@ class AgoraRobot {
   Future<void> pumpApp({
     FakeAuthRepository? auth,
     FakeProfileRepository? profiles,
+    FakeCalendarRepository? calendar,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
   }) async {
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
+    this.calendar = calendar ?? FakeCalendarRepository();
     addTearDown(this.auth.dispose);
+    addTearDown(this.calendar.dispose);
     await tester.pumpWidget(
       ProviderScope(
         retry: (retryCount, error) => null,
@@ -46,6 +53,7 @@ class AgoraRobot {
           appLoggerProvider.overrideWithValue(logger),
           authRepositoryProvider.overrideWithValue(this.auth),
           profileRepositoryProvider.overrideWithValue(this.profiles),
+          calendarRepositoryProvider.overrideWithValue(this.calendar),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),
           ),
@@ -67,6 +75,15 @@ class AgoraRobot {
     // suivante : sans cette attente, l'appui vise l'ancienne position.
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(target));
+    await settle();
+  }
+
+  /// Comme `pumpAndSettle`, mais laisse aussi passer les `await` d'un
+  /// gestionnaire (lectures de providers déjà résolus) qui ne planifient
+  /// aucune image avant d'ouvrir un écran.
+  Future<void> settle() async {
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
   }
 
@@ -86,6 +103,19 @@ class AgoraRobot {
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  /// Ouvre l'éditeur par le bouton « + » de l'agenda.
+  Future<void> openNewEvent() => tap(CalendarKeys.newEvent);
+
+  /// Appuie sur la tuile d'un rdv (la première portant ce titre), après
+  /// avoir fait défiler la grille horaire jusqu'à elle.
+  Future<void> tapEvent(String title) async {
+    final tile = find.text(title).first;
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await settle();
   }
 
   void expectText(String text) => expect(find.text(text), findsOneWidget);

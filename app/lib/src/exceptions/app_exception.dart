@@ -68,6 +68,18 @@ final class InvalidTimezoneException extends AppException {
     : super('invalid-timezone', 'Unknown IANA time zone');
 }
 
+// --- Agenda -------------------------------------------------------------------
+
+final class EventNotFoundException extends AppException {
+  const EventNotFoundException()
+    : super('event-not-found', 'Event not found or not yours');
+}
+
+final class InvalidRangeException extends AppException {
+  const InvalidRangeException()
+    : super('invalid-range', 'Agenda range longer than a quarter');
+}
+
 // --- Transverse ---------------------------------------------------------------
 
 final class NetworkException extends AppException {
