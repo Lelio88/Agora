@@ -1,0 +1,11 @@
+{
+  "@@locale": "fr",
+  "appTitle": "Agora",
+  "@appTitle": {
+    "description": "Nom de l'application, identique dans toutes les langues."
+  },
+  "homeTagline": "Vos agendas, ensemble.",
+  "@homeTagline": {
+    "description": "Accroche de l'écran d'accueil provisoire."
+  }
+}

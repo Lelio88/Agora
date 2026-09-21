@@ -1,0 +1,19 @@
+# Dépôt PUBLIC : aucun secret ici. Les secrets vivent dans le coffre
+# ../.agora-secrets/, hors de tout dépôt (voir le hub Projets/CLAUDE.md).
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+app/android/key.properties
+
+# Configuration de build par environnement (URL + clé Supabase) :
+# seul l'exemple est versionné.
+app/config/*.json
+!app/config/*.json.example
+
+# Sauvegardes produites par /claude-md et /readme-md
+*.bak
+
+# Binaires du worker
+worker/bin/

@@ -1,0 +1,6 @@
+# Le français est la langue de référence : toute clé naît dans app_fr.arb,
+# avec sa description, puis reçoit sa traduction dans app_en.arb.
+arb-dir: lib/src/localization
+template-arb-file: app_fr.arb
+output-localization-file: app_localizations.dart
+nullable-getter: false
