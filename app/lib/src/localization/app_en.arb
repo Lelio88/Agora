@@ -64,5 +64,11 @@
   "errorRateLimited": "Too many attempts. Try again in a few minutes.",
   "errorInvalidTimezone": "Unknown time zone.",
   "errorNetwork": "Can't reach the server. Check your connection.",
-  "errorUnknown": "Something went wrong. Please try again."
+  "errorUnknown": "Something went wrong. Please try again.",
+  "deleteAccountButton": "Delete my account",
+  "deleteAccountTitle": "Delete your account?",
+  "deleteAccountBody": "Your profile, calendars and events will be permanently erased. Groups you own go to another member; groups where you are alone are deleted. This cannot be undone.",
+  "deleteAccountConfirm": "Delete permanently",
+  "cancelButton": "Cancel",
+  "accountDeleted": "Your account has been deleted."
 }

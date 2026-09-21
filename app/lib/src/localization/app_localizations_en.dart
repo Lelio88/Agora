@@ -188,4 +188,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUnknown => 'Something went wrong. Please try again.';
+
+  @override
+  String get deleteAccountButton => 'Delete my account';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your profile, calendars and events will be permanently erased. Groups you own go to another member; groups where you are alone are deleted. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirm => 'Delete permanently';
+
+  @override
+  String get cancelButton => 'Cancel';
+
+  @override
+  String get accountDeleted => 'Your account has been deleted.';
 }

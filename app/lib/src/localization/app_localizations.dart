@@ -433,6 +433,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Une erreur est survenue. Réessaie.'**
   String get errorUnknown;
+
+  /// Bouton qui ouvre la confirmation de suppression du compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get deleteAccountButton;
+
+  /// Titre de la confirmation de suppression.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer ton compte ?'**
+  String get deleteAccountTitle;
+
+  /// Conséquences de la suppression, affichées avant confirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ton profil, tes agendas et tes rendez-vous seront effacés définitivement. Les groupes dont tu es propriétaire passent à un autre membre ; ceux où tu es seul·e sont supprimés. Cette action est irréversible.'**
+  String get deleteAccountBody;
+
+  /// Bouton qui confirme la suppression du compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer définitivement'**
+  String get deleteAccountConfirm;
+
+  /// Bouton d'annulation d'une boîte de dialogue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get cancelButton;
+
+  /// Confirmation affichée après la suppression du compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ton compte a été supprimé.'**
+  String get accountDeleted;
 }
 
 class _AppLocalizationsDelegate

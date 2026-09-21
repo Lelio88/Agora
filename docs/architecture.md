@@ -200,6 +200,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   ouvert aux deux états ; `AuthScaffold(busy:)` neutralise l'écran pendant une action.
 - **La langue du profil pilote l'app et les e-mails** (recopiée dans `raw_user_meta_data` par
   `private.sync_profile_locale`) ; **tous** les gabarits GoTrue sont surchargés, bilingues.
+- **Suppression du compte** par `delete_my_account()` : groupes possédés transmis (admin puis
+  membre le plus ancien, groupe vide supprimé), tout le reste en cascade. Une session dont
+  l'utilisateur n'a plus de profil est fermée (compte supprimé depuis un autre appareil).
 
 ### Architecture de l'app
 

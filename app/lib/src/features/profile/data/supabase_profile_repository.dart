@@ -18,12 +18,13 @@ final class SupabaseProfileRepository implements ProfileRepository {
   final SupabaseClient _client;
 
   @override
-  Future<Profile> fetchProfile(String userId) => _guard(() async {
+  Future<Profile?> fetchProfile(String userId) => _guard(() async {
     final row = await _client
         .from('profiles')
         .select('id, display_name, timezone, locale')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+    if (row == null) return null;
     return Profile(
       id: row['id'] as String,
       displayName: row['display_name'] as String,

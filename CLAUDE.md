@@ -55,6 +55,7 @@ Topologie rapide :
 supabase start                   # pile locale (API :55321, DB :55322) — Docker Desktop lancé
 supabase db reset                # rejoue les migrations sur une base vierge
 supabase test db                 # tests pgTAP (visibilité, groupes, droits)
+bash supabase/checks/account_deletion_race.sh  # concurrence de la suppression de compte
 supabase migration new <slug>    # nouvelle migration
 cd app && flutter analyze && flutter test
 cd app && flutter run -d chrome --dart-define-from-file=config/local.json  # copier local.json.example
@@ -81,5 +82,5 @@ cd worker && go run ./cmd/worker # AGORA_HTTP_ADDR (défaut :8080), santé sur /
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : comptes par e-mail avec code à 6 chiffres (inscription, mot de passe oublié) et profil (nom, langue de l'app et des e-mails, fuseau), vérifiés dans un navigateur contre le Supabase local.
-- **Focus immédiat** : fin de l'étape 1 — connexion Google et Discord (identifiants OAuth à créer), liaison Discord, suppression du compte.
+- **Dernier focus** : suppression du compte (groupes transmis, effacement en cascade) et fermeture des sessions orphelines, vérifiées dans un navigateur contre le Supabase local.
+- **Focus immédiat** : fin de l'étape 1 — connexion Google et Discord (identifiants OAuth à créer), liaison Discord.

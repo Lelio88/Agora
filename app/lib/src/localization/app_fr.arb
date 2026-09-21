@@ -129,5 +129,23 @@
   "errorNetwork": "Impossible de joindre le serveur. Vérifie ta connexion.",
   "@errorNetwork": {"description": "Serveur injoignable."},
   "errorUnknown": "Une erreur est survenue. Réessaie.",
-  "@errorUnknown": {"description": "Erreur sans traduction plus précise."}
+  "@errorUnknown": {"description": "Erreur sans traduction plus précise."},
+
+  "deleteAccountButton": "Supprimer mon compte",
+  "@deleteAccountButton": {"description": "Bouton qui ouvre la confirmation de suppression du compte."},
+
+  "deleteAccountTitle": "Supprimer ton compte ?",
+  "@deleteAccountTitle": {"description": "Titre de la confirmation de suppression."},
+
+  "deleteAccountBody": "Ton profil, tes agendas et tes rendez-vous seront effacés définitivement. Les groupes dont tu es propriétaire passent à un autre membre ; ceux où tu es seul·e sont supprimés. Cette action est irréversible.",
+  "@deleteAccountBody": {"description": "Conséquences de la suppression, affichées avant confirmation."},
+
+  "deleteAccountConfirm": "Supprimer définitivement",
+  "@deleteAccountConfirm": {"description": "Bouton qui confirme la suppression du compte."},
+
+  "cancelButton": "Annuler",
+  "@cancelButton": {"description": "Bouton d'annulation d'une boîte de dialogue."},
+
+  "accountDeleted": "Ton compte a été supprimé.",
+  "@accountDeleted": {"description": "Confirmation affichée après la suppression du compte."}
 }

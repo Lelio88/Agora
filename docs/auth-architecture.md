@@ -44,6 +44,31 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   `private.sync_profile_locale` la recopie dans `auth.users.raw_user_meta_data`, seule source que
   lisent les gabarits. Un fuseau inconnu de Postgres est refusé (`invalid_timezone`).
 
+## Suppression du compte
+
+- **Exigée par le Play Store** pour toute app qui crée des comptes, dans l'app **et** par une
+  adresse web : la version web d'Agora (profil → « Supprimer mon compte ») sert de lien pour la
+  fiche Play.
+- Écran de profil → dialogue qui expose les conséquences → RPC `public.delete_my_account()`
+  (`SECURITY DEFINER`, migration `account_deletion`), puis fermeture de la session.
+- **Groupes possédés transmis** dans la même transaction : à l'admin le plus ancien, sinon au
+  membre le plus ancien. Un groupe sans autre membre est supprimé, avec son agenda et ses rdv.
+  Un groupe ne reste jamais sans propriétaire : la RPC verrouille d'abord, dans un ordre fixe,
+  chaque groupe dont la personne est membre, puis relit son rôle. Deux suppressions simultanées
+  dans un même groupe (propriétaire et héritier) se sérialisent ainsi. pgTAP ne tournant que dans
+  une session, `supabase/checks/account_deletion_race.sh` rejoue ce cas avec deux sessions.
+- **Tout le reste part en cascade** depuis `auth.users` : profil, agendas personnels, rdv et
+  occurrences, URL iCal, appartenances, identités et sessions GoTrue. Les rdv de groupe proposés
+  par la personne restent, sans auteur (contenu partagé), **avec leur texte libre** (titre, lieu,
+  description), qui peut la nommer. La politique de confidentialité doit le dire.
+- **RPC plutôt qu'Edge Function** : le Supabase auto-hébergé n'a pas d'edge runtime.
+- **Après la RPC**, `signOut` retire la session locale **avant** d'appeler le serveur ; le 403
+  que renvoie `/logout` pour un utilisateur disparu est normal et ignoré.
+- **Session orpheline** : un compte supprimé ailleurs laisse sur les autres appareils un jeton
+  d'accès valide jusqu'à son expiration (1 h). `currentProfileProvider` ferme toute session
+  dont l'utilisateur n'a plus de profil. Le profil naît dans la même transaction que le compte,
+  donc son absence ne peut pas être un simple retard.
+
 ## Gabarits d'e-mail
 
 - `supabase/templates/*.html` : **tous** les gabarits que GoTrue peut envoyer sont surchargés
@@ -64,4 +89,5 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 | `app/lib/src/features/auth/presentation/` | Cinq écrans, `AuthActionController`, `AuthScaffold(busy:)`, `AuthKeys` |
 | `app/lib/src/features/profile/` | Profil : lecture/écriture de `profiles`, écran, contrôleur |
 | `supabase/migrations/20260921171319_profile_locale_timezone.sql` | Langue et fuseau à l'inscription, validation du fuseau, recopie de la langue |
+| `supabase/migrations/20260921175536_account_deletion.sql` | `delete_my_account()` : transmission des groupes, puis effacement en cascade |
 | `supabase/templates/*.html` | Gabarits bilingues |

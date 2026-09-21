@@ -104,30 +104,43 @@ class FakeAuthRepository implements AuthRepository {
     _emit(AppUser(id: userId, email: email));
   }
 
+  /// Comme GoTrue : la session locale disparaît AVANT l'appel réseau de
+  /// révocation, qui peut ensuite échouer ([nextError]).
   @override
   Future<void> signOut() async {
+    _emit(null);
     await _record('signOut');
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _record('deleteAccount');
     _emit(null);
   }
 
   Future<void> dispose() => _changes.close();
 }
 
-/// Faux dépôt de profils ; un profil absent est créé à la première lecture.
+/// Faux dépôt de profils ; un profil absent est créé à la première lecture,
+/// sauf pour les comptes de [deletedUserIds], dont le profil n'existe plus.
 class FakeProfileRepository implements ProfileRepository {
   final profiles = <String, Profile>{};
+  final deletedUserIds = <String>{};
   AppException? nextError;
 
   @override
-  Future<Profile> fetchProfile(String userId) async => profiles.putIfAbsent(
-    userId,
-    () => Profile(
-      id: userId,
-      displayName: 'Zoé',
-      timezone: 'Europe/Paris',
-      language: AppLanguage.fr,
-    ),
-  );
+  Future<Profile?> fetchProfile(String userId) async =>
+      deletedUserIds.contains(userId)
+      ? null
+      : profiles.putIfAbsent(
+          userId,
+          () => Profile(
+            id: userId,
+            displayName: 'Zoé',
+            timezone: 'Europe/Paris',
+            language: AppLanguage.fr,
+          ),
+        );
 
   @override
   Future<void> updateProfile(Profile profile) async {

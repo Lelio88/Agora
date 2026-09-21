@@ -1,4 +1,5 @@
-/// Contrôleur de l'écran de profil : enregistrement et déconnexion.
+/// Contrôleur de l'écran de profil : enregistrement, déconnexion et
+/// suppression du compte.
 ///
 /// Après un enregistrement, [currentProfileProvider] est invalidé : la langue
 /// de toute l'app suit alors le profil sans redémarrage.
@@ -33,6 +34,18 @@ final class ProfileController extends AsyncNotifier<void> {
       () => ref.read(authRepositoryProvider).signOut(),
     );
     if (ref.mounted) state = result;
+  }
+
+  /// Supprime le compte ; renvoie `true` en cas de succès. La session se
+  /// ferme, et le routeur quitte l'écran pendant l'`await` : l'état n'est
+  /// écrit que si le contrôleur est encore monté.
+  Future<bool> deleteAccount() async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).deleteAccount(),
+    );
+    if (ref.mounted) state = result;
+    return !result.hasError;
   }
 }
 

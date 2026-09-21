@@ -48,4 +48,9 @@ abstract interface class AuthRepository {
   });
 
   Future<void> signOut();
+
+  /// Supprime définitivement le compte et ses données personnelles, puis
+  /// ferme la session. Les groupes possédés sont transmis (voir la
+  /// migration `account_deletion`).
+  Future<void> deleteAccount();
 }

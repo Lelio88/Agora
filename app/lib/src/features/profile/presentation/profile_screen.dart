@@ -1,5 +1,5 @@
 /// Écran de profil : nom affiché, langue (app et e-mails), fuseau horaire,
-/// déconnexion.
+/// déconnexion et suppression du compte.
 ///
 /// Le fuseau ne se tape pas : on reprend celui de l'appareil. C'est le seul
 /// réglage utile en pratique, et le serveur n'accepte de toute façon que des
@@ -90,6 +90,26 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
     messenger.showSnackBar(SnackBar(content: Text(confirmation.profileSaved)));
   }
 
+  /// Suppression du compte, après une confirmation qui en expose les
+  /// conséquences. En cas de succès, la session se ferme et le routeur mène
+  /// à la connexion ; le messager (celui de l'app) survit à l'écran et y
+  /// affiche la confirmation.
+  Future<void> _confirmDeletion() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => const _DeleteAccountDialog(),
+    );
+    if (confirmed != true) return;
+    final deleted = await ref
+        .read(profileControllerProvider.notifier)
+        .deleteAccount();
+    if (deleted) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.accountDeleted)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -176,11 +196,53 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   icon: const Icon(Icons.logout),
                   label: Text(l10n.signOutButton),
                 ),
+                const SizedBox(height: 8),
+                TextButton(
+                  key: ProfileKeys.deleteAccount,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: controller.isLoading ? null : _confirmDeletion,
+                  child: Text(l10n.deleteAccountButton),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Confirmation de suppression : renvoie `true` si l'on confirme. Le bouton
+/// de confirmation porte la couleur d'erreur du thème, pour qu'on ne le
+/// confonde pas avec une action ordinaire.
+class _DeleteAccountDialog extends StatelessWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
+    return AlertDialog(
+      title: Text(l10n.deleteAccountTitle),
+      content: Text(l10n.deleteAccountBody),
+      actions: [
+        TextButton(
+          key: ProfileKeys.cancelDelete,
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.cancelButton),
+        ),
+        FilledButton(
+          key: ProfileKeys.confirmDelete,
+          style: FilledButton.styleFrom(
+            backgroundColor: colors.error,
+            foregroundColor: colors.onError,
+          ),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.deleteAccountConfirm),
+        ),
+      ],
     );
   }
 }

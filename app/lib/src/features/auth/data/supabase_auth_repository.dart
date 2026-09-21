@@ -12,6 +12,10 @@
 ///   l'enregistrement échoue après la vérification, le code est consommé :
 ///   il faut en redemander un.
 ///
+/// - [deleteAccount] passe par la RPC `delete_my_account` : le Supabase
+///   auto-hébergé n'a pas d'edge runtime, et la transmission des groupes doit
+///   se faire dans la même transaction que l'effacement.
+///
 /// Invariant : aucune exception de GoTrue ne sort d'ici sans être traduite.
 library;
 
@@ -22,9 +26,11 @@ import 'package:agora/src/features/auth/domain/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseAuthRepository implements AuthRepository {
-  const SupabaseAuthRepository(this._auth);
+  const SupabaseAuthRepository(this._client);
 
-  final GoTrueClient _auth;
+  final SupabaseClient _client;
+
+  GoTrueClient get _auth => _client.auth;
 
   @override
   AppUser? get currentUser => _toAppUser(_auth.currentUser);
@@ -97,6 +103,19 @@ final class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() => _guard(_auth.signOut);
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    await _client.rpc<void>('delete_my_account');
+    try {
+      await _auth.signOut();
+    } on AuthException {
+      // Rien à signaler : GoTrue retire la session locale AVANT d'appeler le
+      // serveur, et la révocation distante qui échouerait vise une session
+      // que la suppression du compte a déjà effacée. Remonter cette erreur
+      // annoncerait un échec alors que le compte n'existe plus.
+    }
+  });
 
   static AppUser? _toAppUser(User? user) =>
       user == null ? null : AppUser(id: user.id, email: user.email);

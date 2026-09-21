@@ -190,4 +190,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorUnknown => 'Une erreur est survenue. Réessaie.';
+
+  @override
+  String get deleteAccountButton => 'Supprimer mon compte';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer ton compte ?';
+
+  @override
+  String get deleteAccountBody =>
+      'Ton profil, tes agendas et tes rendez-vous seront effacés définitivement. Les groupes dont tu es propriétaire passent à un autre membre ; ceux où tu es seul·e sont supprimés. Cette action est irréversible.';
+
+  @override
+  String get deleteAccountConfirm => 'Supprimer définitivement';
+
+  @override
+  String get cancelButton => 'Annuler';
+
+  @override
+  String get accountDeleted => 'Ton compte a été supprimé.';
 }

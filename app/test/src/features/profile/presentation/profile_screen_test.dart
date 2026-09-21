@@ -93,4 +93,75 @@ void main() {
 
     robot.expectScreen(AuthKeys.signInScreen);
   });
+
+  testWidgets(
+    'deleting the account after confirming signs out with a message',
+    (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(auth: _signedIn());
+      await robot.openProfile();
+
+      await robot.tap(ProfileKeys.deleteAccount);
+      robot.expectText('Supprimer ton compte ?');
+      await robot.tap(ProfileKeys.confirmDelete);
+
+      expect(robot.auth.calls, contains('deleteAccount'));
+      robot.expectScreen(AuthKeys.signInScreen);
+      robot.expectText('Ton compte a été supprimé.');
+    },
+  );
+
+  testWidgets('cancelling the deletion keeps the account', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn());
+    await robot.openProfile();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+    await robot.tap(ProfileKeys.cancelDelete);
+
+    expect(robot.auth.calls, isNot(contains('deleteAccount')));
+    robot.expectScreen(ProfileKeys.screen);
+  });
+
+  testWidgets('a failed deletion shows why and keeps the session', (
+    tester,
+  ) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn());
+    await robot.openProfile();
+    robot.auth.nextError = const NetworkException();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+    await robot.tap(ProfileKeys.confirmDelete);
+
+    robot.expectScreen(ProfileKeys.screen);
+    robot.expectText('Impossible de joindre le serveur. Vérifie ta connexion.');
+  });
+
+  testWidgets('a session whose account no longer exists is closed', (
+    tester,
+  ) async {
+    final profiles = FakeProfileRepository()
+      ..deletedUserIds.add(FakeAuthRepository.userId);
+    final robot = AgoraRobot(tester);
+
+    await robot.pumpApp(auth: _signedIn(), profiles: profiles);
+
+    expect(robot.auth.calls, contains('signOut'));
+    robot.expectScreen(AuthKeys.signInScreen);
+  });
+
+  testWidgets('an orphan session closes quietly even if revocation fails', (
+    tester,
+  ) async {
+    final profiles = FakeProfileRepository()
+      ..deletedUserIds.add(FakeAuthRepository.userId);
+    final auth = _signedIn()..nextError = const NetworkException();
+    final robot = AgoraRobot(tester);
+
+    await robot.pumpApp(auth: auth, profiles: profiles);
+
+    robot.expectScreen(AuthKeys.signInScreen);
+    expect(robot.logger.errorCount, 0);
+  });
 }

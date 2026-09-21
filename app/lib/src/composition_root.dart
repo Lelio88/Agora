@@ -24,9 +24,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 List<Override> prodOverrides(SupabaseClient client) => [
-  authRepositoryProvider.overrideWith(
-    (ref) => SupabaseAuthRepository(client.auth),
-  ),
+  authRepositoryProvider.overrideWith((ref) => SupabaseAuthRepository(client)),
   profileRepositoryProvider.overrideWith(
     (ref) => SupabaseProfileRepository(client),
   ),
