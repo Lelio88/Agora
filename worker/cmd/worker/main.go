@@ -29,6 +29,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/Lelio88/agora/worker/discord"
 	"github.com/Lelio88/agora/worker/ics"
 	"github.com/Lelio88/agora/worker/internal/config"
 	"github.com/Lelio88/agora/worker/internal/database"
@@ -84,9 +85,19 @@ func run(logger *slog.Logger) error {
 		database.Listen(ctx, cfg.DatabaseURL, subscriptions, logger)
 	}()
 
+	// Le bot n'écoute que si l'application Discord a donné sa clé publique :
+	// sans elle, aucune signature n'est vérifiable, donc rien n'est monté.
+	var interactions http.Handler
+	if cfg.DiscordPublicKey != "" {
+		interactions, err = discord.NewHandler(cfg.DiscordPublicKey, nil, time.Now)
+		if err != nil {
+			return fmt.Errorf("discord: %w", err)
+		}
+		logger.Info("discord interactions ready")
+	}
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpx.NewRouter(),
+		Handler:           httpx.NewRouter(interactions),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 	serveErr := make(chan error, 1)

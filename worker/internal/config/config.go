@@ -16,6 +16,8 @@
 package config
 
 import (
+	"crypto/ed25519"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -29,6 +31,10 @@ type Config struct {
 	HTTPAddr string
 	// DatabaseURL est la connexion Postgres, sous le rôle agora_worker.
 	DatabaseURL string
+	// DiscordPublicKey est la clé publique hexadécimale de l'application
+	// Discord, qui signe chaque interaction. Vide : le bot n'est pas branché
+	// et le point d'entrée des interactions n'est pas monté.
+	DiscordPublicKey string
 	// ICSAllowPrivateNetwork lève le contrôle SSRF des flux iCal
 	// (AGORA_ICS_ALLOW_PRIVATE_NETWORK=true) : développement et tests
 	// seulement, jamais en production.
@@ -61,7 +67,18 @@ func Load(getenv func(string) string) (Config, error) {
 			return Config{}, fmt.Errorf("AGORA_ICS_ALLOW_PRIVATE_NETWORK %q: not a boolean", raw)
 		}
 	}
-	return Config{HTTPAddr: addr, DatabaseURL: databaseURL, ICSAllowPrivateNetwork: allowPrivate}, nil
+	discordKey := getenv("AGORA_DISCORD_PUBLIC_KEY")
+	if discordKey != "" {
+		if _, err := hex.DecodeString(discordKey); err != nil || len(discordKey) != 2*ed25519.PublicKeySize {
+			return Config{}, errors.New("AGORA_DISCORD_PUBLIC_KEY: 64 caractères hexadécimaux attendus")
+		}
+	}
+	return Config{
+		HTTPAddr:               addr,
+		DatabaseURL:            databaseURL,
+		DiscordPublicKey:       discordKey,
+		ICSAllowPrivateNetwork: allowPrivate,
+	}, nil
 }
 
 // RedactedDatabaseURL renvoie DatabaseURL sans son mot de passe, pour les
