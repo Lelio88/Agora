@@ -31,18 +31,17 @@ const _work = UserCalendar(
   colorHex: '#1E88E5',
 );
 
-/// Prochain mardi à 18 h locales : dans la semaine affichée par défaut.
-DateTime _nextTuesday18h() {
+/// Mardi de la semaine affichée par défaut (elle commence le lundi), à 18 h
+/// locales : visible quel que soit le jour du test. Un « prochain mardi »
+/// tombait la semaine suivante un mardi après 18 h.
+DateTime _tuesdayThisWeek18h() {
   final now = DateTime.now();
-  var day = DateTime(now.year, now.month, now.day, 18);
-  while (day.weekday != DateTime.tuesday || !day.isAfter(now)) {
-    day = day.add(const Duration(days: 1));
-  }
-  return day.toUtc();
+  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  return DateTime(monday.year, monday.month, monday.day + 1, 18).toUtc();
 }
 
 AgendaItem _meeting() {
-  final start = _nextTuesday18h();
+  final start = _tuesdayThisWeek18h();
   return AgendaItem(
     eventId: 'evt-meeting',
     calendarId: _work.id,
@@ -157,7 +156,7 @@ void main() {
     tester,
   ) async {
     final calendar = FakeCalendarRepository();
-    final start = _nextTuesday18h();
+    final start = _tuesdayThisWeek18h();
     await calendar.createEvent(
       EventDraft(
         calendarId: _personal.id,

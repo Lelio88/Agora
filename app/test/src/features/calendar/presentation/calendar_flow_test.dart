@@ -18,19 +18,17 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
   ),
 );
 
-/// Prochain mardi à 18 h locales, pour que le rdv tombe dans la semaine
-/// affichée par défaut.
-DateTime _nextTuesday18h() {
+/// Mardi de la semaine affichée par défaut (elle commence le lundi), à 18 h
+/// locales : visible quel que soit le jour du test. Un « prochain mardi »
+/// tombait la semaine suivante un mardi après 18 h.
+DateTime _tuesdayThisWeek18h() {
   final now = DateTime.now();
-  var day = DateTime(now.year, now.month, now.day, 18);
-  while (day.weekday != DateTime.tuesday || !day.isAfter(now)) {
-    day = day.add(const Duration(days: 1));
-  }
-  return day.toUtc();
+  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  return DateTime(monday.year, monday.month, monday.day + 1, 18).toUtc();
 }
 
 AgendaItem _dentist() {
-  final start = _nextTuesday18h();
+  final start = _tuesdayThisWeek18h();
   return AgendaItem(
     eventId: 'evt-dentist',
     calendarId: FakeCalendarRepository.calendarId,
@@ -44,7 +42,7 @@ AgendaItem _dentist() {
 
 Future<FakeCalendarRepository> _withWeeklyYoga() async {
   final calendar = FakeCalendarRepository();
-  final start = _nextTuesday18h();
+  final start = _tuesdayThisWeek18h();
   await calendar.createEvent(
     EventDraft(
       calendarId: FakeCalendarRepository.calendarId,
@@ -145,7 +143,7 @@ void main() {
   });
 
   testWidgets('saving an all-day event keeps its dates', (tester) async {
-    final day = _nextTuesday18h().toLocal();
+    final day = _tuesdayThisWeek18h().toLocal();
     final start = DateTime.utc(day.year, day.month, day.day);
     final calendar = FakeCalendarRepository()
       ..seed(
@@ -249,7 +247,22 @@ void main() {
   });
 
   testWidgets('the schedule view lists upcoming events', (tester) async {
-    final calendar = FakeCalendarRepository()..seed(_dentist());
+    // Aujourd'hui plutôt que le mardi de la semaine : la vue planning va
+    // par mois, et ce mardi peut tomber le mois précédent.
+    final now = DateTime.now();
+    final noon = DateTime(now.year, now.month, now.day, 12).toUtc();
+    final calendar = FakeCalendarRepository()
+      ..seed(
+        AgendaItem(
+          eventId: 'evt-dentist',
+          calendarId: FakeCalendarRepository.calendarId,
+          title: 'Dentiste',
+          start: noon,
+          end: noon.add(const Duration(hours: 1)),
+          isAllDay: false,
+          timezone: 'Europe/Paris',
+        ),
+      );
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendar: calendar);
 
