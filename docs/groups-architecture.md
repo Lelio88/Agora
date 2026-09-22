@@ -1,7 +1,8 @@
 # Groupes — annexe d'architecture
 
 Annexe de [`architecture.md`](./architecture.md) §2-3. Elle décrit la vie d'un groupe (créer,
-inviter, rejoindre, rôles, quitter) et son agenda superposé dans l'app.
+inviter, rejoindre, rôles, quitter), son agenda superposé dans l'app, et ses rdv avec les réponses
+des membres.
 
 ## En base
 
@@ -73,12 +74,57 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
 - **Quitter / supprimer** depuis le menu du groupe ; le propriétaire est invité à transmettre
   d'abord. Après coup, retour à l'écran précédent (ou à l'accueil, ouvert par un lien).
 
+## Rdv de groupe et réponses
+
+Migration : `20260922020000_group_events.sql`. Un rdv de groupe est un rdv de l'agenda du groupe
+(`calendars.group_id`) : les règles des rdv s'appliquent telles quelles (séries, exceptions,
+dépliage par le worker).
+
+- **Proposer** : tout membre (`private.can_add_event`). **Modifier, supprimer** : son créateur et
+  les admins, propriétaire compris (`private.can_edit_event`). Un compte supprimé laisse ses rdv
+  proposés au groupe (`created_by` passe à `null`) ; les admins les gèrent.
+- **Répondre** : présent / peut-être / absent (`public.response_status`), par
+  `respond_to_event(rdv, créneau, réponse)` — seule écriture de `event_responses`, qui vérifie
+  l'appartenance au groupe ; `null` retire la réponse. Une **série se répond occurrence par
+  occurrence** (le créneau d'origine, qui doit être une occurrence dépliée) ; un rdv ponctuel ou
+  une occurrence modifiée (ligne à part) sans créneau (`invalid_occurrence` sinon).
+- **Lire** : les réponses d'un rdv ne sont lisibles que des membres de son groupe (RLS) ;
+  `my_agenda` rend ma réponse avec chaque instance (`my_response`).
+- **Les réponses suivent l'instance** (triggers) : une occurrence qui devient un rdv à part les
+  emporte, et les rend à son créneau si elle disparaît (sans quoi `replace_occurrence`, qui
+  supprime puis recrée la ligne à chaque modification, les effacerait) ; changer l'horaire ou la
+  règle d'une série efface celles de ses occurrences, comme ses exceptions ; changer l'heure d'un
+  rdv ponctuel les garde ; quitter le groupe efface les siennes.
+- **Pas encore** : un rdv de groupe accepté ne rend pas « occupé » dans les autres groupes (la
+  résolution de visibilité ne lit que les agendas personnels) — à trancher avec les créneaux
+  communs (étape 7).
+
+Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service) :
+
+- **Proposer** depuis l'agenda du groupe : bouton « Proposer un rdv » ou appui sur un créneau
+  libre → route `groups/:groupId/events/new` → `GroupEventEditorPage` (l'éditeur, rangé d'office
+  dans l'agenda du groupe, sans réglage de visibilité : tous les membres le voient en détail).
+- **Fiche** (`GroupEventScreen`, route `groups/:groupId/events/:eventId?start=`) : ce qu'est le
+  rdv, qui l'a proposé, ma réponse (trois boutons ; rappuyer retire), les réponses par catégorie
+  et les membres sans réponse ; modifier et supprimer pour le créateur et les admins. `start`
+  désigne l'occurrence d'une série ; pour le reste il est ignoré. Ouverte depuis l'agenda du groupe
+  comme depuis l'agenda perso.
+- **Agenda perso** : les rdv de mes groupes y figurent (la RLS les rend lisibles), non
+  déplaçables ; un appui ouvre leur fiche. Présent ou peut-être : une icône sur la tuile ; absent :
+  tuile estompée et barrée, sans disparaître. « Mes agendas » liste les agendas de mes groupes
+  (sous le nom actuel du groupe) avec la même case « afficher ».
+- **Couplage** : l'écran du groupe (feature groupes) n'importe rien de la feature agenda ; il ouvre
+  ses écrans par nom de route et relit son agenda au retour. La fiche lit membres et rôle par
+  l'application de la feature groupes.
+
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
 | `supabase/migrations/20260922000000_group_management.sql` | `join_group` (partage), `invite_preview`, `set_member_role`, `transfer_group` |
 | `supabase/tests/group_management_test.sql` · `groups_test.sql` | aperçu, partage à l'arrivée, rôles, exclusion, transmission ; inscription, invitations, droits |
+| `supabase/migrations/20260922020000_group_events.sql` · `tests/group_events_test.sql` | réponses aux rdv de groupe, `respond_to_event`, `my_agenda` avec ma réponse ; qui propose, qui modifie, qui répond, réponses qui suivent l'instance |
+| `app/lib/src/features/calendar/presentation/group_event_screen.dart` · `group_event_editor_page.dart` | fiche d'un rdv de groupe (réponses), proposition d'un rdv |
 | `app/lib/src/features/groups/domain/` | `MyGroup`, `GroupMember`, `GroupRole`, `ShareLevel`, `GroupInvite`, `InvitePreview`, `GroupAgendaItem`, contrat du dépôt |
 | `app/lib/src/features/groups/data/supabase_groups_repository.dart` | PostgREST : jointures `group_members`→`groups`/`profiles`, RPC |
 | `app/lib/src/features/groups/application/groups_providers.dart` | providers, `GroupsService`, `PendingInvite`, `looksLikeInviteCode` |

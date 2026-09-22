@@ -1,6 +1,7 @@
 /// Écran d'agenda : vues jour, semaine, mois et planning (kalender), création
 /// et modification des rdv, choix « cette occurrence / toute la série ». Un
-/// rdv importé par lien iCal s'ouvre en lecture seule.
+/// rdv importé par lien iCal s'ouvre en lecture seule ; un rdv de groupe
+/// ouvre sa fiche (réponses), et se montre estompé si j'ai répondu absent.
 ///
 /// Choix non évidents :
 /// - vues, barre et plage chargée viennent de `common_widgets/agenda_view.dart`,
@@ -14,24 +15,27 @@ library;
 
 import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/common_widgets/async_value_widget.dart';
-import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendar_service.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/agenda_event.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
+import 'package:agora/src/features/calendar/presentation/event_actions.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/imported_event_sheet.dart';
 import 'package:agora/src/features/calendar/presentation/scope_dialog.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/localization/app_localizations.dart';
+import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kalender/kalender.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -85,46 +89,24 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       initialStart: start,
     );
     if (result is! EditorSaved || !mounted) return;
-    await _run(
+    await runAction(
+      context,
       () => ref.read(calendarServiceProvider).create(result.draft),
       AppLocalizations.of(context).eventSaved,
     );
   }
 
-  Future<void> _editEvent(AgendaItem item) async {
-    final result = await EventEditorScreen.show(
-      context,
-      calendarId: item.calendarId,
-      timezone: item.timezone,
-      calendars: _writableCalendars,
-      existing: item,
+  Future<void> _editEvent(AgendaItem item) =>
+      editInstance(context, ref, item, calendars: _writableCalendars);
+
+  /// Un rdv de groupe s'ouvre sur sa fiche (réponses, qui vient), par la
+  /// même route que depuis l'agenda du groupe.
+  void _openGroupEvent(String groupId, AgendaItem item) {
+    context.pushNamed(
+      AppRoute.groupEvent.name,
+      pathParameters: {'groupId': groupId, 'eventId': item.eventId},
+      queryParameters: {'start': item.start.toUtc().toIso8601String()},
     );
-    if (result == null || !mounted) return;
-    final l10n = AppLocalizations.of(context);
-    switch (result) {
-      case EditorSaved(:final draft):
-        final target = await _askScope(
-          item,
-          ScopeQuestion.edit,
-          // Une occurrence vit dans l'agenda de sa série : changer
-          // d'agenda ne peut viser que toute la série.
-          allowOccurrence: draft.calendarId == item.calendarId,
-        );
-        if (target == null || !mounted) return;
-        await _run(
-          () => ref
-              .read(calendarServiceProvider)
-              .save(target: target, draft: draft),
-          l10n.eventSaved,
-        );
-      case EditorDeleteRequested():
-        final target = await _askScope(item, ScopeQuestion.delete);
-        if (target == null || !mounted) return;
-        await _run(
-          () => ref.read(calendarServiceProvider).delete(target),
-          l10n.eventDeleted,
-        );
-    }
   }
 
   /// Un rdv importé ne se modifie pas ici : sa fiche ne règle que ce que
@@ -139,7 +121,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       calendar: calendar,
     );
     if (choice == null || !mounted) return;
-    await _run(
+    await runAction(
+      context,
       () => ref.read(calendarServiceProvider).setVisibility(item, choice.value),
       AppLocalizations.of(context).eventVisibilitySaved,
     );
@@ -156,11 +139,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         : (moved.start.toUtc(), moved.end.toUtc());
     if (start == item.start && end == item.end) return;
     final draft = EventDraft.fromItem(item).copyWith(start: start, end: end);
-    final target = await _askScope(item, ScopeQuestion.move);
+    final target = await askScope(context, item, ScopeQuestion.move);
     if (!mounted) return;
     final saved =
         target != null &&
-        await _run(
+        await runAction(
+          context,
           () => ref
               .read(calendarServiceProvider)
               .save(target: target, draft: draft),
@@ -174,37 +158,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   static DateTime _calendarDateUtc(DateTime instant) {
     final local = instant.toLocal();
     return DateTime.utc(local.year, local.month, local.day);
-  }
-
-  /// Pour une instance de série, demande la portée ; sinon le rdv entier.
-  Future<EditTarget?> _askScope(
-    AgendaItem item,
-    ScopeQuestion question, {
-    bool allowOccurrence = true,
-  }) {
-    if (!item.isRecurring) return Future.value(EditTarget.series(item));
-    return showScopeDialog(
-      context,
-      item: item,
-      question: question,
-      allowOccurrence: allowOccurrence,
-    );
-  }
-
-  /// Lance [action] et en affiche l'issue ; vrai si elle a réussi.
-  Future<bool> _run(Future<void> Function() action, String success) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final l10n = AppLocalizations.of(context);
-    try {
-      await action();
-      messenger.showSnackBar(SnackBar(content: Text(success)));
-      return true;
-    } on Exception catch (error) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(messageForError(error, l10n))),
-      );
-      return false;
-    }
   }
 
   List<UserCalendar> get _writableCalendars => [
@@ -283,7 +236,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   onEventTapped: (event) {
                     if (event is! AgendaEvent) return;
                     final calendar = event.calendar;
-                    if (calendar != null && calendar.isImported) {
+                    if (calendar?.groupId case final groupId?) {
+                      _openGroupEvent(groupId, event.item);
+                    } else if (calendar != null && calendar.isImported) {
                       _showImportedEvent(event.item, calendar);
                     } else {
                       _editEvent(event.item);
@@ -334,29 +289,50 @@ Widget _buildTile(
   final foreground = colorHex == null
       ? colors.onPrimaryContainer
       : readableOn(background);
-  return Container(
-    margin: const EdgeInsets.all(1),
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: background,
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Row(
-      children: [
-        if (item?.isRecurring ?? false)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Icon(Icons.repeat, size: 12, color: foreground),
+  // Un rdv de groupe auquel j'ai répondu absent reste visible, estompé et
+  // barré : l'information n'est pas perdue, mais ne prend plus la place.
+  final response = item?.myResponse;
+  final declined = response == ResponseStatus.no;
+  final responseIcon = switch (response) {
+    ResponseStatus.yes => Icons.check_circle_outline,
+    ResponseStatus.maybe => Icons.help_outline,
+    _ => null,
+  };
+  return Opacity(
+    opacity: declined ? 0.45 : 1,
+    child: Container(
+      margin: const EdgeInsets.all(1),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          if (item?.isRecurring ?? false)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(Icons.repeat, size: 12, color: foreground),
+            ),
+          if (responseIcon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(responseIcon, size: 12, color: foreground),
+            ),
+          Expanded(
+            child: Text(
+              item?.title ?? '',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 12,
+                decoration: declined ? TextDecoration.lineThrough : null,
+              ),
+            ),
           ),
-        Expanded(
-          child: Text(
-            item?.title ?? '',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: foreground, fontSize: 12),
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

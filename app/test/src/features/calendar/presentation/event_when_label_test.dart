@@ -1,5 +1,5 @@
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
-import 'package:agora/src/features/calendar/presentation/imported_event_sheet.dart';
+import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

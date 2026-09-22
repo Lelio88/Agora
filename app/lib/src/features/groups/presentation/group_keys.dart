@@ -37,6 +37,7 @@ abstract final class GroupKeys {
   static const delete = ValueKey('group.menu.delete');
   static const confirm = ValueKey('group.confirm');
   static const refresh = ValueKey('group.refresh');
+  static const proposeEvent = ValueKey('group.proposeEvent');
   static const toolbar = AgendaToolbarKeys('group');
   static ValueKey<String> memberChip(String userId) =>
       ValueKey('group.chip.$userId');

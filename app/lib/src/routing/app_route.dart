@@ -6,6 +6,8 @@ library;
 enum AppRoute {
   home,
   group,
+  groupEvent,
+  groupEventNew,
   join,
   joinByCode,
   profile,

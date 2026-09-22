@@ -15,6 +15,7 @@ library;
 
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 
 abstract interface class CalendarRepository {
@@ -63,4 +64,20 @@ abstract interface class CalendarRepository {
   /// réglage possible sur un rdv importé : la synchro n'y touche jamais).
   /// `null` : hérite de l'agenda et du groupe.
   Future<void> setEventVisibility(String eventId, EventVisibility? visibility);
+
+  /// Une instance d'un rdv lisible, avec son créateur, ou `null` s'il
+  /// n'existe plus. [start] est le début de l'instance voulue : pour une
+  /// série, il désigne l'occurrence ; pour le reste, il est ignoré.
+  Future<GroupEventInstance?> fetchInstance(String eventId, {DateTime? start});
+
+  /// Réponses des membres à une instance d'un rdv de groupe.
+  Future<List<EventResponse>> fetchResponses(ResponseKey key);
+
+  /// Répond à une instance d'un rdv de groupe ; `null` retire la réponse.
+  /// Pas membre du groupe, ou occurrence disparue : `EventNotFoundException`.
+  Future<void> respond(ResponseKey key, ResponseStatus? status);
 }
+
+/// Une instance lue seule (fiche d'un rdv de groupe), avec qui l'a proposé
+/// (`null` si son compte a été supprimé).
+typedef GroupEventInstance = ({AgendaItem item, String? createdBy});

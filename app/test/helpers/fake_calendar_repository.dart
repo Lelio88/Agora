@@ -4,20 +4,30 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+
+import 'fakes.dart';
 
 /// Faux [CalendarRepository] en mémoire. Il imite le serveur au plus près
 /// de ce que l'app observe : une série créée apparaît par ses occurrences
 /// hebdomadaires (dépliage minimal, 8 semaines), une occurrence modifiée
 /// remplace la sienne, une occurrence supprimée disparaît. Modifier toute
 /// la série la décale d'autant que l'occurrence touchée ; un nouvel horaire
-/// efface ses occurrences modifiées, comme le serveur.
+/// efface ses occurrences modifiées, comme le serveur. Les réponses aux rdv
+/// de groupe se posent par instance ; ma réponse revient avec l'agenda.
 class FakeCalendarRepository implements CalendarRepository {
   static const calendarId = 'cal-1';
 
   final _items = <String, AgendaItem>{};
   final _changes = StreamController<int>.broadcast();
   final calls = <String>[];
+
+  /// Qui a proposé chaque rdv ; ceux créés ici le sont par l'utilisateur.
+  final creators = <String, String>{};
+
+  /// Réponses par instance, puis par membre.
+  final responses = <ResponseKey, Map<String, ResponseStatus>>{};
 
   /// Les appels qui modifient quelque chose (sans les relectures).
   List<String> get writes =>
@@ -63,6 +73,7 @@ class FakeCalendarRepository implements CalendarRepository {
   Future<void> createEvent(EventDraft draft) async {
     await _record('createEvent');
     final id = 'evt-${_nextId++}';
+    creators[id] = FakeAuthRepository.userId;
     if (draft.recurrence == null) {
       seed(_item(id, draft, draft.start, draft.end));
     } else {
@@ -235,12 +246,65 @@ class FakeCalendarRepository implements CalendarRepository {
     _notify();
   }
 
-  /// [visibility] est une fonction pour distinguer « inchangée » (absente)
-  /// de « selon le groupe » (`null`).
+  /// Comme `fetchInstance` du dépôt Supabase : l'instance d'une série est
+  /// celle qui commence à [start].
+  @override
+  Future<GroupEventInstance?> fetchInstance(
+    String eventId, {
+    DateTime? start,
+  }) async {
+    await _record('fetchInstance');
+    final candidates = _items.values.where((i) => i.eventId == eventId);
+    final item =
+        candidates.where((i) {
+          if (i.kind != InstanceKind.seriesOccurrence || start == null) {
+            return true;
+          }
+          return i.start.isAtSameMomentAs(start);
+        }).firstOrNull ??
+        candidates.firstOrNull;
+    if (item == null) return null;
+    return (item: item, createdBy: creators[eventId]);
+  }
+
+  @override
+  Future<List<EventResponse>> fetchResponses(ResponseKey key) async {
+    await _record('fetchResponses');
+    return [
+      for (final MapEntry(key: userId, value: status)
+          in (responses[key] ?? const {}).entries)
+        EventResponse(userId: userId, status: status),
+    ];
+  }
+
+  /// Comme `respond_to_event` : l'instance doit exister ; ma réponse revient
+  /// ensuite avec l'agenda.
+  @override
+  Future<void> respond(ResponseKey key, ResponseStatus? status) async {
+    await _record('respond');
+    final targets = _items.values
+        .where((i) => i.responseKey == key)
+        .toList(growable: false);
+    if (targets.isEmpty) throw const EventNotFoundException();
+    final forKey = responses.putIfAbsent(key, () => {});
+    if (status == null) {
+      forKey.remove(FakeAuthRepository.userId);
+    } else {
+      forKey[FakeAuthRepository.userId] = status;
+    }
+    for (final item in targets) {
+      seed(_copy(item, myResponse: () => status));
+    }
+    _notify();
+  }
+
+  /// [visibility] et [myResponse] sont des fonctions pour distinguer
+  /// « inchangée » (absente) de « aucune » (`null`).
   AgendaItem _copy(
     AgendaItem item, {
     String? calendarId,
     EventVisibility? Function()? visibility,
+    ResponseStatus? Function()? myResponse,
   }) => AgendaItem(
     eventId: item.eventId,
     seriesId: item.seriesId,
@@ -255,6 +319,7 @@ class FakeCalendarRepository implements CalendarRepository {
     timezone: item.timezone,
     rrule: item.rrule,
     visibility: visibility == null ? item.visibility : visibility(),
+    myResponse: myResponse == null ? item.myResponse : myResponse(),
   );
 
   /// Ne pas attendre la fermeture : `close()` d'un flux broadcast n'aboutit

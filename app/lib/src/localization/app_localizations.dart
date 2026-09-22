@@ -1465,6 +1465,96 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Réglage enregistré.'**
   String get eventVisibilitySaved;
+
+  /// Bouton de l'agenda d'un groupe : proposer un rendez-vous au groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposer un rdv'**
+  String get proposeEventButton;
+
+  /// Confirmation après la création d'un rendez-vous de groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous proposé au groupe.'**
+  String get eventProposed;
+
+  /// Titre du choix de sa réponse à un rendez-vous de groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ma réponse'**
+  String get myResponseLabel;
+
+  /// Réponse à un rendez-vous de groupe : je viens.
+  ///
+  /// In fr, this message translates to:
+  /// **'Présent'**
+  String get responseYes;
+
+  /// Réponse à un rendez-vous de groupe : peut-être.
+  ///
+  /// In fr, this message translates to:
+  /// **'Peut-être'**
+  String get responseMaybe;
+
+  /// Réponse à un rendez-vous de groupe : je ne viens pas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Absent'**
+  String get responseNo;
+
+  /// Membres qui n'ont pas encore répondu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sans réponse'**
+  String get responseNone;
+
+  /// Titre de la liste des réponses des membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponses'**
+  String get responsesTitle;
+
+  /// Une catégorie de réponses et son nombre de membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'{label} · {count}'**
+  String responseSectionTitle(String label, int count);
+
+  /// Auteur d'un rendez-vous de groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposé par {name}'**
+  String proposedBy(String name);
+
+  /// Confirmation après une réponse à un rendez-vous de groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponse enregistrée.'**
+  String get responseSaved;
+
+  /// Confirmation après le retrait de sa réponse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponse retirée.'**
+  String get responseRemoved;
+
+  /// Précise qu'on répond occurrence par occurrence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous répété : votre réponse vaut pour cette date.'**
+  String get occurrenceResponseNote;
+
+  /// Titre de la section des agendas de groupe dans « Mes agendas ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Agendas de mes groupes'**
+  String get groupCalendarsTitle;
+
+  /// Auteur d'un rendez-vous de groupe quand c'est l'utilisateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposé par vous'**
+  String get proposedByMe;
 }
 
 class _AppLocalizationsDelegate

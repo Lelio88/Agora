@@ -6,6 +6,9 @@
 /// - modifier une occurrence passe par la RPC `replace_occurrence`, qui crée
 ///   une ligne à part rattachée à la série ; le serveur masque aussitôt
 ///   l'occurrence dépliée ;
+/// - la fiche d'un rdv de groupe lit sa ligne directement (la RLS la rend
+///   lisible aux membres) et en tire l'instance voulue ; les réponses
+///   s'écrivent par la RPC `respond_to_event`, seule écriture permise ;
 /// - le temps réel ne transporte aucun contenu : à chaque changement de
 ///   `events` ou de `series_expansions` (le worker a redéplié une série),
 ///   on relit. `event_occurrences` n'est pas publiée : Realtime diffuse les
@@ -19,6 +22,7 @@ import 'dart:async';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -152,6 +156,103 @@ final class SupabaseCalendarRepository implements CalendarRepository {
     ),
   );
 
+  @override
+  Future<GroupEventInstance?> fetchInstance(
+    String eventId, {
+    DateTime? start,
+  }) => _guard(() async {
+    final row = await _client
+        .from('events')
+        .select(
+          'id, calendar_id, series_id, recurrence_id, title, location, '
+          'description, starts_at, ends_at, all_day, timezone, rrule, '
+          'visibility, created_by',
+        )
+        .eq('id', eventId)
+        .maybeSingle();
+    if (row == null) return null;
+    final seriesId = row['series_id'] as String?;
+    // Une occurrence modifiée porte la règle de sa série (comme my_agenda).
+    final masterRule = seriesId == null
+        ? null
+        : (await _client
+                  .from('events')
+                  .select('rrule')
+                  .eq('id', seriesId)
+                  .maybeSingle())?['rrule']
+              as String?;
+    return (
+      item: _instanceOf(row, start: start, masterRule: masterRule),
+      createdBy: row['created_by'] as String?,
+    );
+  });
+
+  /// L'instance voulue d'une ligne d'`events` : une occurrence de série
+  /// commence à [start] et dure ce que dure la série.
+  static AgendaItem _instanceOf(
+    Map<String, dynamic> row, {
+    DateTime? start,
+    String? masterRule,
+  }) {
+    final id = row['id'] as String;
+    final rule = row['rrule'] as String?;
+    final rowStart = _timestamp(row['starts_at'])!;
+    final rowEnd = _timestamp(row['ends_at'])!;
+    final isSeries = rule != null;
+    final instanceStart = isSeries ? (start?.toUtc() ?? rowStart) : rowStart;
+    return AgendaItem(
+      eventId: id,
+      seriesId: isSeries ? id : row['series_id'] as String?,
+      originalStart: isSeries
+          ? instanceStart
+          : _timestamp(row['recurrence_id']),
+      calendarId: row['calendar_id'] as String,
+      title: row['title'] as String,
+      location: row['location'] as String?,
+      description: row['description'] as String?,
+      start: instanceStart,
+      end: instanceStart.add(rowEnd.difference(rowStart)),
+      isAllDay: row['all_day'] as bool,
+      timezone: row['timezone'] as String,
+      rrule: rule ?? masterRule,
+      visibility: EventVisibility.fromCode(row['visibility'] as String?),
+    );
+  }
+
+  @override
+  Future<List<EventResponse>> fetchResponses(ResponseKey key) =>
+      _guard(() async {
+        final query = _client
+            .from('event_responses')
+            .select('user_id, status')
+            .eq('event_id', key.eventId);
+        final occurrence = key.occurrenceStart;
+        final rows = occurrence == null
+            ? await query.isFilter('occurrence_start', null)
+            : await query.eq(
+                'occurrence_start',
+                occurrence.toUtc().toIso8601String(),
+              );
+        return [
+          for (final row in rows)
+            if (ResponseStatus.fromCode(row['status'] as String?)
+                case final status?)
+              EventResponse(userId: row['user_id'] as String, status: status),
+        ];
+      });
+
+  @override
+  Future<void> respond(ResponseKey key, ResponseStatus? status) => _guard(
+    () => _client.rpc<void>(
+      'respond_to_event',
+      params: {
+        'p_event_id': key.eventId,
+        'p_occurrence_start': key.occurrenceStart?.toUtc().toIso8601String(),
+        'p_status': status?.code,
+      },
+    ),
+  );
+
   static Map<String, dynamic> _toRow(EventDraft draft) => {
     'calendar_id': draft.calendarId,
     'title': draft.title.trim(),
@@ -179,6 +280,7 @@ final class SupabaseCalendarRepository implements CalendarRepository {
     timezone: row['timezone'] as String,
     rrule: row['rrule'] as String?,
     visibility: EventVisibility.fromCode(row['visibility'] as String?),
+    myResponse: ResponseStatus.fromCode(row['my_response'] as String?),
   );
 
   static DateTime? _timestamp(Object? value) =>

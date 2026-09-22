@@ -22,9 +22,11 @@
 library;
 
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
+import 'package:agora/src/features/calendar/application/group_event_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,15 +132,24 @@ final class CalendarService {
   Future<void> setVisibility(AgendaItem item, EventVisibility? visibility) =>
       _then(_repository.setEventVisibility(item.eventId, visibility));
 
+  /// Répond à l'instance [item] d'un rdv de groupe ; `null` retire la
+  /// réponse.
+  Future<void> respond(AgendaItem item, ResponseStatus? status) =>
+      _then(_repository.respond(item.responseKey, status));
+
   Future<void> _then(Future<void> action) async {
     await action;
     _onChanged();
   }
 }
 
+/// Chaque action relit l'agenda, et la fiche ouverte d'un rdv de groupe
+/// avec ses réponses.
 final calendarServiceProvider = Provider<CalendarService>(
-  (ref) => CalendarService(
-    ref.watch(calendarRepositoryProvider),
-    () => ref.invalidate(agendaProvider),
-  ),
+  (ref) => CalendarService(ref.watch(calendarRepositoryProvider), () {
+    ref
+      ..invalidate(agendaProvider)
+      ..invalidate(groupEventProvider)
+      ..invalidate(eventResponsesProvider);
+  }),
 );

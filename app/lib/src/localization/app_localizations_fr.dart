@@ -784,4 +784,54 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get eventVisibilitySaved => 'Réglage enregistré.';
+
+  @override
+  String get proposeEventButton => 'Proposer un rdv';
+
+  @override
+  String get eventProposed => 'Rendez-vous proposé au groupe.';
+
+  @override
+  String get myResponseLabel => 'Ma réponse';
+
+  @override
+  String get responseYes => 'Présent';
+
+  @override
+  String get responseMaybe => 'Peut-être';
+
+  @override
+  String get responseNo => 'Absent';
+
+  @override
+  String get responseNone => 'Sans réponse';
+
+  @override
+  String get responsesTitle => 'Réponses';
+
+  @override
+  String responseSectionTitle(String label, int count) {
+    return '$label · $count';
+  }
+
+  @override
+  String proposedBy(String name) {
+    return 'Proposé par $name';
+  }
+
+  @override
+  String get responseSaved => 'Réponse enregistrée.';
+
+  @override
+  String get responseRemoved => 'Réponse retirée.';
+
+  @override
+  String get occurrenceResponseNote =>
+      'Rendez-vous répété : votre réponse vaut pour cette date.';
+
+  @override
+  String get groupCalendarsTitle => 'Agendas de mes groupes';
+
+  @override
+  String get proposedByMe => 'Proposé par vous';
 }

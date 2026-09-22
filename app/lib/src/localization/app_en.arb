@@ -236,5 +236,20 @@
   "syncErrorUnknown": "The last sync failed.",
   "importedEventReadOnly": "Imported event: edit it in the original calendar. Here you choose what your groups see of it.",
   "importedEventSeriesNote": "Applies to the whole series.",
-  "eventVisibilitySaved": "Setting saved."
+  "eventVisibilitySaved": "Setting saved.",
+  "proposeEventButton": "Propose an event",
+  "eventProposed": "Event proposed to the group.",
+  "myResponseLabel": "My answer",
+  "responseYes": "Going",
+  "responseMaybe": "Maybe",
+  "responseNo": "Not going",
+  "responseNone": "No answer",
+  "responsesTitle": "Answers",
+  "responseSectionTitle": "{label} · {count}",
+  "proposedBy": "Proposed by {name}",
+  "responseSaved": "Answer saved.",
+  "responseRemoved": "Answer removed.",
+  "occurrenceResponseNote": "Repeating event: your answer applies to this date.",
+  "groupCalendarsTitle": "My groups' calendars",
+  "proposedByMe": "Proposed by you"
 }

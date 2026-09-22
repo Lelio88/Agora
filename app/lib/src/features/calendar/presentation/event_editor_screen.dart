@@ -3,7 +3,12 @@
 /// Il ne parle pas au serveur lui-même : il renvoie un [EditorResult] à
 /// l'écran d'agenda, qui pose la question « cette occurrence ou la série »
 /// s'il y a lieu, puis appelle le service. L'éditeur reste ainsi testable
-/// seul, et la question de portée n'existe qu'à un endroit.
+/// seul, et la question de portée n'existe qu'à un endroit. Ouvert par une
+/// route (proposer un rdv à un groupe), il confie son résultat à
+/// [EventEditorScreen.onResult] et ne se ferme que s'il a abouti.
+///
+/// Pour un agenda de groupe, pas de réglage de visibilité : un rdv du
+/// groupe est vu en détail de tous ses membres.
 ///
 /// Dates et heures sont saisies dans le fuseau local de l'appareil et
 /// stockées en UTC ; un rdv « journée entière » va de minuit UTC à minuit
@@ -48,6 +53,7 @@ class EventEditorScreen extends StatefulWidget {
     this.calendars = const [],
     this.existing,
     this.initialStart,
+    this.onResult,
     super.key,
   });
 
@@ -65,6 +71,11 @@ class EventEditorScreen extends StatefulWidget {
 
   /// Début proposé à la création (créneau touché dans l'agenda).
   final DateTime? initialStart;
+
+  /// Traite le résultat sans fermer l'éditeur ; vrai s'il a abouti, et
+  /// l'éditeur se ferme alors en rendant `true`. Sans lui, l'éditeur se
+  /// ferme en rendant le [EditorResult].
+  final Future<bool> Function(EditorResult result)? onResult;
 
   /// Ouvre l'éditeur et renvoie ce que l'utilisateur a décidé, ou `null`.
   static Future<EditorResult?> show(
@@ -103,6 +114,12 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   late bool _isAllDay = widget.existing?.isAllDay ?? false;
   late EventVisibility? _visibility = widget.existing?.visibility;
   late String _calendarId = widget.existing?.calendarId ?? widget.calendarId;
+  bool _isSending = false;
+
+  /// Le rdv va dans l'agenda d'un groupe : tous ses membres le voient.
+  bool get _inGroupCalendar => widget.calendars.any(
+    (calendar) => calendar.id == _calendarId && !calendar.isPersonal,
+  );
 
   /// Règle éditable ; `null` sans répétition. Une règle importée hors du
   /// sous-ensemble éditable est gardée telle quelle dans [_advancedRule].
@@ -204,7 +221,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 .add(const Duration(days: 1)),
           )
         : (_start.toUtc(), _end.toUtc());
-    Navigator.of(context).pop(
+    _finish(
       EditorSaved(
         EventDraft(
           calendarId: _calendarId,
@@ -216,10 +233,23 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           isAllDay: _isAllDay,
           timezone: widget.existing?.timezone ?? widget.timezone,
           recurrence: _recurrence,
-          visibility: _visibility,
+          visibility: _inGroupCalendar ? null : _visibility,
         ).withRawRule(_advancedRule),
       ),
     );
+  }
+
+  Future<void> _finish(EditorResult result) async {
+    final onResult = widget.onResult;
+    if (onResult == null) {
+      Navigator.of(context).pop(result);
+      return;
+    }
+    setState(() => _isSending = true);
+    final done = await onResult(result);
+    if (!mounted) return;
+    setState(() => _isSending = false);
+    if (done) Navigator.of(context).pop(true);
   }
 
   static DateTime _allDayUtc(DateTime local) =>
@@ -245,8 +275,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               key: CalendarKeys.delete,
               tooltip: l10n.deleteEventButton,
               icon: const Icon(Icons.delete_outline),
-              onPressed: () =>
-                  Navigator.of(context).pop(const EditorDeleteRequested()),
+              onPressed: () => _finish(const EditorDeleteRequested()),
             ),
         ],
       ),
@@ -308,11 +337,12 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 advancedRule: _advancedRule,
                 onChanged: (rule) => setState(() => _recurrence = rule),
               ),
-              VisibilityField(
-                key: CalendarKeys.visibility,
-                value: _visibility,
-                onChanged: (value) => setState(() => _visibility = value),
-              ),
+              if (!_inGroupCalendar)
+                VisibilityField(
+                  key: CalendarKeys.visibility,
+                  value: _visibility,
+                  onChanged: (value) => setState(() => _visibility = value),
+                ),
               const SizedBox(height: 8),
               TextFormField(
                 key: CalendarKeys.location,
@@ -337,7 +367,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               SubmitButton(
                 key: CalendarKeys.save,
                 label: l10n.saveButton,
-                isLoading: false,
+                isLoading: _isSending,
                 onPressed: _submit,
               ),
             ],

@@ -1,13 +1,18 @@
 /// Agenda d'un groupe : les créneaux de tous les membres dans la même
-/// grille, une couleur par membre, des pastilles pour en masquer. Depuis la
-/// barre : inviter, les membres, et le menu du groupe (renommer, quitter,
-/// supprimer).
+/// grille, une couleur par membre, des pastilles pour en masquer, et les
+/// rdv du groupe. Depuis la barre : inviter, les membres, et le menu du
+/// groupe (renommer, quitter, supprimer). « Proposer un rdv » (ou un appui
+/// sur un créneau libre) crée un rdv du groupe ; un appui sur un rdv du
+/// groupe ouvre sa fiche (réponses).
 ///
 /// Choix non évidents :
 /// - les créneaux viennent de `group_agenda`, déjà passés par la règle de
 ///   vie privée : un créneau « occupé » n'a ni titre ni lieu, et un membre
 ///   qui ne partage rien n'a aucun créneau. L'écran n'a rien à cacher ;
 /// - les tuiles sont en lecture seule : on modifie ses rdv depuis son agenda ;
+/// - proposer un rdv et sa fiche sont des écrans de la feature agenda,
+///   ouverts par leur nom de route : cette feature ne les connaît pas. Au
+///   retour, l'agenda du groupe se relit (il n'est pas en temps réel) ;
 /// - masquer un membre est un filtre local à l'écran, sans effet ailleurs.
 library;
 
@@ -131,6 +136,14 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
     final myGroup = group.value;
     return Scaffold(
       key: GroupKeys.groupScreen,
+      floatingActionButton: FloatingActionButton.extended(
+        key: GroupKeys.proposeEvent,
+        // L'accueil, dessous, a ses propres boutons : chacun son tag.
+        heroTag: GroupKeys.proposeEvent,
+        icon: const Icon(Icons.add),
+        label: Text(l10n.proposeEventButton),
+        onPressed: _proposeEvent,
+      ),
       appBar: AppBar(
         title: Text(myGroup?.name ?? ''),
         actions: [
@@ -187,8 +200,15 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
                   locale: Localizations.localeOf(context),
                   callbacks: KalenderCallbacks(
                     onEventTapped: (event) {
-                      if (event is _GroupEvent) _showDetails(event);
+                      if (event is! _GroupEvent) return;
+                      final item = event.item;
+                      if (item.isGroupEvent && item.eventId != null) {
+                        _openGroupEvent(item);
+                      } else {
+                        _showDetails(event);
+                      }
                     },
+                    onTapped: _proposeEvent,
                   ),
                   header: KalenderHeader(
                     multiDayTileComponents: _tileComponents,
@@ -209,6 +229,29 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         ),
       ),
     );
+  }
+
+  /// Propose un rdv au groupe, au créneau touché s'il y en a un.
+  Future<void> _proposeEvent([DateTime? start]) async {
+    await context.pushNamed<bool>(
+      AppRoute.groupEventNew.name,
+      pathParameters: {'groupId': widget.groupId},
+      queryParameters: {
+        if (start != null) 'start': start.toUtc().toIso8601String(),
+      },
+    );
+    if (mounted) ref.invalidate(groupAgendaProvider);
+  }
+
+  /// Ouvre la fiche d'un rdv du groupe ; au retour, relit l'agenda (le rdv
+  /// a pu être modifié ou supprimé).
+  Future<void> _openGroupEvent(GroupAgendaItem item) async {
+    await context.pushNamed<bool>(
+      AppRoute.groupEvent.name,
+      pathParameters: {'groupId': widget.groupId, 'eventId': item.eventId!},
+      queryParameters: {'start': item.start.toUtc().toIso8601String()},
+    );
+    if (mounted) ref.invalidate(groupAgendaProvider);
   }
 
   void _showDetails(_GroupEvent event) {

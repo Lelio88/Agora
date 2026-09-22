@@ -16,7 +16,10 @@ Future<T> guardPostgrest<T>(Future<T> Function() body) async {
   } on PostgrestException catch (error) {
     throw switch (error.message) {
       'invalid_range' => const InvalidRangeException(),
-      'event_not_found' => const EventNotFoundException(),
+      // Occurrence disparue (série déplacée entre-temps) : pour
+      // l'utilisateur, ce rdv-là n'existe plus.
+      'event_not_found' ||
+      'invalid_occurrence' => const EventNotFoundException(),
       'calendar_not_found' => const CalendarNotFoundException(),
       'last_native_calendar' => const LastNativeCalendarException(),
       'invalid_feed_url' => const InvalidFeedUrlException(),

@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé) et [`ics-architecture.md`](./ics-architecture.md) (import iCal), et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses) et [`ics-architecture.md`](./ics-architecture.md) (import iCal), et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -66,7 +66,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `application/` | `domain/` | `data/`, `presentation/` |
 | `data/` | `domain/`, `supabase_flutter` | `presentation/` |
 | `presentation/` | `application/`, `domain/` | `data/` |
-| feature A | `application/` d'une autre feature | ses `data/` ou `presentation/` |
+| feature A | `application/` d'une autre feature (et les types de domaine qu'elle rend) | ses `data/` ou `presentation/` : un écran d'une autre feature s'ouvre par **nom de route** (le routeur, et l'accueil qui compose les onglets, sont les seuls à importer les écrans de plusieurs features) |
 
 Côté base, le worker lit les rdv d'autrui **uniquement** par `private.resolve_group_agenda` (§3).
 
@@ -85,6 +85,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
 | `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
 | `event_occurrences` | occurrences dépliées des rdv **récurrents** | le worker seul (rôle `agora_worker`) |
+| `event_responses` | réponse d'un membre à un rdv de groupe (présent / peut-être / absent), par instance : `occurrence_start` pour une occurrence de série | `respond_to_event()` seul ; lisible des membres du groupe |
 | `series_expansions` | horodatage du dernier dépliage **qui a changé** une série : signal temps réel pour l'app | le worker seul |
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom

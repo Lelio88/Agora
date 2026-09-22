@@ -8,6 +8,7 @@
 /// leur créneau.
 library;
 
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 
 enum InstanceKind { single, seriesOccurrence, modifiedOccurrence }
@@ -27,6 +28,7 @@ final class AgendaItem {
     this.description,
     this.rrule,
     this.visibility,
+    this.myResponse,
   });
 
   final String eventId;
@@ -47,6 +49,9 @@ final class AgendaItem {
   final String? rrule;
   final EventVisibility? visibility;
 
+  /// Ma réponse à un rdv de groupe ; `null` sans réponse, ou hors groupe.
+  final ResponseStatus? myResponse;
+
   InstanceKind get kind {
     if (seriesId == null) return InstanceKind.single;
     return seriesId == eventId
@@ -55,6 +60,13 @@ final class AgendaItem {
   }
 
   bool get isRecurring => seriesId != null;
+
+  /// L'instance à laquelle on répond, pour un rdv de groupe : une occurrence
+  /// dépliée d'une série se répond par son créneau ; tout le reste (rdv
+  /// ponctuel, occurrence modifiée, qui est une ligne à part) sans créneau.
+  ResponseKey get responseKey => kind == InstanceKind.seriesOccurrence
+      ? ResponseKey(eventId, originalStart)
+      : ResponseKey(eventId);
 
   /// Début à afficher, dans le fuseau de l'appareil. Un rdv journée entière
   /// est une date de calendrier, stockée de minuit UTC à minuit UTC : elle
@@ -82,8 +94,9 @@ final class AgendaItem {
       other.instanceKey == instanceKey &&
       other.title == title &&
       other.start == start &&
-      other.end == end;
+      other.end == end &&
+      other.myResponse == myResponse;
 
   @override
-  int get hashCode => Object.hash(instanceKey, title, start, end);
+  int get hashCode => Object.hash(instanceKey, title, start, end, myResponse);
 }

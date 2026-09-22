@@ -3,6 +3,7 @@
 library;
 
 import 'package:agora/src/common_widgets/agenda_view.dart';
+import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:flutter/widgets.dart';
 
@@ -54,6 +55,21 @@ abstract final class CalendarKeys {
     'calendar.imported.visibility',
   );
   static const importedEventSave = ValueKey('calendar.imported.save');
+
+  static const groupEventScreen = ValueKey('calendar.groupEvent');
+  static const groupEventEdit = ValueKey('calendar.groupEvent.edit');
+  static const groupEventDelete = ValueKey('calendar.groupEvent.delete');
+  static const myResponse = ValueKey('calendar.groupEvent.myResponse');
+  static const noResponseSection = ValueKey('calendar.groupEvent.noResponse');
+  static const groupCalendarsHeader = ValueKey('calendars.groupsHeader');
+
+  /// Bouton d'une réponse sur la fiche d'un rdv de groupe.
+  static ValueKey<String> responseOption(ResponseStatus status) =>
+      ValueKey('calendar.groupEvent.respond.${status.name}');
+
+  /// Liste des membres ayant fait une réponse donnée.
+  static ValueKey<String> responseSection(ResponseStatus status) =>
+      ValueKey('calendar.groupEvent.responses.${status.name}');
 
   /// Ligne d'un agenda dans « Mes agendas ».
   static ValueKey<String> calendarTile(String id) =>

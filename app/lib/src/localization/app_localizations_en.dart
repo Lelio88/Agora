@@ -776,4 +776,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eventVisibilitySaved => 'Setting saved.';
+
+  @override
+  String get proposeEventButton => 'Propose an event';
+
+  @override
+  String get eventProposed => 'Event proposed to the group.';
+
+  @override
+  String get myResponseLabel => 'My answer';
+
+  @override
+  String get responseYes => 'Going';
+
+  @override
+  String get responseMaybe => 'Maybe';
+
+  @override
+  String get responseNo => 'Not going';
+
+  @override
+  String get responseNone => 'No answer';
+
+  @override
+  String get responsesTitle => 'Answers';
+
+  @override
+  String responseSectionTitle(String label, int count) {
+    return '$label · $count';
+  }
+
+  @override
+  String proposedBy(String name) {
+    return 'Proposed by $name';
+  }
+
+  @override
+  String get responseSaved => 'Answer saved.';
+
+  @override
+  String get responseRemoved => 'Answer removed.';
+
+  @override
+  String get occurrenceResponseNote =>
+      'Repeating event: your answer applies to this date.';
+
+  @override
+  String get groupCalendarsTitle => 'My groups\' calendars';
+
+  @override
+  String get proposedByMe => 'Proposed by you';
 }

@@ -165,6 +165,13 @@ Migration : `20260921220000_calendar_management.sql`.
   l'enregistrement. Le fuseau de répétition d'une série est celui du profil.
 - **Tuiles** : les journées entières vivent dans l'en-tête de kalender (vues jour et semaine),
   qui reçoit les mêmes `TileComponents` que le corps — sinon elles s'affichent sans titre.
+- **Rdv de groupe dans l'agenda perso** : ils y figurent (agendas de mes groupes, lisibles par la
+  RLS), ne se déplacent pas, et ouvrent leur fiche au lieu de l'éditeur ; ma réponse (`my_response`
+  de `my_agenda`) marque la tuile — absent : estompée et barrée. Détail :
+  [`groups-architecture.md`](./groups-architecture.md) « Rdv de groupe et réponses ».
+- **Actions partagées** (`event_actions.dart`) : ouvrir l'éditeur, poser la question de portée,
+  appeler le service et afficher l'issue (un message remplace le précédent) — pour l'agenda comme
+  pour la fiche d'un rdv de groupe.
 - **Visibilité** d'un rdv ou d'un agenda pour les groupes : hérite, occupé ou invisible — jamais
   « détails » (contrainte serveur : ils ne peuvent que restreindre). `VisibilityField` sert aux
   deux éditeurs.
