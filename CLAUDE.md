@@ -94,5 +94,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : étape 9 préparée — pile de prod, CI sur `release`, répétition locale verte ; rien n'est déployé.
-- **Focus immédiat** : étape 8 (bot Discord, clés de test) ; mise en ligne sur accord (serveur, DNS, secrets), identifiants Discord et Google attendus.
+- **Dernier focus** : Agora est en ligne (Supabase auto-hébergé + worker sur le Hetzner partagé, déploiement par `release`).
+- **Focus immédiat** : étape 8 — `/agenda` (groupe du salon ou perso), `/dispo` (créneaux communs, à porter en Go), liaison d'un salon choisie dans l'app ; puis CAPTCHA, pages légales, fiche Play.
