@@ -826,4 +826,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get proposedByMe => 'Proposed by you';
+
+  @override
+  String get findSlotTooltip => 'Find a time';
+
+  @override
+  String get findSlotTitle => 'Common free times';
+
+  @override
+  String get slotDurationLabel => 'Duration';
+
+  @override
+  String get slotPeriodLabel => 'Period';
+
+  @override
+  String slotPeriodDays(int count) {
+    return 'Next $count days';
+  }
+
+  @override
+  String get slotNotBeforeLabel => 'Not before';
+
+  @override
+  String get slotNotAfterLabel => 'Not after';
+
+  @override
+  String get slotWeekendsLabel => 'Include weekends';
+
+  @override
+  String get slotAllDayLabel => 'All-day events count as busy';
+
+  @override
+  String get slotMembersLabel => 'Who must be there';
+
+  @override
+  String slotInvisibleNote(String names, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$names don\'t share their calendars with the group: they always look free.',
+      one:
+          '$names doesn\'t share their calendar with the group: they always look free.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get slotsHint =>
+      'Only what each member shares with the group counts; a group event takes up the time.';
+
+  @override
+  String get slotsNone => 'No time free for everyone in this period.';
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String durationHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get slotMoreCriteria => 'Hours, days and members';
 }

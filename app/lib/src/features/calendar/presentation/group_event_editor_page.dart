@@ -22,13 +22,17 @@ class GroupEventEditorPage extends ConsumerWidget {
   const GroupEventEditorPage({
     required this.groupId,
     this.initialStart,
+    this.initialEnd,
     super.key,
   });
 
   final String groupId;
 
-  /// Créneau touché dans l'agenda du groupe.
+  /// Créneau touché dans l'agenda du groupe, ou trouvé libre.
   final DateTime? initialStart;
+
+  /// Fin d'un créneau trouvé libre (sinon, une heure après le début).
+  final DateTime? initialEnd;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,6 +63,7 @@ class GroupEventEditorPage extends ConsumerWidget {
               timezone: timezone,
               calendars: <UserCalendar>[calendar],
               initialStart: initialStart,
+              initialEnd: initialEnd,
               onResult: (result) async => switch (result) {
                 EditorSaved(:final draft) => runAction(
                   context,

@@ -834,4 +834,75 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get proposedByMe => 'Proposé par vous';
+
+  @override
+  String get findSlotTooltip => 'Trouver un créneau';
+
+  @override
+  String get findSlotTitle => 'Créneaux communs';
+
+  @override
+  String get slotDurationLabel => 'Durée';
+
+  @override
+  String get slotPeriodLabel => 'Période';
+
+  @override
+  String slotPeriodDays(int count) {
+    return '$count prochains jours';
+  }
+
+  @override
+  String get slotNotBeforeLabel => 'Pas avant';
+
+  @override
+  String get slotNotAfterLabel => 'Pas après';
+
+  @override
+  String get slotWeekendsLabel => 'Week-ends compris';
+
+  @override
+  String get slotAllDayLabel => 'Les journées entières comptent comme prises';
+
+  @override
+  String get slotMembersLabel => 'Qui doit être là';
+
+  @override
+  String slotInvisibleNote(String names, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$names ne partagent pas leur agenda avec le groupe : ces personnes paraissent toujours libres.',
+      one:
+          '$names ne partage pas son agenda avec le groupe : cette personne paraît toujours libre.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get slotsHint =>
+      'Seul ce que chacun partage avec le groupe compte ; un rdv du groupe prend le créneau.';
+
+  @override
+  String get slotsNone =>
+      'Aucun créneau libre pour tout le monde sur cette période.';
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String durationHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes';
+  }
+
+  @override
+  String get slotMoreCriteria => 'Heures, jours et membres';
 }

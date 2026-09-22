@@ -1555,6 +1555,108 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Proposé par vous'**
   String get proposedByMe;
+
+  /// Bouton de l'agenda d'un groupe : chercher un créneau commun.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trouver un créneau'**
+  String get findSlotTooltip;
+
+  /// Titre de l'écran de recherche de créneaux libres pour tous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créneaux communs'**
+  String get findSlotTitle;
+
+  /// Durée du rendez-vous à caler.
+  ///
+  /// In fr, this message translates to:
+  /// **'Durée'**
+  String get slotDurationLabel;
+
+  /// Période où chercher un créneau.
+  ///
+  /// In fr, this message translates to:
+  /// **'Période'**
+  String get slotPeriodLabel;
+
+  /// Choix de la période : les N prochains jours.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} prochains jours'**
+  String slotPeriodDays(int count);
+
+  /// Heure à partir de laquelle chercher, chaque jour.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas avant'**
+  String get slotNotBeforeLabel;
+
+  /// Heure jusqu'à laquelle chercher, chaque jour.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas après'**
+  String get slotNotAfterLabel;
+
+  /// Chercher aussi le samedi et le dimanche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Week-ends compris'**
+  String get slotWeekendsLabel;
+
+  /// Un rdv sur la journée entière (anniversaire, vacances) rend-il indisponible ?
+  ///
+  /// In fr, this message translates to:
+  /// **'Les journées entières comptent comme prises'**
+  String get slotAllDayLabel;
+
+  /// Membres dont la présence est requise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Qui doit être là'**
+  String get slotMembersLabel;
+
+  /// Avertit que les membres qui ne partagent rien ne peuvent pas être vérifiés.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{{names} ne partage pas son agenda avec le groupe : cette personne paraît toujours libre.} other{{names} ne partagent pas leur agenda avec le groupe : ces personnes paraissent toujours libres.}}'**
+  String slotInvisibleNote(String names, int count);
+
+  /// Rappel de ce que la recherche prend en compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Seul ce que chacun partage avec le groupe compte ; un rdv du groupe prend le créneau.'**
+  String get slotsHint;
+
+  /// Aucun créneau trouvé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun créneau libre pour tout le monde sur cette période.'**
+  String get slotsNone;
+
+  /// Durée en minutes.
+  ///
+  /// In fr, this message translates to:
+  /// **'{minutes} min'**
+  String durationMinutes(int minutes);
+
+  /// Durée en heures pleines.
+  ///
+  /// In fr, this message translates to:
+  /// **'{hours} h'**
+  String durationHours(int hours);
+
+  /// Durée en heures et minutes.
+  ///
+  /// In fr, this message translates to:
+  /// **'{hours} h {minutes}'**
+  String durationHoursMinutes(int hours, int minutes);
+
+  /// Volet repliable des critères secondaires de la recherche de créneaux.
+  ///
+  /// In fr, this message translates to:
+  /// **'Heures, jours et membres'**
+  String get slotMoreCriteria;
 }
 
 class _AppLocalizationsDelegate

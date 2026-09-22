@@ -53,6 +53,7 @@ class EventEditorScreen extends StatefulWidget {
     this.calendars = const [],
     this.existing,
     this.initialStart,
+    this.initialEnd,
     this.onResult,
     super.key,
   });
@@ -71,6 +72,10 @@ class EventEditorScreen extends StatefulWidget {
 
   /// Début proposé à la création (créneau touché dans l'agenda).
   final DateTime? initialStart;
+
+  /// Fin proposée à la création (créneau trouvé libre) : début et fin sont
+  /// alors repris tels quels, sans arrondi.
+  final DateTime? initialEnd;
 
   /// Traite le résultat sans fermer l'éditeur ; vrai s'il a abouti, et
   /// l'éditeur se ferme alors en rendant `true`. Sans lui, l'éditeur se
@@ -146,6 +151,14 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       _advancedRule = existing.rrule != null && _recurrence == null
           ? existing.rrule
           : null;
+    } else if ((widget.initialStart, widget.initialEnd) case (
+      final start?,
+      final end?,
+    )) {
+      _start = start.toLocal();
+      _end = end.toLocal();
+      _recurrence = null;
+      _advancedRule = null;
     } else {
       _start = _roundedStart(widget.initialStart?.toLocal() ?? DateTime.now());
       _end = _start.add(_defaultDuration);

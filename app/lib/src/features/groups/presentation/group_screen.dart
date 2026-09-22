@@ -149,6 +149,12 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         actions: [
           if (myGroup != null) ...[
             IconButton(
+              key: GroupKeys.findSlots,
+              tooltip: l10n.findSlotTooltip,
+              icon: const Icon(Icons.event_available_outlined),
+              onPressed: _findSlots,
+            ),
+            IconButton(
               key: GroupKeys.invite,
               tooltip: l10n.inviteTooltip,
               icon: const Icon(Icons.person_add_alt_1_outlined),
@@ -229,6 +235,16 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         ),
       ),
     );
+  }
+
+  /// Cherche un créneau commun ; au retour, relit l'agenda (un rdv a pu y
+  /// être proposé).
+  Future<void> _findSlots() async {
+    await context.pushNamed(
+      AppRoute.groupSlots.name,
+      pathParameters: {'groupId': widget.groupId},
+    );
+    if (mounted) ref.invalidate(groupAgendaProvider);
   }
 
   /// Propose un rdv au groupe, au créneau touché s'il y en a un.

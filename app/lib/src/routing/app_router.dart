@@ -22,6 +22,7 @@ import 'package:agora/src/features/auth/presentation/verify_email_screen.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_editor_page.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_screen.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/presentation/find_slots_screen.dart';
 import 'package:agora/src/features/groups/presentation/group_screen.dart';
 import 'package:agora/src/features/groups/presentation/join_group_screen.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
@@ -73,8 +74,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   child: GroupEventEditorPage(
                     groupId: state.pathParameters['groupId']!,
                     initialStart: _instant(state.uri.queryParameters['start']),
+                    initialEnd: _instant(state.uri.queryParameters['end']),
                   ),
                 ),
+              ),
+              GoRoute(
+                path: 'slots',
+                name: AppRoute.groupSlots.name,
+                builder: (context, state) =>
+                    FindSlotsScreen(groupId: state.pathParameters['groupId']!),
               ),
               GoRoute(
                 path: 'events/:eventId',

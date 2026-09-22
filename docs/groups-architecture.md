@@ -96,8 +96,8 @@ dépliage par le worker).
   règle d'une série efface celles de ses occurrences, comme ses exceptions ; changer l'heure d'un
   rdv ponctuel les garde ; quitter le groupe efface les siennes.
 - **Pas encore** : un rdv de groupe accepté ne rend pas « occupé » dans les autres groupes (la
-  résolution de visibilité ne lit que les agendas personnels) — à trancher avec les créneaux
-  communs (étape 7).
+  résolution de visibilité ne lit que les agendas personnels). Le changer toucherait
+  `private.resolve_group_agenda` : décision de vie privée en attente.
 
 Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service) :
 
@@ -117,6 +117,24 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
   ses écrans par nom de route et relit son agenda au retour. La fiche lit membres et rôle par
   l'application de la feature groupes.
 
+## Créneaux communs
+
+« Trouver un créneau » (barre de l'agenda du groupe, route `groups/:groupId/slots`,
+`FindSlotsScreen`) : les plages où tous les membres choisis sont libres.
+
+- **Calcul dans l'app** (`domain/free_slots.dart`, fonction pure `findFreeSlots`), à partir de
+  `group_agenda` : il ne voit rien de plus que l'agenda superposé. « Occupé » et détail = pris ;
+  « invisible » = aucun créneau, donc **paraît libre** — l'écran nomme les membres qui ne
+  partagent rien. Mes propres rdv comptent (le serveur me les rend en détail).
+- **Un rdv du groupe prend le créneau pour tous.** Une journée entière ne prend rien par défaut
+  (anniversaire, jour férié) ; un interrupteur la compte sur toute la journée.
+- **Réglages** : durée (30 min à 3 h), période (7, 14, 30 jours), fenêtre horaire quotidienne
+  (9 h–22 h par défaut ; une fenêtre qui passerait minuit est vide), week-ends, membres requis.
+  Calcul en heure locale, jour par jour (18 h reste 18 h un jour de changement d'heure) ; jamais
+  dans le passé (au plus tôt le quart d'heure suivant) ; 50 créneaux au plus.
+- **Proposer** : un appui ouvre l'éditeur d'un rdv du groupe (route `groups/:groupId/events/new`
+  avec `start` et `end`), début et fin repris tels quels ; au retour, la liste se relit.
+
 ## Fichiers
 
 | Fichier | Rôle |
@@ -125,6 +143,7 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 | `supabase/tests/group_management_test.sql` · `groups_test.sql` | aperçu, partage à l'arrivée, rôles, exclusion, transmission ; inscription, invitations, droits |
 | `supabase/migrations/20260922020000_group_events.sql` · `tests/group_events_test.sql` | réponses aux rdv de groupe, `respond_to_event`, `my_agenda` avec ma réponse ; qui propose, qui modifie, qui répond, réponses qui suivent l'instance |
 | `app/lib/src/features/calendar/presentation/group_event_screen.dart` · `group_event_editor_page.dart` | fiche d'un rdv de groupe (réponses), proposition d'un rdv |
+| `app/lib/src/features/groups/domain/free_slots.dart` · `presentation/find_slots_screen.dart` | calcul des créneaux communs (pur, testé seul), écran de recherche |
 | `app/lib/src/features/groups/domain/` | `MyGroup`, `GroupMember`, `GroupRole`, `ShareLevel`, `GroupInvite`, `InvitePreview`, `GroupAgendaItem`, contrat du dépôt |
 | `app/lib/src/features/groups/data/supabase_groups_repository.dart` | PostgREST : jointures `group_members`→`groups`/`profiles`, RPC |
 | `app/lib/src/features/groups/application/groups_providers.dart` | providers, `GroupsService`, `PendingInvite`, `looksLikeInviteCode` |

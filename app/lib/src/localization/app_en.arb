@@ -251,5 +251,22 @@
   "responseRemoved": "Answer removed.",
   "occurrenceResponseNote": "Repeating event: your answer applies to this date.",
   "groupCalendarsTitle": "My groups' calendars",
-  "proposedByMe": "Proposed by you"
+  "proposedByMe": "Proposed by you",
+  "findSlotTooltip": "Find a time",
+  "findSlotTitle": "Common free times",
+  "slotDurationLabel": "Duration",
+  "slotPeriodLabel": "Period",
+  "slotPeriodDays": "Next {count} days",
+  "slotNotBeforeLabel": "Not before",
+  "slotNotAfterLabel": "Not after",
+  "slotWeekendsLabel": "Include weekends",
+  "slotAllDayLabel": "All-day events count as busy",
+  "slotMembersLabel": "Who must be there",
+  "slotInvisibleNote": "{count, plural, =1{{names} doesn't share their calendar with the group: they always look free.} other{{names} don't share their calendars with the group: they always look free.}}",
+  "slotsHint": "Only what each member shares with the group counts; a group event takes up the time.",
+  "slotsNone": "No time free for everyone in this period.",
+  "durationMinutes": "{minutes} min",
+  "durationHours": "{hours} h",
+  "durationHoursMinutes": "{hours} h {minutes} min",
+  "slotMoreCriteria": "Hours, days and members"
 }

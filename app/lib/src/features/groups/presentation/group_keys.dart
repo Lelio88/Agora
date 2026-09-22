@@ -38,6 +38,25 @@ abstract final class GroupKeys {
   static const confirm = ValueKey('group.confirm');
   static const refresh = ValueKey('group.refresh');
   static const proposeEvent = ValueKey('group.proposeEvent');
+  static const findSlots = ValueKey('group.findSlots');
+
+  // Créneaux communs.
+  static const slotsScreen = ValueKey('group.slots');
+  static const slotMore = ValueKey('group.slots.more');
+  static const slotNotBefore = ValueKey('group.slots.notBefore');
+  static const slotNotAfter = ValueKey('group.slots.notAfter');
+  static const slotWeekends = ValueKey('group.slots.weekends');
+  static const slotAllDay = ValueKey('group.slots.allDay');
+  static const slotInvisibleNote = ValueKey('group.slots.invisibleNote');
+  static const slotsNone = ValueKey('group.slots.none');
+  static ValueKey<String> slotDuration(int minutes) =>
+      ValueKey('group.slots.duration.$minutes');
+  static ValueKey<String> slotPeriod(int days) =>
+      ValueKey('group.slots.period.$days');
+  static ValueKey<String> slotMember(String userId) =>
+      ValueKey('group.slots.member.$userId');
+  static ValueKey<String> slotTile(int index) =>
+      ValueKey('group.slots.tile.$index');
   static const toolbar = AgendaToolbarKeys('group');
   static ValueKey<String> memberChip(String userId) =>
       ValueKey('group.chip.$userId');

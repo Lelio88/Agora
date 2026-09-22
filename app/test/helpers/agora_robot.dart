@@ -189,6 +189,17 @@ class AgoraRobot {
     await settle();
   }
 
+  /// Fait défiler la liste jusqu'à [target] (une liste paresseuse ne
+  /// construit pas ce qui est hors de l'écran).
+  Future<void> scrollTo(Key target) async {
+    await tester.scrollUntilVisible(
+      find.byKey(target),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+  }
+
   void expectText(String text) => expect(find.text(text), findsOneWidget);
 
   void expectScreen(Key screen) => expect(find.byKey(screen), findsOneWidget);

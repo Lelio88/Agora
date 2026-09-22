@@ -8,6 +8,7 @@ enum AppRoute {
   group,
   groupEvent,
   groupEventNew,
+  groupSlots,
   join,
   joinByCode,
   profile,
