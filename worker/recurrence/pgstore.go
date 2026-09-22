@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -186,56 +185,3 @@ func insertOccurrences(ctx context.Context, tx pgx.Tx, id pgtype.UUID, occurrenc
 // Channel est le canal NOTIFY sur lequel la base signale une série à
 // redéplier (trigger events_notify_recurrence).
 const Channel = "agora_recurrence"
-
-const (
-	listenInitialBackoff = time.Second
-	listenMaxBackoff     = time.Minute
-)
-
-// Listen écoute Channel sur une connexion dédiée (jamais une connexion du
-// pool : un LISTEN resterait actif après sa restitution) et pousse chaque
-// identifiant reçu dans notifications. onConnected est appelé à chaque
-// (re)connexion : les notifications émises pendant la coupure sont perdues,
-// il faut alors tout redéplier. Rend la main à l'annulation de ctx.
-func Listen(ctx context.Context, databaseURL string, notifications chan<- string, onConnected func(), logger *slog.Logger) {
-	backoff := listenInitialBackoff
-	for ctx.Err() == nil {
-		err := listenOnce(ctx, databaseURL, notifications, func() {
-			backoff = listenInitialBackoff
-			onConnected()
-		})
-		if ctx.Err() != nil {
-			return
-		}
-		logger.Warn("listener disconnected", "err", err, "retry_in", backoff)
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(backoff):
-		}
-		backoff = min(backoff*2, listenMaxBackoff)
-	}
-}
-
-func listenOnce(ctx context.Context, databaseURL string, notifications chan<- string, onConnected func()) error {
-	conn, err := pgx.Connect(ctx, databaseURL)
-	if err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
-	defer conn.Close(context.WithoutCancel(ctx))
-	if _, err := conn.Exec(ctx, "listen "+pgx.Identifier{Channel}.Sanitize()); err != nil {
-		return fmt.Errorf("listen: %w", err)
-	}
-	onConnected()
-	for {
-		notification, err := conn.WaitForNotification(ctx)
-		if err != nil {
-			return fmt.Errorf("wait for notification: %w", err)
-		}
-		select {
-		case notifications <- notification.Payload:
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-	}
-}

@@ -10,6 +10,7 @@
 ///   agenda), comme `CalendarService`.
 library;
 
+import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/domain/groups_repository.dart';
@@ -21,9 +22,12 @@ final groupsRepositoryProvider = Provider<GroupsRepository>(
   ),
 );
 
-final myGroupsProvider = FutureProvider<List<MyGroup>>(
-  (ref) => ref.watch(groupsRepositoryProvider).fetchMyGroups(),
-);
+final myGroupsProvider = FutureProvider<List<MyGroup>>((ref) async {
+  // Relus à chaque changement de compte ; aucun sans compte.
+  final repository = ref.watch(groupsRepositoryProvider);
+  if (await ref.watch(currentUserIdProvider.future) == null) return const [];
+  return repository.fetchMyGroups();
+});
 
 /// Un groupe de l'utilisateur ; `null` s'il n'en est plus membre.
 final myGroupProvider = FutureProvider.autoDispose.family<MyGroup?, String>((

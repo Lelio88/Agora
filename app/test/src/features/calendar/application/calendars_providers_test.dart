@@ -1,3 +1,5 @@
+import 'package:agora/src/features/auth/application/auth_providers.dart';
+import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_calendar_repository.dart';
 import '../../../../helpers/fake_calendars_repository.dart';
+import '../../../../helpers/fakes.dart';
 
 final _range = AgendaRange(
   from: DateTime.utc(2026, 10, 12),
@@ -35,11 +38,18 @@ const _work = UserCalendar(
 );
 
 void main() {
+  late FakeAuthRepository auth;
   late FakeCalendarRepository agenda;
   late FakeCalendarsRepository calendars;
   late ProviderContainer container;
 
   void start(List<UserCalendar> initial) {
+    auth = FakeAuthRepository(
+      signedInAs: const AppUser(
+        id: FakeAuthRepository.userId,
+        email: 'zoe@test.local',
+      ),
+    );
     agenda = FakeCalendarRepository()
       ..seed(_item('perso', _personal.id))
       ..seed(_item('boulot', _work.id));
@@ -47,12 +57,15 @@ void main() {
     container = ProviderContainer(
       retry: (retryCount, error) => null,
       overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
         calendarRepositoryProvider.overrideWithValue(agenda),
         calendarsRepositoryProvider.overrideWithValue(calendars),
       ],
     );
     addTearDown(container.dispose);
     addTearDown(agenda.dispose);
+    addTearDown(calendars.dispose);
+    addTearDown(auth.dispose);
   }
 
   Future<List<String>> visibleTitles() async {
@@ -102,5 +115,41 @@ void main() {
       for (final c in await container.read(calendarsProvider.future)) c.id,
     ];
     expect(ids, ['cal-1']);
+  });
+
+  test('calendars are read again when another account signs in', () async {
+    start([_personal]);
+    final sub = container.listen(calendarsProvider, (_, _) {});
+    addTearDown(sub.close);
+    await container.read(calendarsProvider.future);
+    expect(calendars.calls.where((c) => c == 'fetchCalendars'), hasLength(1));
+
+    await auth.signOut();
+    await auth.signInAs(const AppUser(id: 'user-2', email: 'max@test.local'));
+    await container.read(calendarsProvider.future);
+
+    expect(calendars.calls.where((c) => c == 'fetchCalendars'), hasLength(2));
+  });
+
+  test('a server-side change reloads the calendars', () async {
+    start([_personal]);
+    final sub = container.listen(calendarsProvider, (_, _) {});
+    addTearDown(sub.close);
+    await container.read(calendarsProvider.future);
+
+    calendars.pushFromServer(_work);
+    await Future<void>.delayed(Duration.zero);
+    final names = (await container.read(calendarsProvider.future))
+        .map((c) => c.name);
+
+    expect(names, ['Agenda', 'Travail']);
+  });
+
+  test('signed out, the calendars are not requested', () async {
+    start([_personal]);
+    await auth.signOut();
+
+    expect(await container.read(calendarsProvider.future), isEmpty);
+    expect(calendars.calls, isNot(contains('fetchCalendars')));
   });
 }

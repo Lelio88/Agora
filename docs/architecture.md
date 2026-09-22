@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker) et [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé), et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé) et [`ics-architecture.md`](./ics-architecture.md) (import iCal), et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -53,8 +53,10 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
 | `worker/internal/httpx/` | Routes HTTP du worker (`/healthz`, puis interactions Discord) |
-| `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage |
-| `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore`, `Listen` — détail dans l'annexe agenda |
+| `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage ; `Listen` : une connexion `LISTEN` dédiée, partagée par canaux (`agora_recurrence`, `agora_ics`), reconnexion avec repli |
+| `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore` — détail dans l'annexe agenda |
+| `worker/ics/` | Relecture des flux iCal : garde SSRF, téléchargement borné, lecture go-ical, `Service`, `PgStore` (fonctions `private.ics_*`) — détail dans l'annexe iCal |
+| `worker/vendor/` | Dépendances vendorisées (`go mod vendor`) : build hors ligne, version exacte relue |
 
 ### Règles de couplage
 
@@ -167,19 +169,24 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
 
 ## 5. Agendas iCal
 
+Détail complet : [`ics-architecture.md`](./ics-architecture.md). Invariants :
+
 - L'utilisateur colle l'adresse iCal secrète de son agenda (Google, Outlook, iCloud).
   `add_ics_calendar()` accepte `https://` et `webcal://` (réécrit en `https://`) et limite chaque
   personne à 10 flux.
 - **L'URL est un secret** : elle vit dans `private.calendar_feeds`, qu'aucun client ne lit, même
-  pas son propriétaire. L'app n'en affiche jamais la valeur.
-- **Le worker protège contre le SSRF** : il résout le nom d'hôte et refuse toute adresse privée,
-  de bouclage ou lien-local, **au moment de la connexion** (un contrôle de l'URL seule laisserait
-  passer le DNS rebinding). Réponse bornée en taille et en durée ; `ETag`/`Last-Modified` évitent
-  de retélécharger un flux inchangé.
+  pas son propriétaire. Elle ne sort que vers le worker (`private.ics_due_feeds`), qui ne la
+  journalise jamais et n'enregistre un échec que par un code connu.
+- **Le worker n'écrit les rdv importés que par `private.ics_apply`**, en une transaction ; il n'a
+  aucun droit direct sur les tables. Relecture toutes les 30 minutes (bail de 10 min entre
+  instances), délai croissant après un échec, `ETag`/`Last-Modified` pour un flux inchangé.
+- **Le worker protège contre le SSRF** sur l'adresse **résolue**, à chaque connexion, redirections
+  comprises (un contrôle de l'URL seule laisserait passer le DNS rebinding). Réponse bornée en
+  taille et en durée, flux borné en nombre de rdv.
 - **La synchro n'écrase jamais `events.visibility`** : un rdv importé masqué reste masqué après
   relecture. L'upsert porte sur la clé `(calendar_id, source_uid, recurrence_id)`.
-- L'état de synchro (`last_synced_at`, `sync_error`) est écrit dans `calendars`, lisible par le
-  propriétaire.
+- L'état de synchro (`last_synced_at`, `sync_error`) est écrit dans `calendars`, publiée en temps
+  réel : l'app le montre, et propose « Synchroniser maintenant » (`sync_calendar_now`).
 
 ## 6. Bot Discord
 
@@ -246,9 +253,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
-| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas ») ; branchement de `prodOverrides` |
-| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; `-tags integration` : `PgStore` et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé) ; branchement de `prodOverrides` |
+| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences et iCal, chaîne complète serveur → base) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role
   authenticated` + `set local request.jwt.claims = '{"sub": …}'` pour agir en tant qu'un membre, et
@@ -324,6 +331,8 @@ un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en an
   continue publie sa plage totale : rechargement sans fin).
 - ❌ Écrire `events.visibility` depuis la synchro iCal.
 - ❌ Afficher, journaliser ou renvoyer une URL iCal.
+- ❌ Confier un flux au décodeur de go-ical sans `withinDecoderLimits` ni `recover` : il panique
+  sur certaines lignes et peut tourner des heures sur un paramètre géant.
 - ❌ Contrôler le SSRF sur l'URL seule plutôt que sur l'adresse résolue au moment de la connexion.
 - ❌ Donner une valeur par défaut à `SUPABASE_URL` ou à sa clé.
 - ❌ Ajouter un flux d'e-mail GoTrue sans son gabarit bilingue : il partirait en anglais.

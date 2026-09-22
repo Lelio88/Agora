@@ -141,6 +141,17 @@ final class SupabaseCalendarRepository implements CalendarRepository {
     ),
   );
 
+  @override
+  Future<void> setEventVisibility(
+    String eventId,
+    EventVisibility? visibility,
+  ) => _guard(
+    () => _client.rpc<void>(
+      'set_event_visibility',
+      params: {'p_event_id': eventId, 'p_visibility': visibility?.name},
+    ),
+  );
+
   static Map<String, dynamic> _toRow(EventDraft draft) => {
     'calendar_id': draft.calendarId,
     'title': draft.title.trim(),

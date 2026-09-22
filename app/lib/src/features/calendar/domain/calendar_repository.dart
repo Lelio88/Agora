@@ -15,6 +15,7 @@ library;
 
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 
 abstract interface class CalendarRepository {
   /// Instances de [from] (inclus) à [to] (exclu), au plus un trimestre.
@@ -57,4 +58,9 @@ abstract interface class CalendarRepository {
     required String seriesId,
     required DateTime originalStart,
   });
+
+  /// Règle ce que les groupes voient d'un de ses rdv, importé compris (seul
+  /// réglage possible sur un rdv importé : la synchro n'y touche jamais).
+  /// `null` : hérite de l'agenda et du groupe.
+  Future<void> setEventVisibility(String eventId, EventVisibility? visibility);
 }

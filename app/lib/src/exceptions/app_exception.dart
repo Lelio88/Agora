@@ -91,6 +91,19 @@ final class LastNativeCalendarException extends AppException {
     : super('last-native-calendar', 'The last native calendar cannot go');
 }
 
+/// Lien d'import refusé par le serveur : ni `https://` ni `webcal://`, ou
+/// trop long.
+final class InvalidFeedUrlException extends AppException {
+  const InvalidFeedUrlException()
+    : super('invalid-feed-url', 'Calendar link rejected');
+}
+
+/// Nombre maximal d'agendas importés atteint (10 par personne).
+final class TooManyFeedsException extends AppException {
+  const TooManyFeedsException()
+    : super('too-many-feeds', 'Too many imported calendars');
+}
+
 // --- Groupes -----------------------------------------------------------------
 
 /// Code d'invitation inconnu, expiré ou épuisé : le serveur ne dit pas

@@ -1,3 +1,5 @@
+import 'package:agora/src/features/auth/application/auth_providers.dart';
+import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendar_service.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_calendar_repository.dart';
+import '../../../../helpers/fakes.dart';
 
 final _from = DateTime.utc(2026, 10, 12);
 final _to = DateTime.utc(2026, 11, 2);
@@ -39,12 +42,23 @@ void main() {
 
   setUp(() {
     repository = FakeCalendarRepository();
+    // Le temps réel de l'agenda ne s'ouvre qu'avec un compte connecté.
+    final auth = FakeAuthRepository(
+      signedInAs: const AppUser(
+        id: FakeAuthRepository.userId,
+        email: 'zoe@test.local',
+      ),
+    );
     container = ProviderContainer(
       retry: (retryCount, error) => null,
-      overrides: [calendarRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        calendarRepositoryProvider.overrideWithValue(repository),
+      ],
     );
     addTearDown(container.dispose);
     addTearDown(repository.dispose);
+    addTearDown(auth.dispose);
   });
 
   /// L'agenda tel qu'un écran le verrait : écouté, donc rafraîchi à chaque

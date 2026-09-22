@@ -9,7 +9,9 @@ func TestLoad(t *testing.T) {
 		name     string
 		env      map[string]string
 		wantAddr string
-		wantErr  bool
+		// wantPrivate : contrôle SSRF levé (AGORA_ICS_ALLOW_PRIVATE_NETWORK).
+		wantPrivate bool
+		wantErr     bool
 	}{
 		{
 			name:     "defaults to port 8080",
@@ -24,6 +26,17 @@ func TestLoad(t *testing.T) {
 		{
 			name:    "rejects an address without port",
 			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_HTTP_ADDR": "localhost"},
+			wantErr: true,
+		},
+		{
+			name:        "allows private feed addresses only when asked",
+			env:         map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_ICS_ALLOW_PRIVATE_NETWORK": "true"},
+			wantAddr:    ":8080",
+			wantPrivate: true,
+		},
+		{
+			name:    "rejects an unreadable private-network switch",
+			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_ICS_ALLOW_PRIVATE_NETWORK": "maybe"},
 			wantErr: true,
 		},
 		{
@@ -52,6 +65,9 @@ func TestLoad(t *testing.T) {
 			}
 			if cfg.HTTPAddr != tt.wantAddr {
 				t.Errorf("HTTPAddr = %q, want %q", cfg.HTTPAddr, tt.wantAddr)
+			}
+			if cfg.ICSAllowPrivateNetwork != tt.wantPrivate {
+				t.Errorf("ICSAllowPrivateNetwork = %v, want %v", cfg.ICSAllowPrivateNetwork, tt.wantPrivate)
 			}
 			if cfg.DatabaseURL != localURL {
 				t.Errorf("DatabaseURL = %q, want %q", cfg.DatabaseURL, localURL)

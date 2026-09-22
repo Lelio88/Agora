@@ -661,4 +661,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteRevoked => 'Code disabled.';
+
+  @override
+  String get errorInvalidFeedUrl =>
+      'This is not a valid calendar link: it must start with https:// or webcal://.';
+
+  @override
+  String get errorTooManyFeeds =>
+      'You have already imported 10 calendars: delete one to add another.';
+
+  @override
+  String get importCalendarTitle => 'Import a calendar';
+
+  @override
+  String get importCalendarHint => 'Google, Outlook, Apple… via its iCal link';
+
+  @override
+  String get importCalendarButton => 'Import';
+
+  @override
+  String get importUrlLabel => 'Calendar iCal link';
+
+  @override
+  String get importUrlPrivacy =>
+      'This link opens your whole calendar: it stays on Agora\'s server, which never shows it to anyone, not even your groups.';
+
+  @override
+  String get validationFeedUrl =>
+      'Paste a link starting with https:// or webcal://, without spaces.';
+
+  @override
+  String get importHelpTitle => 'Where do I find this link?';
+
+  @override
+  String get importHelpGoogle =>
+      'On a computer: Settings → your calendar → Integrate calendar → “Secret address in iCal format”.';
+
+  @override
+  String get importHelpOutlook =>
+      'Settings → Calendar → Shared calendars → Publish a calendar → pick the calendar, then copy the ICS link.';
+
+  @override
+  String get importHelpApple =>
+      'Calendar app → share the calendar → tick “Public Calendar” → copy the webcal:// link.';
+
+  @override
+  String get importHelpRefresh =>
+      'Agora re-reads the calendar every 30 minutes. Its events are read-only: edit them in the original calendar.';
+
+  @override
+  String get calendarImported =>
+      'Calendar imported: its events will appear in a moment.';
+
+  @override
+  String get importedCalendarLabel => 'Imported via iCal link';
+
+  @override
+  String get syncNowButton => 'Sync now';
+
+  @override
+  String get syncRequested => 'Sync requested.';
+
+  @override
+  String get syncPending => 'First sync in progress…';
+
+  @override
+  String syncedAt(String when) {
+    return 'Synced $when';
+  }
+
+  @override
+  String get syncErrorUnreachable => 'Link unreachable for now; retrying soon.';
+
+  @override
+  String get syncErrorTimeout =>
+      'The calendar\'s server isn\'t responding; retrying soon.';
+
+  @override
+  String get syncErrorNotFound =>
+      'Link not found: the calendar was deleted or its link changed.';
+
+  @override
+  String get syncErrorForbidden =>
+      'Access denied: this link is no longer valid.';
+
+  @override
+  String get syncErrorHttp =>
+      'The calendar\'s server returned an error; retrying soon.';
+
+  @override
+  String get syncErrorTooLarge => 'Calendar too large (over 5 MB).';
+
+  @override
+  String get syncErrorNotCalendar =>
+      'This link doesn\'t lead to an iCal calendar.';
+
+  @override
+  String get syncErrorBlockedAddress =>
+      'This link leads to a private address, which Agora refuses.';
+
+  @override
+  String get syncErrorTooManyEvents =>
+      'Calendar too busy: over 5,000 events to import.';
+
+  @override
+  String get syncErrorUnknown => 'The last sync failed.';
+
+  @override
+  String get importedEventReadOnly =>
+      'Imported event: edit it in the original calendar. Here you choose what your groups see of it.';
+
+  @override
+  String get importedEventSeriesNote => 'Applies to the whole series.';
+
+  @override
+  String get eventVisibilitySaved => 'Setting saved.';
 }

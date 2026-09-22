@@ -19,6 +19,8 @@ Future<T> guardPostgrest<T>(Future<T> Function() body) async {
       'event_not_found' => const EventNotFoundException(),
       'calendar_not_found' => const CalendarNotFoundException(),
       'last_native_calendar' => const LastNativeCalendarException(),
+      'invalid_feed_url' => const InvalidFeedUrlException(),
+      'too_many_feeds' => const TooManyFeedsException(),
       'invite_invalid' => const InvalidInviteException(),
       'not_a_member' => const NotGroupMemberException(),
       'not_group_owner' => const NotGroupOwnerException(),

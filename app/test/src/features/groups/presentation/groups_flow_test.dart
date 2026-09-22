@@ -16,14 +16,14 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
   ),
 );
 
-/// Prochain mardi à [hour] h locales : dans la semaine affichée par défaut.
-DateTime _nextTuesdayAt(int hour) {
+/// Mardi de la semaine affichée par défaut (elle commence le lundi), à
+/// [hour] h locales. Passé ou à venir : la vue semaine montre les deux, et
+/// un « prochain mardi » tomberait la semaine suivante un mardi après
+/// [hour] h.
+DateTime _tuesdayThisWeekAt(int hour) {
   final now = DateTime.now();
-  var day = DateTime(now.year, now.month, now.day, hour);
-  while (day.weekday != DateTime.tuesday || !day.isAfter(now)) {
-    day = day.add(const Duration(days: 1));
-  }
-  return day.toUtc();
+  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  return DateTime(monday.year, monday.month, monday.day + 1, hour).toUtc();
 }
 
 FakeMember _lea() =>
@@ -120,8 +120,8 @@ void main() {
       'Coloc',
       others: [_lea(), _max()],
     );
-    final yoga = _nextTuesdayAt(18);
-    final busy = _nextTuesdayAt(10);
+    final yoga = _tuesdayThisWeekAt(18);
+    final busy = _tuesdayThisWeekAt(10);
     coloc.agenda.addAll([
       GroupAgendaItem(
         eventId: 'e-yoga',

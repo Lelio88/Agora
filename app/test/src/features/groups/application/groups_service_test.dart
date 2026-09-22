@@ -1,9 +1,12 @@
+import 'package:agora/src/features/auth/application/auth_providers.dart';
+import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_groups_repository.dart';
+import '../../../../helpers/fakes.dart';
 
 void main() {
   late FakeGroupsRepository groups;
@@ -11,11 +14,26 @@ void main() {
 
   setUp(() {
     groups = FakeGroupsRepository();
+    // Mes groupes ne se lisent qu'avec un compte connecté.
+    final auth = FakeAuthRepository(
+      signedInAs: const AppUser(
+        id: FakeAuthRepository.userId,
+        email: 'zoe@test.local',
+      ),
+    );
     container = ProviderContainer(
       retry: (retryCount, error) => null,
-      overrides: [groupsRepositoryProvider.overrideWithValue(groups)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        groupsRepositoryProvider.overrideWithValue(groups),
+      ],
     );
     addTearDown(container.dispose);
+    addTearDown(auth.dispose);
+    // Comme un écran : sans auditeur, Riverpod 3 met les providers en pause
+    // et la session ne serait jamais connue.
+    final sub = container.listen(myGroupsProvider, (_, _) {});
+    addTearDown(sub.close);
   });
 
   GroupsService service() => container.read(groupsServiceProvider);

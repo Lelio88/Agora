@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/calendar/domain/calendars_repository.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
@@ -21,7 +23,12 @@ class FakeCalendarsRepository implements CalendarsRepository {
       ];
 
   final List<UserCalendar> _calendars;
+  final _changes = StreamController<int>.broadcast();
   final calls = <String>[];
+  int _ticks = 0;
+
+  /// Liens reçus par [importCalendar], dans l'ordre.
+  final importedUrls = <String>[];
 
   /// Nombre de rdv annoncé avant une suppression, par agenda.
   final eventCounts = <String, int>{};
@@ -37,6 +44,26 @@ class FakeCalendarsRepository implements CalendarsRepository {
       nextError = null;
       throw error;
     }
+  }
+
+  /// Simule un changement venu du serveur (par exemple une synchro faite
+  /// par le worker) : remplace l'agenda et émet un tick.
+  void pushFromServer(UserCalendar calendar) {
+    final index = _calendars.indexWhere((c) => c.id == calendar.id);
+    if (index < 0) {
+      _calendars.add(calendar);
+    } else {
+      _calendars[index] = calendar;
+    }
+    _changes.add(++_ticks);
+  }
+
+  @override
+  Stream<int> watchChanges() => _changes.stream;
+
+  /// Ne pas attendre la fermeture (voir FakeCalendarRepository.dispose).
+  void dispose() {
+    unawaited(_changes.close());
   }
 
   @override
@@ -59,6 +86,33 @@ class FakeCalendarsRepository implements CalendarsRepository {
     );
   }
 
+  /// Comme `add_ics_calendar` : lien vérifié, dix agendas importés au plus.
+  @override
+  Future<void> importCalendar(ImportedCalendarDraft draft) async {
+    _record('importCalendar');
+    if (!looksLikeFeedUrl(draft.url)) throw const InvalidFeedUrlException();
+    if (_calendars.where((c) => c.isImported).length >= 10) {
+      throw const TooManyFeedsException();
+    }
+    importedUrls.add(draft.url);
+    _calendars.add(
+      UserCalendar(
+        id: 'cal-ics-${_nextId++}',
+        name: draft.name.trim(),
+        kind: CalendarKind.ics,
+        colorHex: draft.colorHex,
+      ),
+    );
+  }
+
+  @override
+  Future<void> syncNow(String calendarId) async {
+    _record('syncNow');
+    if (!_calendars[_indexOf(calendarId)].isImported) {
+      throw const CalendarNotFoundException();
+    }
+  }
+
   @override
   Future<void> updateCalendar(String calendarId, CalendarDraft draft) async {
     _record('updateCalendar');
@@ -72,6 +126,8 @@ class FakeCalendarsRepository implements CalendarsRepository {
       visibility: draft.visibility,
       groupId: old.groupId,
       hidden: old.hidden,
+      lastSyncedAt: old.lastSyncedAt,
+      syncError: old.syncError,
     );
   }
 

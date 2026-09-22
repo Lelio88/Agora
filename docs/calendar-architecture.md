@@ -105,10 +105,10 @@ Migration : `20260921220000_calendar_management.sql`.
   précédentes restent. `RefreshAll` continue après l'échec d'une série et remonte tous les
   échecs ; `Run` traite les notifications (uuid vérifié par regex, le reste ignoré), les
   demandes de dépliage complet et le tick périodique.
-- **Écoute** : `Listen` tient une connexion dédiée (jamais une du pool) en `LISTEN
-  agora_recurrence`, se reconnecte avec repli exponentiel (1 s → 1 min) et **demande un
-  dépliage complet à chaque (re)connexion** : les notifications émises pendant une coupure sont
-  perdues.
+- **Écoute** : `database.Listen` (partagée avec l'import iCal) tient une connexion dédiée
+  (jamais une du pool) en `LISTEN agora_recurrence`, se reconnecte avec repli exponentiel
+  (1 s → 1 min) ; l'abonnement du dépliage **demande un dépliage complet à chaque
+  (re)connexion** : les notifications émises pendant une coupure sont perdues.
 - **Écriture** : `UpdateOccurrences` prend le verrou de la série, relit la série, calcule et
   remplace ses occurrences dans **une seule transaction** (ni les RPC d'exception ni une seconde
   instance du worker ne s'intercalent), par un `INSERT … FROM unnest(...)` : Postgres refuse
@@ -186,7 +186,7 @@ Migration : `20260921220000_calendar_management.sql`.
 | `supabase/tests/agenda_test.sql` | tests pgTAP : lecture, exceptions, triggers, agenda de groupe, publication temps réel, droits du worker |
 | `supabase/tests/calendars_test.sql` · `series_move_test.sql` | agendas multiples ; décalage d'une série (fuseau, heure d'été, journée entière) |
 | `worker/recurrence/expand.go` · `service.go` · `pgstore.go` | dépliage, orchestration, Postgres |
-| `worker/recurrence/pgstore_integration_test.go` | test taggé `integration` contre la pile locale |
+| `worker/recurrence/pgstore_integration_test.go` · `worker/internal/database/listen_integration_test.go` | tests taggés `integration` contre la pile locale |
 | `app/lib/src/features/calendar/domain/` | `AgendaItem`, `EventDraft`, `RecurrenceRule`, `EventVisibility`, `UserCalendar`, contrats des dépôts |
 | `app/lib/src/features/calendar/application/` | `agendaProvider`, `visibleAgendaProvider`, `CalendarService`, `EditTarget`, `calendarsProvider`, `CalendarsService` |
 | `app/lib/src/features/calendar/data/` | dépôts Supabase de l'agenda et des agendas, `guardPostgrest` (traduction des erreurs) |

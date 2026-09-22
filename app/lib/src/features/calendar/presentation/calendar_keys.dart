@@ -1,5 +1,5 @@
-/// Clés de l'agenda, de l'éditeur de rdv et de la gestion des agendas,
-/// pour les tests.
+/// Clés de l'agenda, de l'éditeur de rdv, de la gestion et de l'import des
+/// agendas, pour les tests.
 library;
 
 import 'package:agora/src/common_widgets/agenda_view.dart';
@@ -40,6 +40,20 @@ abstract final class CalendarKeys {
   static const calendarSave = ValueKey('calendars.editor.save');
   static const calendarDelete = ValueKey('calendars.editor.delete');
   static const confirmDeleteCalendar = ValueKey('calendars.confirmDelete');
+  static const calendarSyncNow = ValueKey('calendars.editor.syncNow');
+
+  static const importCalendar = ValueKey('calendars.import');
+  static const importScreen = ValueKey('calendars.import.screen');
+  static const importUrl = ValueKey('calendars.import.url');
+  static const importName = ValueKey('calendars.import.name');
+  static const importSave = ValueKey('calendars.import.save');
+  static const importHelp = ValueKey('calendars.import.help');
+
+  static const importedEventSheet = ValueKey('calendar.imported.sheet');
+  static const importedEventVisibility = ValueKey(
+    'calendar.imported.visibility',
+  );
+  static const importedEventSave = ValueKey('calendar.imported.save');
 
   /// Ligne d'un agenda dans « Mes agendas ».
   static ValueKey<String> calendarTile(String id) =>

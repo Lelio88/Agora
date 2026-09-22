@@ -1,5 +1,6 @@
 /// Écran d'agenda : vues jour, semaine, mois et planning (kalender), création
-/// et modification des rdv, choix « cette occurrence / toute la série ».
+/// et modification des rdv, choix « cette occurrence / toute la série ». Un
+/// rdv importé par lien iCal s'ouvre en lecture seule.
 ///
 /// Choix non évidents :
 /// - vues, barre et plage chargée viennent de `common_widgets/agenda_view.dart`,
@@ -25,6 +26,7 @@ import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
+import 'package:agora/src/features/calendar/presentation/imported_event_sheet.dart';
 import 'package:agora/src/features/calendar/presentation/scope_dialog.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -123,6 +125,24 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           l10n.eventDeleted,
         );
     }
+  }
+
+  /// Un rdv importé ne se modifie pas ici : sa fiche ne règle que ce que
+  /// les groupes en voient.
+  Future<void> _showImportedEvent(
+    AgendaItem item,
+    UserCalendar calendar,
+  ) async {
+    final choice = await showImportedEventSheet(
+      context,
+      item: item,
+      calendar: calendar,
+    );
+    if (choice == null || !mounted) return;
+    await _run(
+      () => ref.read(calendarServiceProvider).setVisibility(item, choice.value),
+      AppLocalizations.of(context).eventVisibilitySaved,
+    );
   }
 
   /// Glisser-déposer ou étirement d'une tuile : kalender a déjà déplacé la
@@ -261,7 +281,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 locale: Localizations.localeOf(context),
                 callbacks: KalenderCallbacks(
                   onEventTapped: (event) {
-                    if (event is AgendaEvent) _editEvent(event.item);
+                    if (event is! AgendaEvent) return;
+                    final calendar = event.calendar;
+                    if (calendar != null && calendar.isImported) {
+                      _showImportedEvent(event.item, calendar);
+                    } else {
+                      _editEvent(event.item);
+                    }
                   },
                   onEventChanged: _moveEvent,
                   onTapped: _createEvent,

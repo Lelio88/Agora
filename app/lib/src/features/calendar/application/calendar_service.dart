@@ -25,6 +25,7 @@ import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -122,6 +123,12 @@ final class CalendarService {
     }
     return _then(_repository.deleteEvent(target.wholeEventId));
   }
+
+  /// Règle ce que les groupes voient de l'instance [item] : d'une série
+  /// entière depuis l'une de ses occurrences, d'une occurrence modifiée
+  /// seule (c'est une ligne à part).
+  Future<void> setVisibility(AgendaItem item, EventVisibility? visibility) =>
+      _then(_repository.setEventVisibility(item.eventId, visibility));
 
   Future<void> _then(Future<void> action) async {
     await action;

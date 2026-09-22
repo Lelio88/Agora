@@ -60,6 +60,7 @@ class AgoraRobot {
     this.groups = groups ?? FakeGroupsRepository();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
+    addTearDown(this.calendars.dispose);
     await tester.pumpWidget(
       ProviderScope(
         retry: (retryCount, error) => null,

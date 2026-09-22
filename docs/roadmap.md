@@ -10,7 +10,7 @@ tests verts et une doc à jour ([`architecture.md`](./architecture.md)).
 | 2 | Agenda perso | ✅ vues jour/semaine/mois/planning (kalender), créer/modifier/supprimer, séries avec « cette occurrence / toute la série », masquage par rdv et par agenda, plusieurs agendas (couleur, affichage), glisser-déposer | ✅ |
 | 3 | Groupes | ✅ créer, inviter (code + lien web), rejoindre avec le partage choisi, rôles (admins), transmettre, quitter, exclure ; vue superposée (couleur par membre) · lien ouvrant l'app Android : avec le domaine (étape 9) | ✅ |
 | 4 | Worker : récurrences | ✅ pgx en rôle restreint, dépliage sur fenêtre glissante (1 an avant, 2 ans après), LISTEN/NOTIFY avec reconnexion, dépliage complet toutes les 6 h | ✅ |
-| 5 | Import iCal | Ajout d'un lien, relecture périodique (ETag), garde SSRF, état de synchro visible | à faire |
+| 5 | Import iCal | ✅ ajout d'un lien (aide Google/Outlook/Apple), relecture toutes les 30 min par le worker (ETag, bail, délai croissant), garde SSRF sur l'adresse résolue, état de synchro en temps réel, « Synchroniser maintenant », rdv importés en lecture seule (visibilité réglable) | ✅ |
 | 6 | Rdv de groupe | Agenda du groupe, réponses présent / absent / peut-être | à faire |
 | 7 | Créneaux communs | Recherche des créneaux libres dans l'app (`invisible` = libre, `busy` = pris) | à faire |
 | 8 | Bot Discord | Interactions signées, `/agenda`, `/dispo`, liaison d'un salon, récaps, rappels, réglages dans l'app | à faire |

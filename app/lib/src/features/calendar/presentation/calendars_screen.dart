@@ -1,8 +1,12 @@
 /// « Mes agendas » : les agendas personnels, leur couleur et ce qu'en voient
 /// les groupes ; une case pour les montrer ou les masquer dans sa propre
-/// vue ; créer, modifier, supprimer.
+/// vue ; créer, importer par lien iCal, modifier, relancer la synchro,
+/// supprimer.
 ///
 /// Choix non évidents :
+/// - l'état de synchro d'un agenda importé arrive en temps réel (la table
+///   des agendas est publiée) ; tirer la liste vers le bas la relit quand
+///   même, pour le cas où le temps réel manque ;
 /// - la case ne touche que l'affichage de l'utilisateur (préférence dans
 ///   le compte), jamais ce que voient les groupes ;
 /// - supprimer un agenda annonce d'abord combien de rdv partent avec lui ;
@@ -17,6 +21,8 @@ import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/calendar/presentation/feed_sync_labels.dart';
+import 'package:agora/src/features/calendar/presentation/import_calendar_screen.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -48,30 +54,52 @@ class CalendarsScreen extends ConsumerWidget {
           final nativeCount = personal
               .where((c) => c.kind == CalendarKind.native)
               .length;
-          return ListView(
-            padding: const EdgeInsets.only(bottom: 88),
-            children: [
-              for (final calendar in personal)
-                _CalendarTile(
-                  calendar: calendar,
-                  onTap: () => _edit(
-                    context,
-                    ref,
-                    calendar,
-                    canDelete:
-                        calendar.kind != CalendarKind.native || nativeCount > 1,
+          return RefreshIndicator(
+            onRefresh: () => ref.refresh(calendarsProvider.future),
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 88),
+              children: [
+                for (final calendar in personal)
+                  _CalendarTile(
+                    calendar: calendar,
+                    onTap: () => _edit(
+                      context,
+                      ref,
+                      calendar,
+                      canDelete:
+                          calendar.kind != CalendarKind.native ||
+                          nativeCount > 1,
+                    ),
+                    onShownChanged: (shown) => _run(
+                      context,
+                      () => ref
+                          .read(calendarsServiceProvider)
+                          .setHidden(calendar.id, hidden: !shown),
+                    ),
                   ),
-                  onShownChanged: (shown) => _run(
-                    context,
-                    () => ref
-                        .read(calendarsServiceProvider)
-                        .setHidden(calendar.id, hidden: !shown),
-                  ),
+                const Divider(),
+                ListTile(
+                  key: CalendarKeys.importCalendar,
+                  leading: const Icon(Icons.link),
+                  title: Text(l10n.importCalendarTitle),
+                  subtitle: Text(l10n.importCalendarHint),
+                  onTap: () => _import(context, ref),
                 ),
-            ],
+              ],
+            ),
           );
         },
       ),
+    );
+  }
+
+  Future<void> _import(BuildContext context, WidgetRef ref) async {
+    final draft = await ImportCalendarScreen.show(context);
+    if (draft == null || !context.mounted) return;
+    await _run(
+      context,
+      () => ref.read(calendarsServiceProvider).import(draft),
+      success: AppLocalizations.of(context).calendarImported,
     );
   }
 
@@ -105,6 +133,12 @@ class CalendarsScreen extends ConsumerWidget {
           context,
           () => service.update(calendar.id, draft),
           success: l10n.calendarSaved,
+        );
+      case CalendarEditorSyncRequested():
+        await _run(
+          context,
+          () => service.syncNow(calendar.id),
+          success: l10n.syncRequested,
         );
       case CalendarEditorDeleteRequested():
         final int count;
@@ -201,15 +235,25 @@ class _CalendarTile extends StatelessWidget {
       calendar.colorHex,
       Theme.of(context).colorScheme.primary,
     );
+    final visibility = Text(
+      l10n.calendarVisibilitySummary(
+        visibilityLabel(calendar.visibility, l10n),
+      ),
+    );
     return ListTile(
       key: CalendarKeys.calendarTile(calendar.id),
       leading: CircleAvatar(radius: 10, backgroundColor: color),
       title: Text(calendar.name),
-      subtitle: Text(
-        l10n.calendarVisibilitySummary(
-          visibilityLabel(calendar.visibility, l10n),
-        ),
-      ),
+      isThreeLine: calendar.isImported,
+      subtitle: calendar.isImported
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                visibility,
+                _SyncStatus(calendar: calendar),
+              ],
+            )
+          : visibility,
       trailing: Checkbox(
         key: CalendarKeys.calendarShown(calendar.id),
         value: !calendar.hidden,
@@ -218,6 +262,41 @@ class _CalendarTile extends StatelessWidget {
         onChanged: (value) => onShownChanged(value ?? true),
       ),
       onTap: onTap,
+    );
+  }
+}
+
+/// Ligne d'état de la synchro d'un agenda importé ; en couleur d'erreur si
+/// la dernière relecture a échoué.
+class _SyncStatus extends StatelessWidget {
+  const _SyncStatus({required this.calendar});
+
+  final UserCalendar calendar;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final failed = calendar.syncError != null;
+    return Row(
+      children: [
+        Icon(
+          failed ? Icons.sync_problem : Icons.sync,
+          size: 14,
+          color: failed ? Theme.of(context).colorScheme.error : null,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            syncStatusLabel(calendar, l10n, locale),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: failed
+                ? TextStyle(color: Theme.of(context).colorScheme.error)
+                : null,
+          ),
+        ),
+      ],
     );
   }
 }

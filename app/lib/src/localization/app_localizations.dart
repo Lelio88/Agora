@@ -1273,6 +1273,198 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Code désactivé.'**
   String get inviteRevoked;
+
+  /// Le serveur refuse le lien d'import d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien n\'est pas un lien d\'agenda valable : il doit commencer par https:// ou webcal://.'**
+  String get errorInvalidFeedUrl;
+
+  /// Nombre maximal d'agendas importés atteint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez déjà importé 10 agendas : supprimez-en un pour en ajouter un autre.'**
+  String get errorTooManyFeeds;
+
+  /// Titre de l'écran d'import et de l'entrée qui l'ouvre dans « Mes agendas ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer un agenda'**
+  String get importCalendarTitle;
+
+  /// Sous-titre de l'entrée « Importer un agenda ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Google, Outlook, Apple… par son lien iCal'**
+  String get importCalendarHint;
+
+  /// Bouton qui valide l'import d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer'**
+  String get importCalendarButton;
+
+  /// Champ du lien d'un agenda à importer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien iCal de l\'agenda'**
+  String get importUrlLabel;
+
+  /// Rassure sur le lien d'import, qui est un secret.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien ouvre tout votre agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à vos groupes.'**
+  String get importUrlPrivacy;
+
+  /// Erreur de saisie du lien d'import.
+  ///
+  /// In fr, this message translates to:
+  /// **'Collez un lien qui commence par https:// ou webcal://, sans espace.'**
+  String get validationFeedUrl;
+
+  /// Titre de l'aide qui explique où trouver le lien iCal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Où trouver ce lien ?'**
+  String get importHelpTitle;
+
+  /// Où trouver le lien iCal dans Google Agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur ordinateur : Paramètres → votre agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».'**
+  String get importHelpGoogle;
+
+  /// Où trouver le lien iCal dans Outlook.
+  ///
+  /// In fr, this message translates to:
+  /// **'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisissez l\'agenda, puis copiez le lien ICS.'**
+  String get importHelpOutlook;
+
+  /// Où trouver le lien iCal dans Apple Calendrier (iCloud).
+  ///
+  /// In fr, this message translates to:
+  /// **'App Calendrier → partager l\'agenda → cochez « Calendrier public » → copiez le lien webcal://.'**
+  String get importHelpApple;
+
+  /// Fréquence de relecture d'un agenda importé, et lecture seule.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agora relit l\'agenda toutes les 30 minutes. Ses rendez-vous sont en lecture seule : on les modifie dans l\'agenda d\'origine.'**
+  String get importHelpRefresh;
+
+  /// Confirmation après l'import d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda importé : ses rendez-vous arrivent dans un instant.'**
+  String get calendarImported;
+
+  /// Précise dans l'éditeur qu'un agenda est importé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Importé par lien iCal'**
+  String get importedCalendarLabel;
+
+  /// Bouton qui relance la synchro d'un agenda importé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser maintenant'**
+  String get syncNowButton;
+
+  /// Confirmation après une demande de synchro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation demandée.'**
+  String get syncRequested;
+
+  /// État d'un agenda importé pas encore relu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Première synchronisation en cours…'**
+  String get syncPending;
+
+  /// Dernière synchro réussie d'un agenda importé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisé le {when}'**
+  String syncedAt(String when);
+
+  /// Échec de synchro : serveur de l'agenda injoignable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien injoignable pour l\'instant ; nouvel essai bientôt.'**
+  String get syncErrorUnreachable;
+
+  /// Échec de synchro : délai dépassé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur de l\'agenda ne répond pas ; nouvel essai bientôt.'**
+  String get syncErrorTimeout;
+
+  /// Échec de synchro : 404.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien introuvable : l\'agenda a été supprimé ou son lien a changé.'**
+  String get syncErrorNotFound;
+
+  /// Échec de synchro : 401 ou 403.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès refusé : ce lien n\'est plus valable.'**
+  String get syncErrorForbidden;
+
+  /// Échec de synchro : autre erreur HTTP.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur de l\'agenda a répondu par une erreur ; nouvel essai bientôt.'**
+  String get syncErrorHttp;
+
+  /// Échec de synchro : flux trop gros.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda trop volumineux (plus de 5 Mo).'**
+  String get syncErrorTooLarge;
+
+  /// Échec de synchro : contenu illisible.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien ne mène pas à un agenda iCal.'**
+  String get syncErrorNotCalendar;
+
+  /// Échec de synchro : adresse interne bloquée (protection SSRF).
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien mène à une adresse privée, refusée par Agora.'**
+  String get syncErrorBlockedAddress;
+
+  /// Échec de synchro : trop de rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda trop chargé : plus de 5 000 rendez-vous à importer.'**
+  String get syncErrorTooManyEvents;
+
+  /// Échec de synchro de cause inconnue.
+  ///
+  /// In fr, this message translates to:
+  /// **'La dernière synchronisation a échoué.'**
+  String get syncErrorUnknown;
+
+  /// Explique sur la fiche d'un rdv importé ce qu'on peut y faire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous importé : modifiez-le dans l\'agenda d\'origine. Vous choisissez ici ce qu\'en voient vos groupes.'**
+  String get importedEventReadOnly;
+
+  /// Le réglage de visibilité d'une occurrence importée vaut pour la série.
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'applique à toute la série.'**
+  String get importedEventSeriesNote;
+
+  /// Confirmation après le réglage de visibilité d'un rdv importé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réglage enregistré.'**
+  String get eventVisibilitySaved;
 }
 
 class _AppLocalizationsDelegate

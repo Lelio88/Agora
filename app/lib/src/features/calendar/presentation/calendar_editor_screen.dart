@@ -2,6 +2,9 @@
 /// groupes. Comme l'éditeur de rdv, il ne parle pas au serveur : il renvoie
 /// un [CalendarEditorResult] à « Mes agendas », qui confirme une
 /// suppression et appelle le service.
+///
+/// Pour un agenda importé, il montre aussi l'état de la synchro et propose
+/// de la relancer — jamais le lien, que l'app ne connaît pas.
 library;
 
 import 'package:agora/src/common_widgets/submit_button.dart';
@@ -9,6 +12,8 @@ import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/calendar/presentation/color_picker.dart';
+import 'package:agora/src/features/calendar/presentation/feed_sync_labels.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +31,11 @@ final class CalendarEditorSaved extends CalendarEditorResult {
 
 final class CalendarEditorDeleteRequested extends CalendarEditorResult {
   const CalendarEditorDeleteRequested();
+}
+
+/// Relancer la synchro d'un agenda importé.
+final class CalendarEditorSyncRequested extends CalendarEditorResult {
+  const CalendarEditorSyncRequested();
 }
 
 class CalendarEditorScreen extends StatefulWidget {
@@ -121,7 +131,7 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: 8),
-              _ColorPicker(
+              ColorPicker(
                 selected: _colorHex,
                 onSelected: (hex) => setState(() => _colorHex = hex),
               ),
@@ -131,6 +141,8 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
                 value: _visibility,
                 onChanged: (value) => setState(() => _visibility = value),
               ),
+              if (existing != null && existing.isImported)
+                _SyncSection(calendar: existing),
               const SizedBox(height: 24),
               SubmitButton(
                 key: CalendarKeys.calendarSave,
@@ -167,39 +179,38 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
   }
 }
 
-class _ColorPicker extends StatelessWidget {
-  const _ColorPicker({required this.selected, required this.onSelected});
+/// État de la synchro d'un agenda importé, et le bouton qui la relance.
+class _SyncSection extends StatelessWidget {
+  const _SyncSection({required this.calendar});
 
-  final String? selected;
-  final ValueChanged<String> onSelected;
+  final UserCalendar calendar;
 
   @override
   Widget build(BuildContext context) {
-    final fallback = Theme.of(context).colorScheme.primary;
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final failed = calendar.syncError != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final hex in appPalette)
-          Semantics(
-            selected: hex == selected,
-            button: true,
-            child: InkWell(
-              key: CalendarKeys.calendarColor(hex),
-              customBorder: const CircleBorder(),
-              onTap: () => onSelected(hex),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: colorFromHex(hex, fallback),
-                child: hex == selected
-                    ? Icon(
-                        Icons.check,
-                        color: readableOn(colorFromHex(hex, fallback)),
-                      )
-                    : null,
-              ),
-            ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(failed ? Icons.sync_problem : Icons.sync),
+          title: Text(l10n.importedCalendarLabel),
+          subtitle: Text(
+            syncStatusLabel(calendar, l10n, locale),
+            style: failed
+                ? TextStyle(color: Theme.of(context).colorScheme.error)
+                : null,
           ),
+        ),
+        OutlinedButton.icon(
+          key: CalendarKeys.calendarSyncNow,
+          icon: const Icon(Icons.refresh),
+          label: Text(l10n.syncNowButton),
+          onPressed: () =>
+              Navigator.of(context).pop(const CalendarEditorSyncRequested()),
+        ),
       ],
     );
   }

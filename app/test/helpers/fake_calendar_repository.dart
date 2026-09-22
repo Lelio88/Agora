@@ -4,6 +4,7 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 
 /// Faux [CalendarRepository] en mémoire. Il imite le serveur au plus près
 /// de ce que l'app observe : une série créée apparaît par ses occurrences
@@ -218,11 +219,33 @@ class FakeCalendarRepository implements CalendarRepository {
     visibility: draft.visibility,
   );
 
-  AgendaItem _copy(AgendaItem item, {required String calendarId}) => AgendaItem(
+  /// Comme le serveur, ne touche que la ligne visée : une série depuis
+  /// l'une de ses occurrences, pas ses occurrences modifiées.
+  @override
+  Future<void> setEventVisibility(
+    String eventId,
+    EventVisibility? visibility,
+  ) async {
+    await _record('setEventVisibility');
+    final targets = _items.values.where((i) => i.eventId == eventId).toList();
+    if (targets.isEmpty) throw const EventNotFoundException();
+    for (final item in targets) {
+      seed(_copy(item, visibility: () => visibility));
+    }
+    _notify();
+  }
+
+  /// [visibility] est une fonction pour distinguer « inchangée » (absente)
+  /// de « selon le groupe » (`null`).
+  AgendaItem _copy(
+    AgendaItem item, {
+    String? calendarId,
+    EventVisibility? Function()? visibility,
+  }) => AgendaItem(
     eventId: item.eventId,
     seriesId: item.seriesId,
     originalStart: item.originalStart,
-    calendarId: calendarId,
+    calendarId: calendarId ?? item.calendarId,
     title: item.title,
     location: item.location,
     description: item.description,
@@ -231,7 +254,7 @@ class FakeCalendarRepository implements CalendarRepository {
     isAllDay: item.isAllDay,
     timezone: item.timezone,
     rrule: item.rrule,
-    visibility: item.visibility,
+    visibility: visibility == null ? item.visibility : visibility(),
   );
 
   /// Ne pas attendre la fermeture : `close()` d'un flux broadcast n'aboutit

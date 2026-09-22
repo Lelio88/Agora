@@ -11,13 +11,13 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md) et [`groups`](./docs/groups-architecture.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md) et [`ics`](./docs/ics-architecture.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
 - `app/lib/src/` — `composition_root.dart`, `app.dart`, `routing/`, `supabase/`, `exceptions/`, `logging/`, `localization/` (ARB).
 - `supabase/migrations/` — schéma, RLS, RPC ; `supabase/tests/` — pgTAP ; `config.toml` — pile locale sur les ports 553xx.
-- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`, `Listen`).
+- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/vendor/` — dépendances vendorisées.
 
 ## III. Pile Technologique
 
@@ -25,7 +25,7 @@ Topologie rapide :
 
 - **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
-- **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `time/tzdata` embarqué.
+- **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
 - **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.
 - **Android** : `applicationId` **`app.agora`**, figé dès le premier envoi au Play Store.
 
@@ -35,7 +35,7 @@ Topologie rapide :
 2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`.
 3. **Migrations immuables** : une migration déjà appliquée en prod n'est **jamais** modifiée. Corriger = nouvelle migration.
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
-5. **Le worker est l'unique implémentation des RRULE** : l'app lit l'agenda par `my_agenda()`, jamais la ligne maîtresse d'une série. Il n'écrit jamais `events.visibility` et contrôle le SSRF sur l'adresse **résolue** au moment de la connexion.
+5. **Le worker est l'unique implémentation des RRULE** : l'app lit l'agenda par `my_agenda()`, jamais la ligne maîtresse d'une série. Il n'écrit les rdv importés que par `private.ics_apply`, jamais `events.visibility`, note un échec par un code connu (jamais le texte d'une erreur, qui contiendrait l'URL) et contrôle le SSRF sur l'adresse **résolue** à chaque connexion. `AGORA_ICS_ALLOW_PRIVATE_NETWORK` ne se pose qu'en local.
 6. **Couplage Flutter** : `presentation` n'importe jamais `data`, et seule la composition root branche les implémentations. Les erreurs sont des `AppException` scellées ; seul `AppLogger` journalise.
 7. **Deux langues** : toute chaîne d'interface naît dans `app_fr.arb` (avec sa description) et reçoit sa traduction dans `app_en.arb`, dans le même commit.
 
@@ -62,9 +62,11 @@ cd app && flutter run -d chrome --web-port 58090 --dart-define-from-file=config/
 cd worker && go vet ./... && go test -race ./...
 AGORA_TEST_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
 AGORA_TEST_ADMIN_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres \
-  go test -race -tags integration ./...   # PgStore et LISTEN contre la pile locale
+  go test -race -tags integration ./...   # PgStore (récurrences, iCal) et LISTEN contre la pile locale
 AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
-  go run ./cmd/worker              # déplie les séries ; AGORA_HTTP_ADDR (défaut :8080), /healthz
+  go run ./cmd/worker              # déplie les séries, relit les flux iCal ; AGORA_HTTP_ADDR (défaut :8080), /healthz
+# AGORA_ICS_ALLOW_PRIVATE_NETWORK=true : lève la garde SSRF (flux servi en local) — jamais en prod
+cd worker && go mod tidy && go mod vendor   # après tout changement de dépendance Go
 # E-mails locaux (codes de confirmation, réinitialisation) : Mailpit sur http://127.0.0.1:55324
 ```
 
@@ -77,6 +79,8 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
 | Séries, exceptions, dépliage, agendas, écran d'agenda | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`) + tests Go de `worker/recurrence/` |
 | Groupes, invitations, rôles, agenda de groupe | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `visibility`) |
+| Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
+| Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
@@ -88,5 +92,5 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : étape 3 terminée — groupes (créer, inviter par code ou lien web, rejoindre avec le partage choisi, rôles, transmettre, quitter), agenda superposé par membre, accueil à deux onglets.
-- **Focus immédiat** : étape 5 (import iCal) ou 6 (rdv de groupe) au choix ; Google et Discord attendent toujours les identifiants OAuth.
+- **Dernier focus** : étape 5 terminée — import iCal (lien secret, worker vendorisé qui relit toutes les 30 min avec garde SSRF, état de synchro en temps réel, rdv importés en lecture seule).
+- **Focus immédiat** : étape 6 (rdv de groupe, réponses présent/absent) ; Google et Discord attendent toujours les identifiants OAuth.

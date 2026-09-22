@@ -17,6 +17,8 @@ const _all = <AppException>[
   InvalidRangeException(),
   CalendarNotFoundException(),
   LastNativeCalendarException(),
+  InvalidFeedUrlException(),
+  TooManyFeedsException(),
   InvalidInviteException(),
   NotGroupMemberException(),
   NotGroupOwnerException(),

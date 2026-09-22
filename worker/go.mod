@@ -3,6 +3,7 @@ module github.com/Lelio88/agora/worker
 go 1.26.2
 
 require (
+	github.com/emersion/go-ical v0.0.0-20250609112844-439c63cef608
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/teambition/rrule-go v1.8.2
 )

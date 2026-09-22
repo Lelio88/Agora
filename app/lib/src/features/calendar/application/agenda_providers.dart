@@ -11,6 +11,7 @@
 /// liste des agendas, sans recharger les rdv.
 library;
 
+import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
@@ -38,9 +39,13 @@ final class AgendaRange {
 }
 
 /// Compteur de changements côté serveur ; chaque tick recharge l'agenda.
-final agendaChangesProvider = StreamProvider<int>(
-  (ref) => ref.watch(calendarRepositoryProvider).watchChanges(),
-);
+/// Réabonné à chaque changement de compte, ce qui recharge aussi l'agenda ;
+/// rien sans compte.
+final agendaChangesProvider = StreamProvider<int>((ref) async* {
+  final repository = ref.watch(calendarRepositoryProvider);
+  if (await ref.watch(currentUserIdProvider.future) == null) return;
+  yield* repository.watchChanges();
+});
 
 final agendaProvider = FutureProvider.autoDispose
     .family<List<AgendaItem>, AgendaRange>((ref, range) {

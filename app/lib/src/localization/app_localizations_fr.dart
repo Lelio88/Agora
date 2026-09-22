@@ -669,4 +669,119 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get inviteRevoked => 'Code désactivé.';
+
+  @override
+  String get errorInvalidFeedUrl =>
+      'Ce lien n\'est pas un lien d\'agenda valable : il doit commencer par https:// ou webcal://.';
+
+  @override
+  String get errorTooManyFeeds =>
+      'Vous avez déjà importé 10 agendas : supprimez-en un pour en ajouter un autre.';
+
+  @override
+  String get importCalendarTitle => 'Importer un agenda';
+
+  @override
+  String get importCalendarHint => 'Google, Outlook, Apple… par son lien iCal';
+
+  @override
+  String get importCalendarButton => 'Importer';
+
+  @override
+  String get importUrlLabel => 'Lien iCal de l\'agenda';
+
+  @override
+  String get importUrlPrivacy =>
+      'Ce lien ouvre tout votre agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à vos groupes.';
+
+  @override
+  String get validationFeedUrl =>
+      'Collez un lien qui commence par https:// ou webcal://, sans espace.';
+
+  @override
+  String get importHelpTitle => 'Où trouver ce lien ?';
+
+  @override
+  String get importHelpGoogle =>
+      'Sur ordinateur : Paramètres → votre agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».';
+
+  @override
+  String get importHelpOutlook =>
+      'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisissez l\'agenda, puis copiez le lien ICS.';
+
+  @override
+  String get importHelpApple =>
+      'App Calendrier → partager l\'agenda → cochez « Calendrier public » → copiez le lien webcal://.';
+
+  @override
+  String get importHelpRefresh =>
+      'Agora relit l\'agenda toutes les 30 minutes. Ses rendez-vous sont en lecture seule : on les modifie dans l\'agenda d\'origine.';
+
+  @override
+  String get calendarImported =>
+      'Agenda importé : ses rendez-vous arrivent dans un instant.';
+
+  @override
+  String get importedCalendarLabel => 'Importé par lien iCal';
+
+  @override
+  String get syncNowButton => 'Synchroniser maintenant';
+
+  @override
+  String get syncRequested => 'Synchronisation demandée.';
+
+  @override
+  String get syncPending => 'Première synchronisation en cours…';
+
+  @override
+  String syncedAt(String when) {
+    return 'Synchronisé le $when';
+  }
+
+  @override
+  String get syncErrorUnreachable =>
+      'Lien injoignable pour l\'instant ; nouvel essai bientôt.';
+
+  @override
+  String get syncErrorTimeout =>
+      'Le serveur de l\'agenda ne répond pas ; nouvel essai bientôt.';
+
+  @override
+  String get syncErrorNotFound =>
+      'Lien introuvable : l\'agenda a été supprimé ou son lien a changé.';
+
+  @override
+  String get syncErrorForbidden =>
+      'Accès refusé : ce lien n\'est plus valable.';
+
+  @override
+  String get syncErrorHttp =>
+      'Le serveur de l\'agenda a répondu par une erreur ; nouvel essai bientôt.';
+
+  @override
+  String get syncErrorTooLarge => 'Agenda trop volumineux (plus de 5 Mo).';
+
+  @override
+  String get syncErrorNotCalendar => 'Ce lien ne mène pas à un agenda iCal.';
+
+  @override
+  String get syncErrorBlockedAddress =>
+      'Ce lien mène à une adresse privée, refusée par Agora.';
+
+  @override
+  String get syncErrorTooManyEvents =>
+      'Agenda trop chargé : plus de 5 000 rendez-vous à importer.';
+
+  @override
+  String get syncErrorUnknown => 'La dernière synchronisation a échoué.';
+
+  @override
+  String get importedEventReadOnly =>
+      'Rendez-vous importé : modifiez-le dans l\'agenda d\'origine. Vous choisissez ici ce qu\'en voient vos groupes.';
+
+  @override
+  String get importedEventSeriesNote => 'S\'applique à toute la série.';
+
+  @override
+  String get eventVisibilitySaved => 'Réglage enregistré.';
 }

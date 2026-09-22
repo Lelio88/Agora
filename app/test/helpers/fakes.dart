@@ -41,6 +41,10 @@ class FakeAuthRepository implements AuthRepository {
     _changes.add(user);
   }
 
+  /// Fait arriver [user] comme si une session venait de s'ouvrir, sans
+  /// passer par le formulaire (autre compte que [userId]).
+  Future<void> signInAs(AppUser user) async => _emit(user);
+
   Future<void> _record(String call) async {
     calls.add(call);
     await gate?.future;
@@ -118,7 +122,12 @@ class FakeAuthRepository implements AuthRepository {
     _emit(null);
   }
 
-  Future<void> dispose() => _changes.close();
+  /// Ne pas attendre la fermeture : `close()` d'un flux broadcast n'aboutit
+  /// qu'une fois tous les abonnés partis, ce qui dépend de l'ordre des
+  /// teardowns et bloquerait le test 30 s.
+  void dispose() {
+    unawaited(_changes.close());
+  }
 }
 
 /// Faux dépôt de profils ; un profil absent est créé à la première lecture,

@@ -214,30 +214,6 @@ func fixed(occurrences []Occurrence) Compute {
 	return func(Series, bool) ([]Occurrence, error) { return occurrences, nil }
 }
 
-func TestPgStoreListenReceivesNotifications(t *testing.T) {
-	_, admin := openPools(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	notifications := make(chan string, 1)
-	connected := make(chan struct{}, 1)
-	go Listen(ctx, os.Getenv("AGORA_TEST_DATABASE_URL"), notifications,
-		func() { connected <- struct{}{} }, discardLogger())
-
-	<-connected
-	const payload = "f0000000-0000-0000-0000-00000000f003"
-	if _, err := admin.Exec(ctx, `select pg_notify($1, $2)`, Channel, payload); err != nil {
-		t.Fatal(err)
-	}
-	select {
-	case got := <-notifications:
-		if got != payload {
-			t.Errorf("notification = %q, want %q", got, payload)
-		}
-	case <-ctx.Done():
-		t.Fatal("no notification received")
-	}
-}
-
 func contains(list []string, want string) bool {
 	for _, item := range list {
 		if item == want {

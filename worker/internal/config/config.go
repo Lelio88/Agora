@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 )
 
 // Config regroupe les réglages du worker.
@@ -28,6 +29,10 @@ type Config struct {
 	HTTPAddr string
 	// DatabaseURL est la connexion Postgres, sous le rôle agora_worker.
 	DatabaseURL string
+	// ICSAllowPrivateNetwork lève le contrôle SSRF des flux iCal
+	// (AGORA_ICS_ALLOW_PRIVATE_NETWORK=true) : développement et tests
+	// seulement, jamais en production.
+	ICSAllowPrivateNetwork bool
 }
 
 const defaultHTTPAddr = ":8080"
@@ -49,7 +54,14 @@ func Load(getenv func(string) string) (Config, error) {
 	if err != nil || (parsed.Scheme != "postgres" && parsed.Scheme != "postgresql") {
 		return Config{}, errors.New("AGORA_DATABASE_URL must be a postgres:// URL")
 	}
-	return Config{HTTPAddr: addr, DatabaseURL: databaseURL}, nil
+	allowPrivate := false
+	if raw := getenv("AGORA_ICS_ALLOW_PRIVATE_NETWORK"); raw != "" {
+		allowPrivate, err = strconv.ParseBool(raw)
+		if err != nil {
+			return Config{}, fmt.Errorf("AGORA_ICS_ALLOW_PRIVATE_NETWORK %q: not a boolean", raw)
+		}
+	}
+	return Config{HTTPAddr: addr, DatabaseURL: databaseURL, ICSAllowPrivateNetwork: allowPrivate}, nil
 }
 
 // RedactedDatabaseURL renvoie DatabaseURL sans son mot de passe, pour les
