@@ -78,7 +78,7 @@ cd worker && go mod tidy && go mod vendor   # après tout changement de dépenda
 |---|---|
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
 | Séries, exceptions, dépliage, agendas, écran d'agenda | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`) + tests Go de `worker/recurrence/` |
-| Groupes, invitations, rôles, agenda de groupe, rdv de groupe et réponses, créneaux communs | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `group_events`, `visibility`) + `free_slots_test.dart` |
+| Groupes, invitations, rôles, agenda de groupe, rdv de groupe et réponses, créneaux communs | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `group_lifecycle`, `group_events`, `visibility`) + `free_slots_test.dart` |
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |

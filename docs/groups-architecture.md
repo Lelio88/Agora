@@ -7,7 +7,8 @@ des membres.
 ## En base
 
 Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `create_invite`,
-`group_agenda`, `resolve_group_agenda`), `20260922000000_group_management.sql` (le reste).
+`group_agenda`, `resolve_group_agenda`), `20260922000000_group_management.sql` (le reste),
+`20260922030000_group_lifecycle.sql` (ni vide ni sans propriétaire).
 
 | Notion | Représentation |
 |---|---|
@@ -26,7 +27,13 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
 - **Rôles** : le propriétaire seul nomme ou retire des admins (`set_member_role`) et transmet le
   groupe (`transfer_group` : l'ancien propriétaire devient admin). Les deux verrouillent la
   ligne du groupe, comme `delete_my_account` : transmission et suppression de compte
-  simultanées se sérialisent. **Invariant : un seul propriétaire.**
+  simultanées se sérialisent.
+- **Un groupe ne reste ni vide ni sans propriétaire** (trigger `private.keep_group_alive`, après
+  toute sortie d'un membre) : sans membre, il est supprimé avec son agenda et ses rdv ; sans
+  propriétaire, il revient à l'admin le plus ancien, sinon au membre le plus ancien. C'est le
+  filet d'un compte effacé hors de `delete_my_account` (interface d'administration de
+  Supabase, qui passe par la cascade) ; les chemins ordinaires n'y touchent pas. **Invariant :
+  un groupe existant a au moins un membre, et exactement un propriétaire.**
 - **Par RLS directe** (pas de RPC) : renommer (admins), supprimer le groupe (propriétaire),
   régler son propre partage, quitter (sauf le propriétaire, qui transmet d'abord), exclure un
   simple membre (admins), révoquer une invitation (son auteur ou un admin), inviter (tout
@@ -141,6 +148,7 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 |---|---|
 | `supabase/migrations/20260922000000_group_management.sql` | `join_group` (partage), `invite_preview`, `set_member_role`, `transfer_group` |
 | `supabase/tests/group_management_test.sql` · `groups_test.sql` | aperçu, partage à l'arrivée, rôles, exclusion, transmission ; inscription, invitations, droits |
+| `supabase/migrations/20260922030000_group_lifecycle.sql` · `tests/group_lifecycle_test.sql` | groupe vide supprimé, propriétaire disparu remplacé (compte effacé par la cascade) |
 | `supabase/migrations/20260922020000_group_events.sql` · `tests/group_events_test.sql` | réponses aux rdv de groupe, `respond_to_event`, `my_agenda` avec ma réponse ; qui propose, qui modifie, qui répond, réponses qui suivent l'instance |
 | `app/lib/src/features/calendar/presentation/group_event_screen.dart` · `group_event_editor_page.dart` | fiche d'un rdv de groupe (réponses), proposition d'un rdv |
 | `app/lib/src/features/groups/domain/free_slots.dart` · `presentation/find_slots_screen.dart` | calcul des créneaux communs (pur, testé seul), écran de recherche |

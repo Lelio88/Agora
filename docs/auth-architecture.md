@@ -61,6 +61,9 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   occurrences, URL iCal, appartenances, identités et sessions GoTrue. Les rdv de groupe proposés
   par la personne restent, sans auteur (contenu partagé), **avec leur texte libre** (titre, lieu,
   description), qui peut la nommer. La politique de confidentialité doit le dire.
+- **Compte effacé hors de la RPC** (interface d'administration de Supabase) : seule la cascade
+  joue ; le trigger `private.keep_group_alive` transmet alors ou supprime ses groupes
+  ([`groups-architecture.md`](./groups-architecture.md)).
 - **RPC plutôt qu'Edge Function** : le Supabase auto-hébergé n'a pas d'edge runtime.
 - **Après la RPC**, `signOut` retire la session locale **avant** d'appeler le serveur ; le 403
   que renvoie `/logout` pour un utilisateur disparu est normal et ignoré.
