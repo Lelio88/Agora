@@ -41,7 +41,9 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
 - **Agenda du groupe** : `group_agenda(groupe, de, à)` (membre obligatoire, ≤ 93 jours) passe par
   `private.resolve_group_agenda`, seule sortie des rdv d'autrui (§3 de l'architecture) : niveau
   effectif = le plus restrictif de `share_level`, agenda et rdv ; « occupé » sans titre ni
-  lieu, « invisible » absent. Les rdv de l'utilisateur lui reviennent en détail.
+  lieu, « invisible » absent. Les rdv de l'utilisateur lui reviennent en détail. Un rdv d'un
+  autre groupe où un membre a répondu « présent » y figure en « occupé »
+  (`20260922040000_cross_group_busy.sql`).
 
 ## Dans l'app (`app/lib/src/features/groups/`)
 
@@ -102,9 +104,9 @@ dépliage par le worker).
   supprime puis recrée la ligne à chaque modification, les effacerait) ; changer l'horaire ou la
   règle d'une série efface celles de ses occurrences, comme ses exceptions ; changer l'heure d'un
   rdv ponctuel les garde ; quitter le groupe efface les siennes.
-- **Pas encore** : un rdv de groupe accepté ne rend pas « occupé » dans les autres groupes (la
-  résolution de visibilité ne lit que les agendas personnels). Le changer toucherait
-  `private.resolve_group_agenda` : décision de vie privée en attente.
+- **Occupé ailleurs** : répondre « présent » rend occupé dans ses autres groupes, par
+  `private.resolve_group_agenda` (§3 de l'architecture) — « occupé » au plus pour les autres,
+  rien là où l'on ne partage rien ; « peut-être » et « absent » ne prennent pas le créneau.
 
 Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service) :
 
@@ -132,7 +134,8 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 - **Calcul dans l'app** (`domain/free_slots.dart`, fonction pure `findFreeSlots`), à partir de
   `group_agenda` : il ne voit rien de plus que l'agenda superposé. « Occupé » et détail = pris ;
   « invisible » = aucun créneau, donc **paraît libre** — l'écran nomme les membres qui ne
-  partagent rien. Mes propres rdv comptent (le serveur me les rend en détail).
+  partagent rien. Mes propres rdv comptent (le serveur me les rend en détail), comme les rdv
+  d'autres groupes où un membre a répondu « présent ».
 - **Un rdv du groupe prend le créneau pour tous.** Une journée entière ne prend rien par défaut
   (anniversaire, jour férié) ; un interrupteur la compte sur toute la journée.
 - **Réglages** : durée (30 min à 3 h), période (7, 14, 30 jours), fenêtre horaire quotidienne
@@ -149,6 +152,7 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 | `supabase/migrations/20260922000000_group_management.sql` | `join_group` (partage), `invite_preview`, `set_member_role`, `transfer_group` |
 | `supabase/tests/group_management_test.sql` · `groups_test.sql` | aperçu, partage à l'arrivée, rôles, exclusion, transmission ; inscription, invitations, droits |
 | `supabase/migrations/20260922030000_group_lifecycle.sql` · `tests/group_lifecycle_test.sql` | groupe vide supprimé, propriétaire disparu remplacé (compte effacé par la cascade) |
+| `supabase/migrations/20260922040000_cross_group_busy.sql` · `tests/cross_group_busy_test.sql` | « présent » à un rdv d'un autre groupe = « occupé » ici |
 | `supabase/migrations/20260922020000_group_events.sql` · `tests/group_events_test.sql` | réponses aux rdv de groupe, `respond_to_event`, `my_agenda` avec ma réponse ; qui propose, qui modifie, qui répond, réponses qui suivent l'instance |
 | `app/lib/src/features/calendar/presentation/group_event_screen.dart` · `group_event_editor_page.dart` | fiche d'un rdv de groupe (réponses), proposition d'un rdv |
 | `app/lib/src/features/groups/domain/free_slots.dart` · `presentation/find_slots_screen.dart` | calcul des créneaux communs (pur, testé seul), écran de recherche |

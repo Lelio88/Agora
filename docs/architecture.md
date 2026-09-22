@@ -123,6 +123,10 @@ trois réglages, avec l'ordre `details` < `busy` < `invisible` (d'où `greatest(
 - Le propriétaire voit toujours ses propres rdv en détail.
 - Les rdv d'un **agenda de groupe** sont en détail pour tous les membres. Un agenda de groupe n'a
   pas de réglage de visibilité (contrainte `CHECK`).
+- **Rdv d'un autre groupe** auquel un membre a répondu « présent » : il le rend `busy` ici,
+  **jamais plus** (le détail appartient à l'autre groupe), dans la limite de son `share_level`
+  pour ce groupe (`invisible` : rien). Lui seul le voit en détail. « Peut-être » et « absent »
+  ne prennent pas le créneau.
 - Agenda et rdv ne peuvent que **restreindre** : `details` y est interdit (contrainte `CHECK`).
 - **Discord** : l'audience d'un salon déborde du groupe, donc les rdv personnels y sont plafonnés
   à `busy`. Les rdv de groupe restent en détail.
@@ -145,8 +149,8 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
 3. Postgres contrôle le droit `EXECUTE` sur `public.group_agenda` : `anon` est refusé (`42501`).
 4. `group_agenda` (`SECURITY DEFINER`) vérifie l'appartenance au groupe (`not_a_member`,
    `42501`) et la plage (`invalid_range`, `22023`).
-5. `private.resolve_group_agenda` joint membres → agendas → rdv, calcule le niveau effectif de
-   chaque rdv, déplie les récurrents par `event_occurrences`, écarte les `invisible` et vide
+5. `private.resolve_group_agenda` joint membres → agendas → rdv, et membres → réponses
+   « présent » aux rdv d'autres groupes, calcule le niveau effectif de chaque rdv, déplie les récurrents par `event_occurrences`, écarte les `invisible` et vide
    titre, lieu et identifiant des `busy`.
 6. PostgREST sérialise les lignes en JSON : l'app ne reçoit jamais ce qu'elle ne doit pas voir.
 
@@ -254,7 +258,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
 | App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé) ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences et iCal, chaîne complète serveur → base) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 

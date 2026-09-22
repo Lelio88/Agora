@@ -31,7 +31,7 @@ Topologie rapide :
 
 ## IV. Garde-Fous non négociables
 
-1. **Vie privée : un seul chemin de sortie.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda`, appelée par `group_agenda()` ou par le worker. Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy`. Toute évolution de la règle ajoute son test pgTAP.
+1. **Vie privée : un seul chemin de sortie.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda`, appelée par `group_agenda()` ou par le worker. Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy` ; un rdv accepté dans un autre groupe n'est jamais plus que `busy`. Toute évolution de la règle ajoute son test pgTAP.
 2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`.
 3. **Migrations immuables** : une migration déjà appliquée en prod n'est **jamais** modifiée. Corriger = nouvelle migration.
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
@@ -81,7 +81,7 @@ cd worker && go mod tidy && go mod vendor   # après tout changement de dépenda
 | Groupes, invitations, rôles, agenda de groupe, rdv de groupe et réponses, créneaux communs | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `group_lifecycle`, `group_events`, `visibility`) + `free_slots_test.dart` |
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
-| Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |
+| Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
@@ -92,5 +92,5 @@ cd worker && go mod tidy && go mod vendor   # après tout changement de dépenda
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : étapes 6 et 7 terminées — rdv de groupe avec réponses, puis créneaux communs (« Trouver un créneau », calcul dans l'app sur `group_agenda`).
-- **Focus immédiat** : décision en attente (un rdv accepté dans un groupe rend-il « occupé » ailleurs ?) ; étape 8 (bot Discord) et comptes Google/Discord attendent leurs identifiants ; étape 9 (mise en ligne) à lancer.
+- **Dernier focus** : un rdv accepté dans un groupe rend « occupé » dans les autres ; groupes jamais vides ni sans propriétaire.
+- **Focus immédiat** : préparer l'étape 9 (images, Supabase auto-hébergé, sans déployer) puis l'étape 8 (bot Discord, clés de test) ; identifiants Discord et Google attendus.
