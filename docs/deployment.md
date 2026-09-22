@@ -47,6 +47,12 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   Caddy au contrôle préalable, le navigateur bloque tout. Caddy répond 204 aux `OPTIONS` et
   **remplace** (`defer`) l'origine qu'émet GoTrue : deux valeurs font refuser la réponse.
   L'origine autorisée est la seule app web.
+- **`X-Supabase-Api-Version` doit être exposé** (`Access-Control-Expose-Headers`) : un
+  navigateur ne lit que les en-têtes exposés, et sans celui-ci le client Supabase croit parler à
+  une ancienne API, cherche `error_code` dans un corps qui dit `code`, et rend une erreur sans
+  code : l'app affiche « une erreur est survenue » pour **toutes** les erreurs d'authentification
+  (mot de passe faux, adresse non confirmée, limite atteinte). Kong l'exposait ; la répétition le
+  vérifie désormais.
 - **Realtime lit son tenant dans le premier segment du `Host`** : Caddy envoie
   `realtime-dev.agora`. **`handle_path`**, jamais `handle` + `uri strip_prefix` (Caddy exécute
   `rewrite` avant `uri`).

@@ -91,6 +91,13 @@ Future<void> _checkCors(String key) async {
       anonRead.statusCode == 401 || anonRead.statusCode == 403, anonRead.statusCode);
   _check('une seule origine CORS sur une réponse de PostgREST',
       anonRead.headers['access-control-allow-origin'] == _web);
+  // Sans cet en-tête exposé, le client Supabase lit les erreurs de GoTrue au
+  // mauvais format et l'app n'affiche plus que « une erreur est survenue ».
+  _check(
+      "la version d'API de Supabase est lisible du navigateur",
+      (anonRead.headers['access-control-expose-headers'] ?? '')
+          .toLowerCase()
+          .contains('x-supabase-api-version'));
 }
 
 Future<void> _checkGroupFlow(SupabaseClient alice, SupabaseClient bob) async {

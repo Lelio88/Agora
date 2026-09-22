@@ -96,7 +96,13 @@ api.agora.heianenterprise.com {
 	header {
 		defer
 		Access-Control-Allow-Origin "https://agora.heianenterprise.com"
-		Access-Control-Expose-Headers "Content-Range, Content-Profile, Range-Unit, X-Total-Count"
+		# X-Supabase-Api-Version est VITAL : un navigateur ne lit que les
+		# en-têtes exposés, et sans celui-ci le client Supabase croit parler
+		# à une vieille API, cherche « error_code » dans un corps qui dit
+		# « code », et rend une erreur sans code — « Une erreur est
+		# survenue » à la place de « mot de passe incorrect », pour TOUTES
+		# les erreurs d'authentification. Kong l'exposait.
+		Access-Control-Expose-Headers "Content-Range, Content-Profile, Range-Unit, X-Total-Count, X-Supabase-Api-Version, X-Sb-Error-Code"
 		-Access-Control-Allow-Credentials
 		Vary "Origin"
 		X-Content-Type-Options nosniff
