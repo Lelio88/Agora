@@ -11,12 +11,13 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md) et [`ics`](./docs/ics-architecture.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md), [`ics`](./docs/ics-architecture.md) et [`deployment`](./docs/deployment.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
 - `app/lib/src/` — `composition_root.dart`, `app.dart`, `routing/`, `supabase/`, `exceptions/`, `logging/`, `localization/` (ARB).
 - `supabase/migrations/` — schéma, RLS, RPC ; `supabase/tests/` — pgTAP ; `config.toml` — pile locale sur les ports 553xx.
+- `deploy/` — mise en ligne : compose de prod, rôles, `migrate.sh`, vhost Caddy, bootstrap, répétition locale (`rehearsal/`) ; `.github/workflows/deploy.yml` sur la branche `release`.
 - `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/vendor/` — dépendances vendorisées.
 
 ## III. Pile Technologique
@@ -67,6 +68,7 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
   go run ./cmd/worker              # déplie les séries, relit les flux iCal ; AGORA_HTTP_ADDR (défaut :8080), /healthz
 # AGORA_ICS_ALLOW_PRIVATE_NETWORK=true : lève la garde SSRF (flux servi en local) — jamais en prod
 cd worker && go mod tidy && go mod vendor   # après tout changement de dépendance Go
+sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep : garder la pile)
 # E-mails locaux (codes de confirmation, réinitialisation) : Mailpit sur http://127.0.0.1:55324
 ```
 
@@ -83,14 +85,14 @@ cd worker && go mod tidy && go mod vendor   # après tout changement de dépenda
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
-| Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
+| Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
 | Étape de la feuille de route livrée | `docs/roadmap.md` (colonne État) |
-| Mise en ligne, sous-domaine, service serveur | `../INFRASTRUCTURE.md` + `docs/architecture.md` §10 |
+| Mise en ligne, sous-domaine, service serveur, `deploy/` | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) |
 | Nouvel anti-pattern découvert | `docs/architecture.md` §11 |
 | Changement de dépendance critique | Section III + `pubspec.yaml` / `go.mod` |
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : un rdv accepté dans un groupe rend « occupé » dans les autres ; groupes jamais vides ni sans propriétaire.
-- **Focus immédiat** : préparer l'étape 9 (images, Supabase auto-hébergé, sans déployer) puis l'étape 8 (bot Discord, clés de test) ; identifiants Discord et Google attendus.
+- **Dernier focus** : étape 9 préparée — pile de prod, CI sur `release`, répétition locale verte ; rien n'est déployé.
+- **Focus immédiat** : étape 8 (bot Discord, clés de test) ; mise en ligne sur accord (serveur, DNS, secrets), identifiants Discord et Google attendus.

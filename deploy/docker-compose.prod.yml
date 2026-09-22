@@ -1,0 +1,246 @@
+# Agora — production : Supabase auto-hébergé (Postgres, GoTrue, PostgREST,
+# Realtime) et le worker. Copié par la CI dans /opt/agora/docker-compose.yml,
+# à côté d'un .env qui ne quitte jamais le serveur (gabarit :
+# deploy/production.env.example, rempli par deploy/bootstrap-server.sh).
+#
+#   docker compose pull && docker compose up -d
+#   AGORA_TAG=<sha> docker compose up -d        # épingler ou revenir en arrière
+#
+# Choix non évidents (détail : docs/deployment.md) :
+#   - pas de Kong, de Studio, de Storage ni de pg-meta : l'app n'en a pas
+#     besoin, et chaque conteneur coûte de la mémoire sur un serveur partagé.
+#     Le Caddy de l'hôte route /auth/v1, /rest/v1 et /realtime/v1 et répond
+#     lui-même au CORS, que Kong assurait (deploy/caddy/agora.caddy) ;
+#   - images épinglées sur les versions de la pile locale (supabase start) :
+#     les tests pgTAP et Flutter tournent contre elles. Monter une version =
+#     la monter ici, la rejouer en local, puis déployer ;
+#   - les mots de passe des rôles internes (authenticator,
+#     supabase_auth_admin, supabase_admin) sont posés par init/zzz-roles.sql
+#     à la création du volume : l'image ne propage pas POSTGRES_PASSWORD ;
+#   - le schéma d'Agora n'est pas appliqué ici mais par deploy/migrate.sh,
+#     APRÈS le premier démarrage de GoTrue, qui crée auth.users ;
+#   - mem_limit sur chaque service : OBLIGATOIRE sur ce serveur, où Ollama
+#     monte à 5,5 Go chaque nuit pour CulturiaQuests. Total ~1 Go de
+#     plafonds pour ~300 Mo réellement consommés.
+#
+# Réseau : Postgres ne publie rien ; les autres services n'écoutent que sur la
+# boucle locale (94xx), Caddy est le seul point d'entrée public.
+
+name: agora
+
+services:
+  db:
+    image: public.ecr.aws/supabase/postgres:17.6.1.158
+    container_name: agora_db
+    restart: unless-stopped
+    mem_limit: 384m
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      POSTGRES_PORT: 5432
+      PGPORT: 5432
+      POSTGRES_DB: postgres
+      PGDATABASE: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db:/var/lib/postgresql/data
+      - db-config:/etc/postgresql-custom
+      # Monté FICHIER par fichier dans migrations/ : monter le dossier
+      # masquerait les migrations de l'image, qui créent les rôles ; la racine
+      # de docker-entrypoint-initdb.d/ et init-scripts/ passent avant elles.
+      - ./init/zzz-roles.sql:/docker-entrypoint-initdb.d/migrations/zzz-roles.sql:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth:
+    image: public.ecr.aws/supabase/gotrue:v2.195.0
+    container_name: agora_auth
+    restart: unless-stopped
+    mem_limit: 96m
+    depends_on:
+      db:
+        condition: service_healthy
+    # Chaque réglage est nommé ici : c'est la traduction de
+    # supabase/config.toml (qui ne règle que la pile locale). Un réglage
+    # oublié ramène le défaut de GoTrue sans erreur.
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${API_URL:?API_URL manquant dans .env}/auth/v1
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL:?SITE_URL manquant dans .env}
+      GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS:-}
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      # Jetons : mêmes réglages que config.toml.
+      GOTRUE_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant dans .env}
+      GOTRUE_JWT_ISSUER: ${API_URL}/auth/v1
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_SECURITY_REFRESH_TOKEN_ROTATION_ENABLED: "true"
+      GOTRUE_SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 10
+      GOTRUE_SECURITY_MANUAL_LINKING_ENABLED: "true"
+      GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_REAUTHENTICATION: "false"
+      # Mots de passe : 8 caractères, lettres et chiffres (letters_digits).
+      GOTRUE_PASSWORD_MIN_LENGTH: 8
+      GOTRUE_PASSWORD_REQUIRED_CHARACTERS: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:0123456789"
+      # E-mail : confirmation par CODE à 6 chiffres, valable 15 min.
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      GOTRUE_MAILER_SECURE_EMAIL_CHANGE_ENABLED: "true"
+      GOTRUE_MAILER_OTP_LENGTH: 6
+      GOTRUE_MAILER_OTP_EXP: 900
+      GOTRUE_MAILER_URLPATHS_INVITE: ${API_URL}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${API_URL}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: ${API_URL}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${API_URL}/auth/v1/verify
+      # Gabarits bilingues, servis par Caddy depuis /opt/agora/email/ :
+      # GoTrue ne sait les lire que par URL.
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/recovery.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/email_change.html
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/magic_link.html
+      GOTRUE_MAILER_TEMPLATES_REAUTHENTICATION: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/reauthentication.html
+      GOTRUE_MAILER_TEMPLATES_INVITE: ${EMAIL_TEMPLATES_URL:-${SITE_URL}/email}/invite.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Agora — code de confirmation · confirmation code"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Agora — changer de mot de passe · password reset"
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Agora — nouvelle adresse · new email address"
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: "Agora — code de connexion · sign-in code"
+      GOTRUE_MAILER_SUBJECTS_REAUTHENTICATION: "Agora — code de vérification · verification code"
+      GOTRUE_MAILER_SUBJECTS_INVITE: "Agora — invitation"
+      # SMTP Brevo, expéditeur authentifié du domaine partagé.
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:-smtp-relay.brevo.com}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
+      GOTRUE_SMTP_USER: ${SMTP_USER:?SMTP_USER manquant dans .env}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS:?SMTP_PASS manquant dans .env}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_SENDER:-no-reply@heianenterprise.com}
+      GOTRUE_SMTP_SENDER_NAME: Agora
+      # Limites. Écarts VOULUS avec config.toml, dont les valeurs locales
+      # bloqueraient la prod : email_sent y vaut 2 par heure pour TOUTE
+      # l'instance, et max_frequency 1 s par adresse. Ici : 30 e-mails par
+      # heure (le quota Brevo gratuit est de 300 par jour, partagé), et une
+      # minute entre deux e-mails à la même adresse.
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: 30
+      GOTRUE_SMTP_MAX_FREQUENCY: 60s
+      GOTRUE_RATE_LIMIT_TOKEN_REFRESH: 150
+      GOTRUE_RATE_LIMIT_OTP: 30
+      GOTRUE_RATE_LIMIT_VERIFY: 30
+      # Limites PAR CLIENT : derrière Caddy, toutes les requêtes viennent de
+      # la même adresse ; sans cet en-tête, la limite serait commune à tous
+      # et quelques essais bloqueraient la connexion de chacun. Caddy écrase
+      # un X-Forwarded-For venu d'un client (proxy non déclaré de confiance).
+      GOTRUE_RATE_LIMIT_HEADER: X-Forwarded-For
+      # CAPTCHA (Turnstile ou hCaptcha) : désactivé tant que l'app n'envoie
+      # pas de jeton — l'activer avant romprait inscription et connexion.
+      GOTRUE_SECURITY_CAPTCHA_ENABLED: ${CAPTCHA_ENABLED:-false}
+      GOTRUE_SECURITY_CAPTCHA_PROVIDER: ${CAPTCHA_PROVIDER:-turnstile}
+      GOTRUE_SECURITY_CAPTCHA_SECRET: ${CAPTCHA_SECRET:-}
+      # Connexion Google et Discord : identité seule, activée par le .env.
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_SECRET:-}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${API_URL}/auth/v1/callback
+      GOTRUE_EXTERNAL_DISCORD_ENABLED: ${DISCORD_OAUTH_ENABLED:-false}
+      GOTRUE_EXTERNAL_DISCORD_CLIENT_ID: ${DISCORD_OAUTH_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_DISCORD_SECRET: ${DISCORD_OAUTH_SECRET:-}
+      GOTRUE_EXTERNAL_DISCORD_REDIRECT_URI: ${API_URL}/auth/v1/callback
+    ports:
+      - "127.0.0.1:9401:9999"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rest:
+    image: public.ecr.aws/supabase/postgrest:v16.1
+    container_name: agora_rest
+    restart: unless-stopped
+    mem_limit: 96m
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,graphql_public
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_ADMIN_SERVER_HOST: localhost
+      PGRST_ADMIN_SERVER_PORT: 3001
+    ports:
+      - "127.0.0.1:9402:3000"
+    healthcheck:
+      test: ["CMD", "postgrest", "--ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  realtime:
+    image: public.ecr.aws/supabase/realtime:v2.124.4
+    container_name: agora_realtime
+    restart: unless-stopped
+    mem_limit: 320m
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: SET search_path TO _realtime
+      # 16 caractères exactement (clé AES-128 des réglages du tenant).
+      DB_ENC_KEY: ${REALTIME_DB_ENC_KEY:?REALTIME_DB_ENC_KEY manquant dans .env}
+      API_JWT_SECRET: ${JWT_SECRET}
+      METRICS_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${REALTIME_SECRET_KEY_BASE:?REALTIME_SECRET_KEY_BASE manquant dans .env}
+      APP_NAME: realtime
+      ERL_AFLAGS: -proto_dist inet_tcp
+      DNS_NODES: "''"
+      RLIMIT_NOFILE: "10000"
+      # Crée le tenant « realtime-dev » au démarrage. Realtime lit le tenant
+      # dans le premier segment de l'en-tête Host : Caddy le fabrique.
+      SEED_SELF_HOST: "true"
+      RUN_JANITOR: "true"
+    ports:
+      - "127.0.0.1:9403:4000"
+    healthcheck:
+      test: ["CMD", "curl", "-sSfL", "--head", "-o", "/dev/null", "-H", "Host:realtime-dev", "http://127.0.0.1:4000/api/ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
+  worker:
+    image: ghcr.io/lelio88/agora-worker:${AGORA_TAG:-latest}
+    container_name: agora_worker
+    restart: unless-stopped
+    mem_limit: 96m
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Rôle restreint : son mot de passe est posé par deploy/migrate.sh.
+      AGORA_DATABASE_URL: postgres://agora_worker:${AGORA_WORKER_PASSWORD:?AGORA_WORKER_PASSWORD manquant dans .env}@db:5432/postgres?sslmode=disable
+      AGORA_HTTP_ADDR: ":8080"
+    ports:
+      - "127.0.0.1:9404:8080"
+
+volumes:
+  db:
+    name: agora_db
+  db-config:
+    name: agora_db_config

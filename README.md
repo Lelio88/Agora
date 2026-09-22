@@ -38,4 +38,5 @@ cd worker && go run ./cmd/worker   # service de fond, santé sur http://localhos
 | `app/` | App Flutter (Android + web), français et anglais |
 | `supabase/` | Schéma Postgres, règles d'accès, tests pgTAP |
 | `worker/` | Service Go : import iCal, récurrences, bot Discord |
+| `deploy/` | Mise en ligne : Supabase auto-hébergé, Caddy, répétition locale ([détail](docs/deployment.md)) |
 | `docs/` | [Architecture](docs/architecture.md) et [feuille de route](docs/roadmap.md) |

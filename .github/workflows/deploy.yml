@@ -1,0 +1,275 @@
+name: Deploy
+
+# Chaîne de mise en ligne d'Agora (backend Supabase auto-hébergé, worker,
+# application web). Détail et première installation : docs/deployment.md.
+#
+# Déclencheur : push sur `release` (main reste la branche de travail ; mettre
+# en ligne = `git push origin main:release`), ou lancement manuel.
+#
+# Étapes :
+#   1. verify — tests Go et Flutter : rien ne part si l'un échoue. Les tests
+#      pgTAP demandent la pile Supabase locale : ils se lancent avant de
+#      pousser (supabase test db), pas ici ;
+#   2. worker, web — l'image du worker (GHCR) et l'app web sont construites
+#      sur le runner : le serveur, partagé, ne compile RIEN ;
+#   3. deploy — le serveur reçoit compose, vhost, migrations, gabarits
+#      d'e-mail et app web ; il démarre la base et GoTrue, applique les
+#      migrations, démarre le reste, sonde chaque service, et seulement
+#      alors remplace l'app web (une app neuve sur un schéma ancien casserait).
+#
+# Secrets GitHub attendus : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, et
+# AGORA_ANON_KEY (clé publiable, figée dans l'app web à la compilation). Le
+# serveur tire l'image avec le jeton ÉPHÉMÈRE du run, révoqué à la fin :
+# aucun jeton durable n'y est posé.
+#
+# Les actions qui ne viennent pas de GitHub sont épinglées sur une EMPREINTE
+# DE COMMIT, jamais sur un tag : un tag se redéplace, et ces actions-là
+# reçoivent la clé SSH du serveur ou publient l'image. Le commentaire donne
+# la version lisible ; pour monter de version, résoudre la nouvelle empreinte
+# (« gh api repos/<action>/git/ref/tags/<tag> »).
+
+# "on" quoté : non quoté, YAML le lit comme le booléen true.
+"on":
+  push:
+    branches: [release]
+    # Un push purement documentaire ne redéploie pas ; un push mixte, si.
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+# Jamais deux déploiements entremêlés ; le second attend le premier.
+concurrency:
+  group: deploy-agora-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_WORKER: ghcr.io/lelio88/agora-worker
+  SITE_URL: https://agora.heianenterprise.com
+  API_URL: https://api.agora.heianenterprise.com
+  FLUTTER_VERSION: 3.47.2
+
+jobs:
+  verify:
+    name: Tests Go et Flutter
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: worker/go.mod
+          cache: false
+
+      - name: Worker — vet et tests
+        working-directory: worker
+        run: go vet ./... && go test -race ./...
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: App — analyse et tests
+        working-directory: app
+        run: flutter pub get && flutter analyze && flutter test
+
+  worker:
+    name: Image du worker
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v4.4.1
+
+      - name: Se connecter à GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construire et publier
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v7.4.0
+        with:
+          context: worker
+          push: true
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          tags: |
+            ${{ env.IMAGE_WORKER }}:${{ github.sha }}
+            ${{ env.IMAGE_WORKER }}:latest
+          cache-from: type=gha,scope=worker
+          cache-to: type=gha,mode=max,scope=worker
+
+  web:
+    name: Application web
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # Adresses et clé figées ici, à la compilation. La clé est publiable
+      # (elle finit dans le bundle) ; elle reste un secret GitHub pour ne
+      # pas vivre dans le dépôt.
+      - name: Construire
+        working-directory: app
+        env:
+          ANON_KEY: ${{ secrets.AGORA_ANON_KEY }}
+        run: |
+          if [ -z "$ANON_KEY" ]; then
+            echo "ERREUR : secret AGORA_ANON_KEY absent."
+            exit 1
+          fi
+          printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s"}' \
+            "$API_URL" "$ANON_KEY" "$SITE_URL" > "$RUNNER_TEMP/prod.json"
+          flutter pub get
+          flutter build web --release --dart-define-from-file="$RUNNER_TEMP/prod.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: app/build/web
+          retention-days: 1
+
+  deploy:
+    name: Déployer sur le serveur
+    needs: [worker, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Lecture seule : ce job ne fait que tirer l'image publiée par worker.
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: bundle/web
+
+      # Le lot reproduit l'arborescence de /opt/agora.
+      - name: Préparer le lot
+        run: |
+          mkdir -p bundle/init bundle/caddy bundle/migrations bundle/email
+          cp deploy/docker-compose.prod.yml bundle/docker-compose.yml
+          cp deploy/init/zzz-roles.sql bundle/init/
+          cp deploy/migrate.sh bundle/
+          cp deploy/caddy/agora.caddy bundle/caddy/
+          cp supabase/migrations/*.sql bundle/migrations/
+          cp supabase/templates/*.html bundle/email/
+
+      - name: Copier le lot
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: bundle
+          target: /tmp/agora-deploy
+          strip_components: 1
+          rm: true
+
+      - name: Migrer, démarrer, sonder
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        env:
+          # Jeton fabriqué par GitHub pour CE run et invalidé à sa fin.
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+          AGORA_TAG: ${{ github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: GHCR_TOKEN,GHCR_USER,AGORA_TAG
+          command_timeout: 20m
+          script: |
+            set -eu
+            cd /opt/agora
+            NEW=/tmp/agora-deploy
+
+            # Se déconnecter quoi qu'il arrive : le jeton ne doit pas rester
+            # écrit en clair dans ~/.docker/config.json.
+            trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+            # Le .env est créé UNE fois par bootstrap-server.sh, jamais par
+            # la CI : le régénérer changerait JWT_SECRET (sessions et clé de
+            # l'app invalidées) et les mots de passe de la base.
+            if [ ! -f .env ]; then
+              echo "ERREUR : /opt/agora/.env absent. Lancer deploy/bootstrap-server.sh d'abord."
+              exit 1
+            fi
+
+            install -m 644 "$NEW/docker-compose.yml" docker-compose.yml
+            install -m 644 "$NEW/init/zzz-roles.sql" init/zzz-roles.sql
+            install -m 755 "$NEW/migrate.sh" migrate.sh
+            rm -rf migrations email
+            cp -r "$NEW/migrations" "$NEW/email" .
+
+            # Le vhost ne recharge Caddy que s'il a changé, et seulement après
+            # validation : un Caddyfile cassé toucherait tous les sites de l'hôte.
+            if ! cmp -s "$NEW/caddy/agora.caddy" caddy/agora.caddy; then
+              install -m 644 "$NEW/caddy/agora.caddy" caddy/agora.caddy
+              caddy validate --config /etc/caddy/Caddyfile >/dev/null
+              systemctl reload caddy
+              echo "Caddy rechargé (vhost modifié)"
+            fi
+
+            export AGORA_TAG
+            docker compose pull --quiet
+
+            # GoTrue d'abord : il crée auth.users, dont le schéma dépend.
+            docker compose up -d db auth
+            for i in $(seq 1 60); do
+              [ "$(docker inspect -f '{{.State.Health.Status}}' agora_auth)" = healthy ] && break
+              if [ "$i" -eq 60 ]; then
+                echo "ERREUR : GoTrue ne répond pas."; docker compose logs --tail 60 db auth; exit 1
+              fi
+              sleep 2
+            done
+
+            sh migrate.sh
+            docker compose up -d --remove-orphans
+
+            # GoTrue, PostgREST et Realtime ont leur healthcheck Docker ; le
+            # worker (image sans curl) se sonde par /healthz.
+            healthy() { [ "$(docker inspect -f '{{.State.Health.Status}}' "$1")" = healthy ]; }
+            echo "Sonde des services…"
+            for i in $(seq 1 40); do
+              if healthy agora_auth && healthy agora_rest && healthy agora_realtime \
+                 && curl -sf http://127.0.0.1:9404/healthz >/dev/null; then
+                echo "GoTrue, PostgREST, Realtime et worker répondent."
+                break
+              fi
+              if [ "$i" -eq 40 ]; then
+                echo "ERREUR : sonde en timeout."; docker compose logs --tail 60; exit 1
+              fi
+              sleep 3
+            done
+
+            # L'app web en dernier, par bascule : jamais de dossier à moitié copié.
+            rm -rf web.old
+            [ -d web ] && mv web web.old
+            mv "$NEW/web" web
+            rm -rf web.old "$NEW"
+
+            # Mémoriser la version en ligne : un `docker compose up -d` manuel
+            # relance exactement ce qui est déployé, pas « latest ».
+            sed -i "s/^AGORA_TAG=.*/AGORA_TAG=$AGORA_TAG/" .env
+
+            docker image prune -f >/dev/null
+            echo "Déployé : $AGORA_TAG"

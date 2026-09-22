@@ -14,7 +14,7 @@ tests verts et une doc à jour ([`architecture.md`](./architecture.md)).
 | 6 | Rdv de groupe | ✅ proposer un rdv au groupe (tout membre ; créateur et admins modifient), fiche avec réponses présent / peut-être / absent (par occurrence pour une série), rdv de groupe dans l'agenda perso (ma réponse sur la tuile), agendas de groupe à montrer ou masquer | ✅ |
 | 7 | Créneaux communs | ✅ « Trouver un créneau » : durée, période, heures, week-ends, membres requis ; `invisible` = libre (signalé), `busy` = pris, rdv du groupe = pris ; un rdv accepté (« présent ») dans un autre groupe rend occupé ; un appui propose le rdv | ✅ |
 | 8 | Bot Discord | Interactions signées, `/agenda`, `/dispo`, liaison d'un salon, récaps, rappels, réglages dans l'app | à faire |
-| 9 | Mise en ligne | Supabase auto-hébergé + worker sur Hetzner (réglages `GOTRUE_*` et gabarits servis par URL), CAPTCHA sur les formulaires de compte, pages légales (dont : les rdv de groupe proposés survivent à la suppression du compte), fiche Play Store (lien web de suppression du compte : la version web) | à faire |
+| 9 | Mise en ligne | Supabase auto-hébergé + worker sur Hetzner (réglages `GOTRUE_*` et gabarits servis par URL), CAPTCHA sur les formulaires de compte, pages légales (dont : les rdv de groupe proposés survivent à la suppression du compte), fiche Play Store (lien web de suppression du compte : la version web) · préparé : pile de prod, vhost Caddy, migrations, CI (`release`), répétition locale verte ([`deployment.md`](./deployment.md)) · reste : serveur, DNS, secrets, CAPTCHA dans l'app, pages légales, fiche Play | en cours |
 
 ## Décisions de cadrage (2026-09-21)
 

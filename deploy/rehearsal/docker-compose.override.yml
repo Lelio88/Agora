@@ -1,0 +1,33 @@
+# Répétition locale de la mise en ligne (deploy/rehearsal/rehearse.sh).
+# Chargé automatiquement à côté du docker-compose.yml de prod, copié tel quel :
+# n'ajoute que ce que le serveur fournit hors compose (Caddy de l'hôte, Brevo).
+
+services:
+  auth:
+    # Mailpit n'a pas de TLS, et GoTrue refuse l'authentification SMTP en
+    # clair (Brevo, en prod, passe en STARTTLS sur le port 587).
+    environment:
+      GOTRUE_SMTP_USER: ""
+      GOTRUE_SMTP_PASS: ""
+
+  mailpit:
+    image: public.ecr.aws/supabase/mailpit:v1.30.2
+    container_name: agora_rehearsal_mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "127.0.0.1:8482:8025"
+
+  # Le vhost de prod, transposé en HTTP local par rehearse.sh.
+  caddy:
+    image: caddy:2
+    container_name: agora_rehearsal_caddy
+    command: ["sh", "-c", "mkdir -p /var/log/caddy && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/opt/agora/web:ro
+      - ./email:/opt/agora/email:ro
+    ports:
+      - "127.0.0.1:8480:8480"
+      - "127.0.0.1:8481:8481"

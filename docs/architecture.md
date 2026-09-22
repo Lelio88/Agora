@@ -271,6 +271,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   (`test/helpers/agora_robot.dart`) qui monte l'app entière et porte tous les sélecteurs. Les
   écrans exposent des `ValueKey` (`AuthKeys`, `ProfileKeys`, `HomeKeys`) : les tests ne dépendent
   pas des libellés traduits.
+- **Mise en ligne répétée en local** : `sh deploy/rehearsal/rehearse.sh` monte la pile de prod
+  (compose, rôles, migrations, vhost Caddy) et la parcourt de bout en bout
+  ([`deployment.md`](./deployment.md)).
 - **Parcours réel sur le web** : `flutter build web --dart-define-from-file=config/local.json`,
   servir `build/web`, puis piloter avec Playwright. Flutter dessine sur un canvas ; cliquer
   `flt-semantics-placeholder` active l'arbre d'accessibilité, qui expose champs et boutons par
@@ -280,24 +283,24 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Service | Usage | Référence |
 |---|---|---|
-| Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Postgres ; `api.agora.heianenterprise.com` | recette d'Arpente, `../INFRASTRUCTURE.md` |
-| Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé au déploiement | `../INFRASTRUCTURE.md` |
+| Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Realtime, Postgres ; `api.agora.heianenterprise.com`, sans Kong (Caddy route et répond au CORS) | [`deployment.md`](./deployment.md) |
+| Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
+| App web | `agora.heianenterprise.com`, servie par Caddy ; sert aussi de lien web de suppression du compte pour le Play Store | [`deployment.md`](./deployment.md) |
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot | portail développeurs Discord |
 | Google / Discord OAuth | connexion (identité seule, sans accès à l'agenda) | console Google Cloud, portail Discord |
 
-Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public.
+Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public. Carte du serveur :
+`../INFRASTRUCTURE.md`.
 
-**`config.toml` ne règle que la pile locale.** Sur le serveur auto-hébergé, GoTrue lit les mêmes
-réglages dans ses variables d'environnement (`GOTRUE_MAILER_AUTOCONFIRM=false`,
-`GOTRUE_MAILER_OTP_EXP=900`, `GOTRUE_PASSWORD_MIN_LENGTH`,
-`GOTRUE_PASSWORD_REQUIRED_CHARACTERS`, SMTP Brevo…). En prod s'ajoute un **CAPTCHA**
-(`GOTRUE_SECURITY_CAPTCHA_*`, hCaptcha ou Turnstile) sur l'inscription, la connexion et la
-réinitialisation : c'est lui, plus que la limite par IP, qui borne la force brute des codes
-depuis de nombreuses adresses. Il charge
-les gabarits **par URL** (`GOTRUE_MAILER_TEMPLATES_CONFIRMATION`, etc.), jamais depuis
-`supabase/templates/`. Le déploiement doit donc servir ces fichiers et reporter chaque réglage :
-un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en anglais) sans erreur.
+**`config.toml` ne règle que la pile locale.** En prod, GoTrue lit ses réglages dans ses
+variables d'environnement, nommées une à une dans `deploy/docker-compose.prod.yml`, et charge les
+gabarits **par URL** : un réglage d'auth se change aux deux endroits, un oubli ramenant le défaut
+de GoTrue sans erreur (lien au lieu de code, e-mail en anglais). Un **CAPTCHA**
+(`GOTRUE_SECURITY_CAPTCHA_*`) sur l'inscription, la connexion et la réinitialisation bornera la
+force brute des codes depuis de nombreuses adresses ; il ne s'active qu'avec l'app qui envoie son
+jeton. Pile, pièges, première installation et répétition locale :
+[`deployment.md`](./deployment.md).
 
 ## 11. Anti-patterns à éviter
 

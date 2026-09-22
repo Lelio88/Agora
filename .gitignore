@@ -17,3 +17,6 @@ app/config/*.json
 
 # Binaires du worker
 worker/bin/
+
+# Répétition locale de la mise en ligne (secrets jetables)
+deploy/rehearsal/.work/

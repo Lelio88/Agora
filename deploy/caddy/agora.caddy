@@ -1,0 +1,124 @@
+# Agora — vhosts Caddy. Copié par la CI dans /opt/agora/caddy/agora.caddy,
+# puis importé par le Caddyfile de l'hôte (« import /opt/agora/caddy/agora.caddy »).
+#
+# Autonome à dessein : aucun snippet de l'hôte, pour que ce fichier serve de
+# Caddyfile complet le jour où Agora a son propre serveur. Les ports 94xx sont
+# ceux publiés sur la boucle locale par deploy/docker-compose.prod.yml.
+#
+# Deux origines :
+#   - agora.heianenterprise.com : l'app web (fichiers de flutter build web,
+#     déposés par la CI dans /opt/agora/web) et les gabarits d'e-mail que
+#     GoTrue lit par URL (/opt/agora/email) ;
+#   - api.agora.heianenterprise.com : Supabase sans Kong. Caddy route les
+#     préfixes que fabrique le client Supabase et tient le rôle CORS de Kong.
+#
+# Pièges à ne pas défaire (rencontrés sur Arpente) :
+#   - GoTrue ne connaît pas l'en-tête apikey : sans réponse de Caddy au
+#     contrôle préalable, le navigateur bloque toute requête. Le bloc header
+#     REMPLACE (defer) l'Access-Control-Allow-Origin de GoTrue : deux valeurs
+#     font refuser la réponse ;
+#   - Realtime lit son tenant dans le premier segment du Host : Caddy lui
+#     envoie « realtime-dev.agora », sinon il cherche un tenant « api » ;
+#   - handle_path, jamais handle + uri strip_prefix : Caddy exécute rewrite
+#     avant uri, le préfixe serait remis avant d'être retiré.
+
+(agora_access_log) {
+	log {
+		output file /var/log/caddy/{args[0]}.log {
+			roll_size 20MiB
+			roll_keep 5
+			roll_keep_for 720h
+		}
+		# IP masquées à la source : le diagnostic distingue des clients, il
+		# n'a pas à les identifier.
+		format filter {
+			wrap json
+			fields {
+				request>remote_ip ip_mask {
+					ipv4 24
+					ipv6 32
+				}
+				request>client_ip ip_mask {
+					ipv4 24
+					ipv6 32
+				}
+				# Le jeton de session ne doit pas finir dans un journal.
+				request>headers>Authorization delete
+				request>headers>Apikey delete
+				request>headers>Cookie delete
+			}
+		}
+	}
+}
+
+agora.heianenterprise.com {
+	import agora_access_log agora-access
+
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	handle_path /email/* {
+		root * /opt/agora/email
+		file_server
+	}
+
+	# Les fichiers d'une version Flutter ne sont pas hachés : revalidation à
+	# chaque chargement (ETag), sinon un navigateur garderait l'ancienne app.
+	handle {
+		root * /opt/agora/web
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+api.agora.heianenterprise.com {
+	import agora_access_log agora-api-access
+
+	@preflight method OPTIONS
+	handle @preflight {
+		header {
+			Access-Control-Allow-Origin "https://agora.heianenterprise.com"
+			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+			Access-Control-Allow-Headers "{http.request.header.Access-Control-Request-Headers}"
+			Access-Control-Max-Age "86400"
+			Vary "Origin"
+		}
+		respond 204
+	}
+
+	header {
+		defer
+		Access-Control-Allow-Origin "https://agora.heianenterprise.com"
+		Access-Control-Expose-Headers "Content-Range, Content-Profile, Range-Unit, X-Total-Count"
+		-Access-Control-Allow-Credentials
+		Vary "Origin"
+		X-Content-Type-Options nosniff
+		-Server
+	}
+
+	handle_path /auth/v1/* {
+		reverse_proxy 127.0.0.1:9401
+	}
+
+	handle_path /rest/v1/* {
+		reverse_proxy 127.0.0.1:9402
+	}
+
+	handle_path /realtime/v1/* {
+		rewrite * /socket{path}
+		reverse_proxy 127.0.0.1:9403 {
+			header_up Host realtime-dev.agora
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}
