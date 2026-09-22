@@ -14,7 +14,7 @@ import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
-import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
@@ -197,7 +197,7 @@ class _CalendarTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final color = calendarColor(
+    final color = colorFromHex(
       calendar.colorHex,
       Theme.of(context).colorScheme.primary,
     );

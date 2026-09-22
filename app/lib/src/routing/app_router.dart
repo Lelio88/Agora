@@ -5,6 +5,10 @@
 /// connexion ou déconnexion via `refreshListenable`. Un contrôle de session
 /// dans un widget laisserait voir le contenu protégé une fraction de seconde.
 /// La règle elle-même est dans `auth_redirect.dart`.
+///
+/// Un groupe et « Rejoindre » sont des sous-routes de l'accueil : ouverts
+/// par un lien, le retour ramène à l'accueil. Un lien d'invitation ouvert
+/// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion.
 library;
 
 import 'package:agora/src/features/auth/application/auth_providers.dart';
@@ -13,6 +17,9 @@ import 'package:agora/src/features/auth/presentation/reset_password_screen.dart'
 import 'package:agora/src/features/auth/presentation/sign_in_screen.dart';
 import 'package:agora/src/features/auth/presentation/sign_up_screen.dart';
 import 'package:agora/src/features/auth/presentation/verify_email_screen.dart';
+import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/presentation/group_screen.dart';
+import 'package:agora/src/features/groups/presentation/join_group_screen.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/presentation/profile_screen.dart';
 import 'package:agora/src/routing/app_route.dart';
@@ -24,19 +31,46 @@ import 'package:go_router/go_router.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authRepositoryProvider);
+  final pendingInvite = ref.watch(pendingInviteProvider);
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
-    redirect: (context, state) => authRedirect(
-      isSignedIn: auth.currentUser != null,
-      location: state.matchedLocation,
-    ),
+    redirect: (context, state) {
+      final isSignedIn = auth.currentUser != null;
+      final location = state.matchedLocation;
+      final invite = inviteCodeInLocation(location);
+      if (!isSignedIn && invite != null) pendingInvite.code = invite;
+      return authRedirect(
+        isSignedIn: isSignedIn,
+        location: location,
+        pendingInvite: pendingInvite.code,
+      );
+    },
     routes: [
       GoRoute(
         path: '/',
         name: AppRoute.home.name,
         builder: (context, state) => const HomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'groups/:groupId',
+            name: AppRoute.group.name,
+            builder: (context, state) =>
+                GroupScreen(groupId: state.pathParameters['groupId']!),
+          ),
+          GoRoute(
+            path: 'join',
+            name: AppRoute.joinByCode.name,
+            builder: (context, state) => const JoinGroupScreen(),
+          ),
+          GoRoute(
+            path: 'join/:code',
+            name: AppRoute.join.name,
+            builder: (context, state) =>
+                JoinGroupScreen(code: state.pathParameters['code']),
+          ),
+        ],
       ),
       GoRoute(
         path: '/profile',

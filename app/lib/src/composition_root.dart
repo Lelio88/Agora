@@ -22,6 +22,8 @@ import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendar_repository.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendars_repository.dart';
+import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/data/supabase_profile_repository.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -37,6 +39,9 @@ List<Override> prodOverrides(SupabaseClient client) => [
   ),
   calendarsRepositoryProvider.overrideWith(
     (ref) => SupabaseCalendarsRepository(client),
+  ),
+  groupsRepositoryProvider.overrideWith(
+    (ref) => SupabaseGroupsRepository(client),
   ),
   deviceTimezoneProvider.overrideWith((ref) => const PlatformDeviceTimezone()),
 ];

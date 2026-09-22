@@ -1,14 +1,14 @@
-/// Palette des agendas et couleur de leurs tuiles.
+/// Palette de l'app : couleurs des agendas et des membres d'un groupe.
 ///
-/// La base garde la couleur en `#RRGGBB` ; l'app propose une palette
-/// courte, lisible en thème clair comme en sombre. Un agenda sans couleur
-/// prend celle du thème. Le texte d'une tuile est clair ou foncé selon la
+/// La base garde une couleur en `#RRGGBB` ; l'app propose une palette
+/// courte, lisible en thème clair comme en sombre. Sans couleur, on prend
+/// celle du thème. Un texte posé dessus est clair ou foncé selon la
 /// luminance du fond.
 library;
 
 import 'package:flutter/material.dart';
 
-const calendarPalette = [
+const appPalette = [
   '#1E88E5',
   '#43A047',
   '#E53935',
@@ -19,8 +19,8 @@ const calendarPalette = [
   '#546E7A',
 ];
 
-/// Couleur d'un agenda ; [fallback] si elle est absente ou mal formée.
-Color calendarColor(String? hex, Color fallback) {
+/// Couleur `#RRGGBB` ; [fallback] si elle est absente ou mal formée.
+Color colorFromHex(String? hex, Color fallback) {
   final value = hex == null || hex.length != 7
       ? null
       : int.tryParse(hex.substring(1), radix: 16);
@@ -28,7 +28,7 @@ Color calendarColor(String? hex, Color fallback) {
 }
 
 /// Texte lisible sur [background].
-Color onCalendarColor(Color background) =>
+Color readableOn(Color background) =>
     ThemeData.estimateBrightnessForColor(background) == Brightness.dark
     ? Colors.white
     : Colors.black87;

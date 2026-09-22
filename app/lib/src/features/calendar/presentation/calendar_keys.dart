@@ -2,17 +2,20 @@
 /// pour les tests.
 library;
 
+import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:flutter/widgets.dart';
 
 abstract final class CalendarKeys {
   static const screen = ValueKey('calendar.screen');
   static const newEvent = ValueKey('calendar.newEvent');
-  static const today = ValueKey('calendar.today');
-  static const viewDay = ValueKey('calendar.viewDay');
-  static const viewWeek = ValueKey('calendar.viewWeek');
-  static const viewMonth = ValueKey('calendar.viewMonth');
-  static const viewSchedule = ValueKey('calendar.viewSchedule');
+  // Barre commune des vues d'agenda (`common_widgets/agenda_view.dart`).
+  static const toolbar = AgendaToolbarKeys('calendar');
+  static final today = toolbar.today;
+  static final viewDay = toolbar.day;
+  static final viewWeek = toolbar.week;
+  static final viewMonth = toolbar.month;
+  static final viewSchedule = toolbar.schedule;
   static const manageCalendars = ValueKey('calendar.manageCalendars');
 
   static const editor = ValueKey('calendar.editor');

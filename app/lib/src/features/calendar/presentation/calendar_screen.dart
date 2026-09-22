@@ -2,9 +2,8 @@
 /// et modification des rdv, choix « cette occurrence / toute la série ».
 ///
 /// Choix non évidents :
-/// - la plage chargée suit la page visible, arrondie au mois entier avec un
-///   mois de marge de chaque côté : changer de page ne recharge pas à chaque
-///   jour, et la vue planning a toujours de quoi défiler ;
+/// - vues, barre et plage chargée viennent de `common_widgets/agenda_view.dart`,
+///   partagé avec l'agenda d'un groupe ;
 /// - les instances viennent d'`agendaProvider` et sont poussées dans le
 ///   contrôleur de kalender à chaque changement : kalender ne connaît pas le
 ///   dépôt, il n'affiche que ce qu'on lui donne ;
@@ -12,6 +11,7 @@
 ///   de l'affichage attendu.
 library;
 
+import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -21,7 +21,7 @@ import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/agenda_event.dart';
-import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
@@ -31,11 +31,6 @@ import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kalender/kalender.dart';
-
-enum AgendaView { day, week, month, schedule }
-
-/// Au-delà, une plage « visible » n'est pas une page mais une vue entière.
-const _maxVisible = Duration(days: 62);
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -48,75 +43,32 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   final _eventsController = DefaultEventsController();
   final _kalenderController = KalenderController();
   AgendaView _view = AgendaView.week;
-  late AgendaRange _range = _rangeAround(DateTime.now());
+  late final VisibleRangeFollower _follower;
+  late AgendaRange _range;
 
   @override
   void initState() {
     super.initState();
-    _kalenderController.visibleDateTimeRange.addListener(
-      _onVisibleRangeChanged,
+    _follower = VisibleRangeFollower(
+      _kalenderController,
+      initialDate: DateTime.now(),
+      onRangeChanged: (range) {
+        if (mounted) setState(() => _range = _toAgendaRange(range));
+      },
     );
+    _range = _toAgendaRange(_follower.range);
   }
 
   @override
   void dispose() {
-    _kalenderController.visibleDateTimeRange.removeListener(
-      _onVisibleRangeChanged,
-    );
+    _follower.dispose();
     _kalenderController.dispose();
     _eventsController.dispose();
     super.dispose();
   }
 
-  /// Mois entier autour de [date], plus un mois de chaque côté (UTC).
-  static AgendaRange _rangeAround(DateTime date) {
-    final local = date.toLocal();
-    return AgendaRange(
-      from: DateTime(local.year, local.month - 1).toUtc(),
-      to: DateTime(local.year, local.month + 2).toUtc(),
-    );
-  }
-
-  /// Quand la page visible sort de la plage chargée, on recharge autour du
-  /// milieu de la page. Une plage visible plus longue que [_maxVisible] est
-  /// ignorée : elle ne décrit pas ce qui est à l'écran (une vue continue
-  /// publie sa plage totale), et la suivre rechargerait sans fin.
-  void _onVisibleRangeChanged() {
-    final visible = _kalenderController.visibleDateTimeRange.value;
-    if (visible == null ||
-        visible.end.difference(visible.start) > _maxVisible) {
-      return;
-    }
-    final middle = visible.start.add(
-      visible.end.difference(visible.start) ~/ 2,
-    );
-    final isInside =
-        !middle.isBefore(_range.from) && middle.isBefore(_range.to);
-    if (isInside) return;
-    final needed = _rangeAround(middle);
-    // kalender publie sa plage visible pendant sa propre construction : un
-    // setState immédiat serait un « setState() called during build ».
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && needed != _range) setState(() => _range = needed);
-    });
-  }
-
-  ViewConfiguration get _viewConfiguration => switch (_view) {
-    AgendaView.day => MultiDayViewConfiguration.singleDay(
-      initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
-    ),
-    AgendaView.week => MultiDayViewConfiguration.week(
-      numberOfDays: MediaQuery.sizeOf(context).width < 600 ? 3 : 7,
-      firstDayOfWeek: DateTime.monday,
-      initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
-    ),
-    AgendaView.month => MonthViewConfiguration.singleMonth(
-      firstDayOfWeek: DateTime.monday,
-    ),
-    // Paginée (un mois par page) : la variante continue publie sa plage
-    // TOTALE comme plage visible, inexploitable pour savoir quoi charger.
-    AgendaView.schedule => ScheduleViewConfiguration.paginated(),
-  };
+  static AgendaRange _toAgendaRange(LoadedRange range) =>
+      AgendaRange(from: range.from, to: range.to);
 
   Future<void> _createEvent([DateTime? start]) async {
     final calendarId = await ref.read(defaultCalendarIdProvider.future);
@@ -277,19 +229,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       key: CalendarKeys.screen,
       floatingActionButton: FloatingActionButton(
         key: CalendarKeys.newEvent,
+        // Les onglets de l'accueil coexistent : chaque bouton a son tag.
+        heroTag: CalendarKeys.newEvent,
         tooltip: l10n.newEventTooltip,
         onPressed: _createEvent,
         child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
-          _Toolbar(
+          AgendaToolbar(
+            keys: CalendarKeys.toolbar,
             view: _view,
             onViewChanged: (view) => setState(() => _view = view),
-            onToday: () => _kalenderController.animateToDate(DateTime.now()),
-            onPrevious: _kalenderController.animateToPreviousPage,
-            onNext: _kalenderController.animateToNextPage,
-            onManageCalendars: () => CalendarsScreen.show(context),
+            controller: _kalenderController,
+            trailing: [
+              IconButton(
+                key: CalendarKeys.manageCalendars,
+                tooltip: l10n.manageCalendarsTooltip,
+                icon: const Icon(Icons.event_note_outlined),
+                onPressed: () => CalendarsScreen.show(context),
+              ),
+            ],
           ),
           Expanded(
             child: AsyncValueWidget<List<AgendaItem>>(
@@ -297,7 +257,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               data: (_) => KalenderView(
                 eventsController: _eventsController,
                 kalenderController: _kalenderController,
-                viewConfiguration: _viewConfiguration,
+                viewConfiguration: agendaViewConfiguration(context, _view),
                 locale: Localizations.localeOf(context),
                 callbacks: KalenderCallbacks(
                   onEventTapped: (event) {
@@ -344,10 +304,10 @@ Widget _buildTile(
   final agendaEvent = event is AgendaEvent ? event : null;
   final item = agendaEvent?.item;
   final colorHex = agendaEvent?.calendar?.colorHex;
-  final background = calendarColor(colorHex, colors.primaryContainer);
+  final background = colorFromHex(colorHex, colors.primaryContainer);
   final foreground = colorHex == null
       ? colors.onPrimaryContainer
-      : onCalendarColor(background);
+      : readableOn(background);
   return Container(
     margin: const EdgeInsets.all(1),
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -373,83 +333,4 @@ Widget _buildTile(
       ],
     ),
   );
-}
-
-class _Toolbar extends StatelessWidget {
-  const _Toolbar({
-    required this.view,
-    required this.onViewChanged,
-    required this.onToday,
-    required this.onPrevious,
-    required this.onNext,
-    required this.onManageCalendars,
-  });
-
-  final AgendaView view;
-  final ValueChanged<AgendaView> onViewChanged;
-  final VoidCallback onToday;
-  final VoidCallback onPrevious;
-  final VoidCallback onNext;
-  final VoidCallback onManageCalendars;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    // Défilable : sur un téléphone étroit, les quatre vues et les boutons
-    // de navigation ne tiennent pas côte à côte.
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: l10n.previousPeriod,
-            icon: const Icon(Icons.chevron_left),
-            onPressed: onPrevious,
-          ),
-          TextButton(
-            key: CalendarKeys.today,
-            onPressed: onToday,
-            child: Text(l10n.todayButton),
-          ),
-          IconButton(
-            tooltip: l10n.nextPeriod,
-            icon: const Icon(Icons.chevron_right),
-            onPressed: onNext,
-          ),
-          const SizedBox(width: 16),
-          SegmentedButton<AgendaView>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: AgendaView.day,
-                label: Text(l10n.viewDay, key: CalendarKeys.viewDay),
-              ),
-              ButtonSegment(
-                value: AgendaView.week,
-                label: Text(l10n.viewWeek, key: CalendarKeys.viewWeek),
-              ),
-              ButtonSegment(
-                value: AgendaView.month,
-                label: Text(l10n.viewMonth, key: CalendarKeys.viewMonth),
-              ),
-              ButtonSegment(
-                value: AgendaView.schedule,
-                label: Text(l10n.viewSchedule, key: CalendarKeys.viewSchedule),
-              ),
-            ],
-            selected: {view},
-            onSelectionChanged: (selection) => onViewChanged(selection.first),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            key: CalendarKeys.manageCalendars,
-            tooltip: l10n.manageCalendarsTooltip,
-            icon: const Icon(Icons.event_note_outlined),
-            onPressed: onManageCalendars,
-          ),
-        ],
-      ),
-    );
-  }
 }

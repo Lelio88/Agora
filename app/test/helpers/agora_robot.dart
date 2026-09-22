@@ -1,4 +1,5 @@
 import 'package:agora/src/app.dart';
+import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
@@ -6,6 +7,8 @@ import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
@@ -14,9 +17,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'fake_calendar_repository.dart';
 import 'fake_calendars_repository.dart';
+import 'fake_groups_repository.dart';
 import 'fakes.dart';
 import 'recording_app_logger.dart';
 
@@ -30,6 +35,7 @@ class AgoraRobot {
   late final FakeProfileRepository profiles;
   late final FakeCalendarRepository calendar;
   late final FakeCalendarsRepository calendars;
+  late final FakeGroupsRepository groups;
 
   /// Erreurs remontées par les providers, comme en production
   /// (`AsyncErrorLogger`) : un parcours réussi n'en laisse aucune.
@@ -42,6 +48,8 @@ class AgoraRobot {
     FakeProfileRepository? profiles,
     FakeCalendarRepository? calendar,
     FakeCalendarsRepository? calendars,
+    FakeGroupsRepository? groups,
+    Uri? webBaseUrl,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
   }) async {
@@ -49,6 +57,7 @@ class AgoraRobot {
     this.profiles = profiles ?? FakeProfileRepository();
     this.calendar = calendar ?? FakeCalendarRepository();
     this.calendars = calendars ?? FakeCalendarsRepository();
+    this.groups = groups ?? FakeGroupsRepository();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
     await tester.pumpWidget(
@@ -61,6 +70,8 @@ class AgoraRobot {
           profileRepositoryProvider.overrideWithValue(this.profiles),
           calendarRepositoryProvider.overrideWithValue(this.calendar),
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
+          groupsRepositoryProvider.overrideWithValue(this.groups),
+          webBaseUrlProvider.overrideWithValue(webBaseUrl),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),
           ),
@@ -129,6 +140,21 @@ class AgoraRobot {
   /// (`pageBack` cherche l'infobulle anglaise « Back »).
   Future<void> goBack() async {
     await tester.tap(find.byType(BackButton));
+    await settle();
+  }
+
+  /// Ouvre l'onglet « Groupes » de l'accueil.
+  Future<void> openGroupsTab() => tap(HomeKeys.groupsTab);
+
+  /// Ouvre le groupe [groupId] depuis l'onglet « Groupes ».
+  Future<void> openGroup(String groupId) async {
+    await openGroupsTab();
+    await tap(GroupKeys.groupTile(groupId));
+  }
+
+  /// Ouvre [location] comme un lien reçu (le routeur applique ses règles).
+  Future<void> openLink(String location) async {
+    GoRouter.of(tester.element(find.byType(Navigator).first)).go(location);
     await settle();
   }
 

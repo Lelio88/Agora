@@ -33,4 +33,53 @@ void main() {
       },
     );
   }
+
+  group('pending invitation', () {
+    test('a signed-out visitor is sent to sign in', () {
+      expect(
+        authRedirect(isSignedIn: false, location: '/join/ABCD2345'),
+        '/sign-in',
+      );
+    });
+
+    test('once signed in, the visitor is brought back to the invitation', () {
+      for (final location in ['/', '/sign-in', '/verify-email']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingInvite: 'ABCD2345',
+          ),
+          '/join/ABCD2345',
+          reason: location,
+        );
+      }
+    });
+
+    test('a pending invitation does not hijack other screens', () {
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/profile',
+          pendingInvite: 'ABCD2345',
+        ),
+        isNull,
+      );
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/join/ABCD2345',
+          pendingInvite: 'ABCD2345',
+        ),
+        isNull,
+      );
+    });
+  });
+
+  test('inviteCodeInLocation reads only a plausible code', () {
+    expect(inviteCodeInLocation('/join/abcd2345'), 'ABCD2345');
+    expect(inviteCodeInLocation('/join/ABCD'), isNull);
+    expect(inviteCodeInLocation('/join/ABCD2345/x'), isNull);
+    expect(inviteCodeInLocation('/profile'), isNull);
+  });
 }

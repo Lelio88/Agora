@@ -11,7 +11,7 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et son annexe [`docs/auth-architecture.md`](./docs/auth-architecture.md) pour les comptes. Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md) et [`groups`](./docs/groups-architecture.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
@@ -58,7 +58,7 @@ supabase test db                 # tests pgTAP (visibilité, groupes, droits)
 bash supabase/checks/account_deletion_race.sh  # concurrence de la suppression de compte
 supabase migration new <slug>    # nouvelle migration
 cd app && flutter analyze && flutter test
-cd app && flutter run -d chrome --dart-define-from-file=config/local.json  # copier local.json.example
+cd app && flutter run -d chrome --web-port 58090 --dart-define-from-file=config/local.json  # copier local.json.example (liens d'invitation sur ce port)
 cd worker && go vet ./... && go test -race ./...
 AGORA_TEST_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
 AGORA_TEST_ADMIN_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres \
@@ -76,6 +76,7 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 |---|---|
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
 | Séries, exceptions, dépliage, agendas, écran d'agenda | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`) + tests Go de `worker/recurrence/` |
+| Groupes, invitations, rôles, agenda de groupe | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `visibility`) |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
@@ -87,5 +88,5 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : étape 2 terminée — plusieurs agendas (couleur, masquage pour les groupes, affichage perso, suppression), glisser-déposer, et « toute la série » qui décale la série au lieu de la réécrire.
-- **Focus immédiat** : les groupes (étape 3) : créer, inviter, rejoindre, réglage de partage, vue superposée ; Google et Discord attendent toujours les identifiants OAuth.
+- **Dernier focus** : étape 3 terminée — groupes (créer, inviter par code ou lien web, rejoindre avec le partage choisi, rôles, transmettre, quitter), agenda superposé par membre, accueil à deux onglets.
+- **Focus immédiat** : étape 5 (import iCal) ou 6 (rdv de groupe) au choix ; Google et Discord attendent toujours les identifiants OAuth.

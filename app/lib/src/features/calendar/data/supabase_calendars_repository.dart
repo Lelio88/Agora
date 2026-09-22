@@ -8,10 +8,10 @@
 /// - masquer un agenda est un upsert sur (utilisateur, agenda).
 library;
 
-import 'package:agora/src/features/calendar/data/postgrest_errors.dart';
 import 'package:agora/src/features/calendar/domain/calendars_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
+import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseCalendarsRepository implements CalendarsRepository {

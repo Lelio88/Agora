@@ -17,7 +17,7 @@ import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
-import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
@@ -437,7 +437,7 @@ class _CalendarField extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 6,
-                  backgroundColor: calendarColor(calendar.colorHex, fallback),
+                  backgroundColor: colorFromHex(calendar.colorHex, fallback),
                 ),
                 const SizedBox(width: 8),
                 Flexible(

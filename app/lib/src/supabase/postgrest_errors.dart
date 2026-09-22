@@ -1,5 +1,5 @@
-/// Traduction des erreurs PostgREST de l'agenda en `AppException`, partagée
-/// par les dépôts de la feature.
+/// Traduction des erreurs PostgREST en `AppException`, partagée par les
+/// dépôts Supabase (agenda, agendas, groupes).
 ///
 /// Les RPC et triggers lèvent des messages stables (`event_not_found`,
 /// `last_native_calendar`…) : c'est eux qu'on lit, jamais le texte libre.
@@ -19,6 +19,10 @@ Future<T> guardPostgrest<T>(Future<T> Function() body) async {
       'event_not_found' => const EventNotFoundException(),
       'calendar_not_found' => const CalendarNotFoundException(),
       'last_native_calendar' => const LastNativeCalendarException(),
+      'invite_invalid' => const InvalidInviteException(),
+      'not_a_member' => const NotGroupMemberException(),
+      'not_group_owner' => const NotGroupOwnerException(),
+      'invalid_member' => const InvalidMemberException(),
       _ when looksLikeNetworkError(error.message) => const NetworkException(),
       _ => const UnknownException(),
     };

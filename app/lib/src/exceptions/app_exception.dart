@@ -91,6 +91,30 @@ final class LastNativeCalendarException extends AppException {
     : super('last-native-calendar', 'The last native calendar cannot go');
 }
 
+// --- Groupes -----------------------------------------------------------------
+
+/// Code d'invitation inconnu, expiré ou épuisé : le serveur ne dit pas
+/// lequel, pour ne rien révéler de l'existence d'un code.
+final class InvalidInviteException extends AppException {
+  const InvalidInviteException()
+    : super('invite-invalid', 'Invitation unknown, expired or used up');
+}
+
+final class NotGroupMemberException extends AppException {
+  const NotGroupMemberException()
+    : super('not-a-member', 'Not a member of this group');
+}
+
+final class NotGroupOwnerException extends AppException {
+  const NotGroupOwnerException()
+    : super('not-group-owner', 'Only the group owner can do this');
+}
+
+final class InvalidMemberException extends AppException {
+  const InvalidMemberException()
+    : super('invalid-member', 'This person is not a member you can manage');
+}
+
 // --- Transverse ---------------------------------------------------------------
 
 final class NetworkException extends AppException {

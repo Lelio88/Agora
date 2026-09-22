@@ -8,7 +8,7 @@ tests verts et une doc à jour ([`architecture.md`](./architecture.md)).
 | 0 | Fondations | Dépôt, squelettes app + worker, schéma et règle de visibilité (tests pgTAP) | ✅ |
 | 1 | Comptes | ✅ e-mail + code à 6 chiffres (inscription, mot de passe oublié), profil (nom, langue app + e-mails, fuseau), suppression du compte (groupes transmis) · à faire : Google, Discord, liaison Discord a posteriori | en cours |
 | 2 | Agenda perso | ✅ vues jour/semaine/mois/planning (kalender), créer/modifier/supprimer, séries avec « cette occurrence / toute la série », masquage par rdv et par agenda, plusieurs agendas (couleur, affichage), glisser-déposer | ✅ |
-| 3 | Groupes | Créer, inviter (lien/code), rejoindre, quitter, transmettre ; réglage de partage par groupe ; vue superposée | à faire |
+| 3 | Groupes | ✅ créer, inviter (code + lien web), rejoindre avec le partage choisi, rôles (admins), transmettre, quitter, exclure ; vue superposée (couleur par membre) · lien ouvrant l'app Android : avec le domaine (étape 9) | ✅ |
 | 4 | Worker : récurrences | ✅ pgx en rôle restreint, dépliage sur fenêtre glissante (1 an avant, 2 ans après), LISTEN/NOTIFY avec reconnexion, dépliage complet toutes les 6 h | ✅ |
 | 5 | Import iCal | Ajout d'un lien, relecture périodique (ETag), garde SSRF, état de synchro visible | à faire |
 | 6 | Rdv de groupe | Agenda du groupe, réponses présent / absent / peut-être | à faire |

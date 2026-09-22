@@ -16,11 +16,11 @@ library;
 
 import 'dart:async';
 
-import 'package:agora/src/features/calendar/data/postgrest_errors.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseCalendarRepository implements CalendarRepository {

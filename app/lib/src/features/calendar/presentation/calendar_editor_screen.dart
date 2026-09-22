@@ -7,7 +7,7 @@ library;
 import 'package:agora/src/common_widgets/submit_button.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
-import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -62,7 +62,7 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
   late final _name = TextEditingController(text: widget.existing?.name);
   late String? _colorHex =
       widget.existing?.colorHex ??
-      (widget.existing == null ? calendarPalette.first : null);
+      (widget.existing == null ? appPalette.first : null);
   late EventVisibility? _visibility = widget.existing?.visibility;
 
   @override
@@ -180,7 +180,7 @@ class _ColorPicker extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        for (final hex in calendarPalette)
+        for (final hex in appPalette)
           Semantics(
             selected: hex == selected,
             button: true,
@@ -190,11 +190,11 @@ class _ColorPicker extends StatelessWidget {
               onTap: () => onSelected(hex),
               child: CircleAvatar(
                 radius: 18,
-                backgroundColor: calendarColor(hex, fallback),
+                backgroundColor: colorFromHex(hex, fallback),
                 child: hex == selected
                     ? Icon(
                         Icons.check,
-                        color: onCalendarColor(calendarColor(hex, fallback)),
+                        color: readableOn(colorFromHex(hex, fallback)),
                       )
                     : null,
               ),

@@ -36,19 +36,20 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes) et [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker) et [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé), et la feuille de route |
 
 ### Infrastructure partagée
 
 | Package | Rôle |
 |---|---|
 | `app/lib/src/composition_root.dart` | Seul point (avec `main.dart`) qui importe les couches `data/` ; `prodOverrides` branche chaque `*RepositoryProvider` |
-| `app/lib/src/supabase/` | `SupabaseConfig` : URL + clé lues au build, sans valeur par défaut ; `http` limité aux hôtes locaux |
+| `app/lib/src/supabase/` | `SupabaseConfig` : URL + clé lues au build, sans valeur par défaut ; `http` limité aux hôtes locaux ; `guardPostgrest` : erreurs PostgREST → `AppException` (messages stables des RPC) |
+| `app/lib/src/config/` | `web_links.dart` : adresse de la version web (`AGORA_WEB_URL`, facultative) et lien d'invitation |
 | `app/lib/src/exceptions/` | `AppException` scellée (switch exhaustif des messages) ; `AsyncErrorLogger` transmet toute erreur de provider à `AppLogger` |
 | `app/lib/src/logging/` | `AppLogger`, seule surface de journalisation (`dart:developer` par défaut) |
 | `app/lib/src/routing/` | GoRouter, navigation par nom (`AppRoute` dans `app_route.dart`) ; `auth_redirect.dart` : règle de redirection pure, testée seule |
 | `app/lib/src/device/` | `DeviceTimezone` : fuseau IANA de l'appareil (flutter_timezone), repli `Europe/Paris` |
-| `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` |
+| `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` ; `agenda_view.dart` (vues kalender, barre, suivi de la plage chargée) ; `palette.dart` (couleurs des agendas et des membres) |
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
 | `worker/internal/httpx/` | Routes HTTP du worker (`/healthz`, puis interactions Discord) |
@@ -218,8 +219,11 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   pas surchargé dans `prodOverrides`, et le test de démarrage monte l'app sous `prodOverrides`.
   Après toute modification de cette liste : hot **restart**, pas hot reload.
 - **Configuration** : `--dart-define-from-file=config/<env>.json` (`SUPABASE_URL`,
-  `SUPABASE_PUBLISHABLE_KEY`). Aucune valeur par défaut : une URL sans clé fait échouer le
-  démarrage, au lieu des 401 muets d'une clé retombée sur celle du poste local.
+  `SUPABASE_PUBLISHABLE_KEY`, et `AGORA_WEB_URL` facultative pour les liens d'invitation). Aucune
+  valeur par défaut : une URL sans clé fait échouer le démarrage, au lieu des 401 muets d'une
+  clé retombée sur celle du poste local.
+- **Accueil** : deux onglets (Agenda, Groupes). Groupes et invitations : voir
+  [`groups-architecture.md`](./groups-architecture.md).
 - **Langues** : repli sur le français pour une langue d'appareil non prise en charge.
 - **Android** : `INTERNET` déclarée dans le manifeste principal (le gabarit Flutter ne la met que
   dans les manifestes debug/profile) ; `applicationId` `app.agora`.
@@ -307,6 +311,11 @@ un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en an
   `update_series`, qui décale la série.
 - ❌ Bâtir le brouillon d'une occurrence modifiée sans la règle de sa série (`my_agenda` la fournit).
 - ❌ Supprimer un agenda autrement que par `delete_calendar` (le dernier agenda natif doit rester).
+- ❌ Régler le partage d'un membre après `join_group` au lieu de le passer à `join_group` : le
+  groupe verrait « occupé » le temps de l'écart.
+- ❌ Dire pourquoi un code d'invitation est refusé (inconnu, expiré, épuisé) : même erreur pour tous.
+- ❌ Importer une feature depuis une autre : ce qui sert à deux features (vues d'agenda, palette,
+  traduction d'erreurs) vit dans `common_widgets/` ou `supabase/`.
 - ❌ Se fier à la RLS seule pour un changement de propriétaire ou d'agenda : sur la ligne
   d'arrivée, `can_edit_event` ne regarde pas le créateur quand on possède l'agenda cible
   (d'où `check_event_move`).

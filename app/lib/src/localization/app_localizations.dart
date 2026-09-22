@@ -841,6 +841,438 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Rendez-vous déplacé.'**
   String get eventMoved;
+
+  /// Code d'invitation refusé ; le serveur ne dit pas pourquoi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce code d\'invitation n\'est pas valable : inconnu, expiré ou déjà utilisé.'**
+  String get errorInvalidInvite;
+
+  /// Action sur un groupe dont on n'est pas membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous ne faites pas partie de ce groupe.'**
+  String get errorNotGroupMember;
+
+  /// Action réservée au propriétaire du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Seul le propriétaire du groupe peut faire cela.'**
+  String get errorNotGroupOwner;
+
+  /// Rôle ou transmission visant quelqu'un hors du groupe (ou le propriétaire).
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette personne ne fait pas partie du groupe.'**
+  String get errorInvalidMember;
+
+  /// Onglet de l'agenda personnel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda'**
+  String get navAgenda;
+
+  /// Onglet des groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupes'**
+  String get navGroups;
+
+  /// Titre de l'écran des groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupes'**
+  String get groupsTitle;
+
+  /// Liste des groupes vide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun groupe pour l\'instant. Créez-en un, ou rejoignez celui d\'un proche avec son code.'**
+  String get noGroups;
+
+  /// Bouton de création d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau groupe'**
+  String get newGroupButton;
+
+  /// Bouton pour saisir un code d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre avec un code'**
+  String get joinWithCodeButton;
+
+  /// Rôle : propriétaire du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Propriétaire'**
+  String get groupRoleOwner;
+
+  /// Rôle : administrateur du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Admin'**
+  String get groupRoleAdmin;
+
+  /// Rôle : simple membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membre'**
+  String get groupRoleMember;
+
+  /// Sous-titre d'un groupe : ce que l'utilisateur y partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous partagez : {level}'**
+  String groupMyShare(String level);
+
+  /// Titre du formulaire de création d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau groupe'**
+  String get newGroupTitle;
+
+  /// Champ du nom d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du groupe'**
+  String get groupNameLabel;
+
+  /// Champ de la description d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Description (facultative)'**
+  String get groupDescriptionLabel;
+
+  /// Erreur de saisie : nom de groupe vide ou trop long.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entre 1 et 60 caractères.'**
+  String get validationGroupName;
+
+  /// Bouton de création.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer'**
+  String get createButton;
+
+  /// Confirmation après la création d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe créé.'**
+  String get groupCreated;
+
+  /// Titre de l'écran pour rejoindre un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre un groupe'**
+  String get joinTitle;
+
+  /// Champ du code d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code d\'invitation'**
+  String get inviteCodeLabel;
+
+  /// Bouton pour passer à l'étape suivante.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get continueButton;
+
+  /// Question avant de rejoindre un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre « {name} » ?'**
+  String joinGroupQuestion(String name);
+
+  /// Taille du groupe à rejoindre.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 membre} other{{count} membres}}'**
+  String joinMemberCount(int count);
+
+  /// Question du niveau de partage, posée en rejoignant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Que verront les autres membres de votre agenda ?'**
+  String get joinShareQuestion;
+
+  /// Niveau de partage : les détails des rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout : titres et lieux'**
+  String get shareDetails;
+
+  /// Niveau de partage : seulement les créneaux pris.
+  ///
+  /// In fr, this message translates to:
+  /// **'Occupé, sans détail'**
+  String get shareBusy;
+
+  /// Niveau de partage : rien de son agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien'**
+  String get shareNothing;
+
+  /// Précision sous le choix du partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pourrez changer ce choix à tout moment dans le groupe. Vos agendas et rendez-vous masqués restent masqués.'**
+  String get shareHint;
+
+  /// Bouton pour rejoindre le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre'**
+  String get joinButton;
+
+  /// L'invitation vise un groupe dont on est membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous faites déjà partie de ce groupe.'**
+  String get alreadyMember;
+
+  /// Bouton qui ouvre le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir le groupe'**
+  String get openGroupButton;
+
+  /// Confirmation après avoir rejoint un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue dans « {name} » !'**
+  String joinedGroup(String name);
+
+  /// Infobulle du bouton des membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membres'**
+  String get groupMembersTooltip;
+
+  /// Infobulle du bouton d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inviter'**
+  String get inviteTooltip;
+
+  /// Désigne l'utilisateur dans la liste des membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous'**
+  String get memberYou;
+
+  /// Créneau d'un membre qui ne partage pas le détail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Occupé'**
+  String get busyLabel;
+
+  /// Auteur d'un rdv de l'agenda du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe'**
+  String get groupEventOwner;
+
+  /// Entrée de menu : renommer le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renommer le groupe'**
+  String get renameGroup;
+
+  /// Confirmation après avoir renommé le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe enregistré.'**
+  String get groupSaved;
+
+  /// Entrée de menu : quitter le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter le groupe'**
+  String get leaveGroup;
+
+  /// Titre de la confirmation pour quitter un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter « {name} » ?'**
+  String leaveGroupTitle(String name);
+
+  /// Conséquence du départ d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous ne verrez plus l\'agenda du groupe, et le groupe ne verra plus le vôtre.'**
+  String get leaveGroupBody;
+
+  /// Confirmation après avoir quitté un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez quitté le groupe.'**
+  String get leftGroup;
+
+  /// Le propriétaire ne quitte pas sans transmettre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmettez d\'abord le groupe à un autre membre pour pouvoir le quitter.'**
+  String get ownerMustTransfer;
+
+  /// Entrée de menu : supprimer le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le groupe'**
+  String get deleteGroup;
+
+  /// Titre de la confirmation de suppression d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer « {name} » ?'**
+  String deleteGroupTitle(String name);
+
+  /// Conséquence de la suppression d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le groupe disparaît pour tous ses membres. Leurs agendas personnels ne sont pas touchés.'**
+  String get deleteGroupBody;
+
+  /// Confirmation après la suppression d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe supprimé.'**
+  String get groupDeleted;
+
+  /// Titre de l'écran des membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membres'**
+  String get membersTitle;
+
+  /// Libellé du réglage de partage de l'utilisateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce que je partage avec ce groupe'**
+  String get myShareLabel;
+
+  /// Ce qu'un membre partage avec le groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partage : {level}'**
+  String memberShares(String level);
+
+  /// Action : donner le rôle d'admin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nommer admin'**
+  String get makeAdmin;
+
+  /// Action : retirer le rôle d'admin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer le rôle d\'admin'**
+  String get removeAdmin;
+
+  /// Action : faire d'un membre le propriétaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmettre le groupe'**
+  String get transferGroup;
+
+  /// Titre de la confirmation de transmission.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmettre le groupe à {name} ?'**
+  String transferTitle(String name);
+
+  /// Conséquence de la transmission du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} en deviendra propriétaire ; vous resterez admin.'**
+  String transferBody(String name);
+
+  /// Action : exclure un membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exclure du groupe'**
+  String get removeMember;
+
+  /// Titre de la confirmation d'exclusion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exclure {name} ?'**
+  String removeMemberTitle(String name);
+
+  /// Confirmation après une exclusion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membre exclu.'**
+  String get memberRemoved;
+
+  /// Confirmation après un changement de rôle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rôle mis à jour.'**
+  String get roleChanged;
+
+  /// Confirmation après la transmission du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe transmis.'**
+  String get groupTransferred;
+
+  /// Confirmation après le changement de son partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partage enregistré.'**
+  String get shareSaved;
+
+  /// Titre de la fenêtre d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inviter dans « {name} »'**
+  String inviteTitle(String name);
+
+  /// Précision sous le code d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toute personne qui a ce code peut rejoindre le groupe jusqu\'au {date}.'**
+  String inviteCodeHint(String date);
+
+  /// Bouton qui copie le code d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le code'**
+  String get copyCode;
+
+  /// Bouton qui copie le lien d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien'**
+  String get copyLink;
+
+  /// Confirmation après la copie du code.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code copié.'**
+  String get codeCopied;
+
+  /// Confirmation après la copie du lien.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien copié.'**
+  String get linkCopied;
+
+  /// Bouton qui révoque l'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver ce code'**
+  String get revokeInvite;
+
+  /// Confirmation après la révocation d'une invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code désactivé.'**
+  String get inviteRevoked;
 }
 
 class _AppLocalizationsDelegate

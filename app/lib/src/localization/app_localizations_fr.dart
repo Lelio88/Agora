@@ -414,4 +414,259 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get eventMoved => 'Rendez-vous déplacé.';
+
+  @override
+  String get errorInvalidInvite =>
+      'Ce code d\'invitation n\'est pas valable : inconnu, expiré ou déjà utilisé.';
+
+  @override
+  String get errorNotGroupMember => 'Vous ne faites pas partie de ce groupe.';
+
+  @override
+  String get errorNotGroupOwner =>
+      'Seul le propriétaire du groupe peut faire cela.';
+
+  @override
+  String get errorInvalidMember =>
+      'Cette personne ne fait pas partie du groupe.';
+
+  @override
+  String get navAgenda => 'Agenda';
+
+  @override
+  String get navGroups => 'Groupes';
+
+  @override
+  String get groupsTitle => 'Groupes';
+
+  @override
+  String get noGroups =>
+      'Aucun groupe pour l\'instant. Créez-en un, ou rejoignez celui d\'un proche avec son code.';
+
+  @override
+  String get newGroupButton => 'Nouveau groupe';
+
+  @override
+  String get joinWithCodeButton => 'Rejoindre avec un code';
+
+  @override
+  String get groupRoleOwner => 'Propriétaire';
+
+  @override
+  String get groupRoleAdmin => 'Admin';
+
+  @override
+  String get groupRoleMember => 'Membre';
+
+  @override
+  String groupMyShare(String level) {
+    return 'Vous partagez : $level';
+  }
+
+  @override
+  String get newGroupTitle => 'Nouveau groupe';
+
+  @override
+  String get groupNameLabel => 'Nom du groupe';
+
+  @override
+  String get groupDescriptionLabel => 'Description (facultative)';
+
+  @override
+  String get validationGroupName => 'Entre 1 et 60 caractères.';
+
+  @override
+  String get createButton => 'Créer';
+
+  @override
+  String get groupCreated => 'Groupe créé.';
+
+  @override
+  String get joinTitle => 'Rejoindre un groupe';
+
+  @override
+  String get inviteCodeLabel => 'Code d\'invitation';
+
+  @override
+  String get continueButton => 'Continuer';
+
+  @override
+  String joinGroupQuestion(String name) {
+    return 'Rejoindre « $name » ?';
+  }
+
+  @override
+  String joinMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count membres',
+      one: '1 membre',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinShareQuestion =>
+      'Que verront les autres membres de votre agenda ?';
+
+  @override
+  String get shareDetails => 'Tout : titres et lieux';
+
+  @override
+  String get shareBusy => 'Occupé, sans détail';
+
+  @override
+  String get shareNothing => 'Rien';
+
+  @override
+  String get shareHint =>
+      'Vous pourrez changer ce choix à tout moment dans le groupe. Vos agendas et rendez-vous masqués restent masqués.';
+
+  @override
+  String get joinButton => 'Rejoindre';
+
+  @override
+  String get alreadyMember => 'Vous faites déjà partie de ce groupe.';
+
+  @override
+  String get openGroupButton => 'Ouvrir le groupe';
+
+  @override
+  String joinedGroup(String name) {
+    return 'Bienvenue dans « $name » !';
+  }
+
+  @override
+  String get groupMembersTooltip => 'Membres';
+
+  @override
+  String get inviteTooltip => 'Inviter';
+
+  @override
+  String get memberYou => 'Vous';
+
+  @override
+  String get busyLabel => 'Occupé';
+
+  @override
+  String get groupEventOwner => 'Groupe';
+
+  @override
+  String get renameGroup => 'Renommer le groupe';
+
+  @override
+  String get groupSaved => 'Groupe enregistré.';
+
+  @override
+  String get leaveGroup => 'Quitter le groupe';
+
+  @override
+  String leaveGroupTitle(String name) {
+    return 'Quitter « $name » ?';
+  }
+
+  @override
+  String get leaveGroupBody =>
+      'Vous ne verrez plus l\'agenda du groupe, et le groupe ne verra plus le vôtre.';
+
+  @override
+  String get leftGroup => 'Vous avez quitté le groupe.';
+
+  @override
+  String get ownerMustTransfer =>
+      'Transmettez d\'abord le groupe à un autre membre pour pouvoir le quitter.';
+
+  @override
+  String get deleteGroup => 'Supprimer le groupe';
+
+  @override
+  String deleteGroupTitle(String name) {
+    return 'Supprimer « $name » ?';
+  }
+
+  @override
+  String get deleteGroupBody =>
+      'Le groupe disparaît pour tous ses membres. Leurs agendas personnels ne sont pas touchés.';
+
+  @override
+  String get groupDeleted => 'Groupe supprimé.';
+
+  @override
+  String get membersTitle => 'Membres';
+
+  @override
+  String get myShareLabel => 'Ce que je partage avec ce groupe';
+
+  @override
+  String memberShares(String level) {
+    return 'Partage : $level';
+  }
+
+  @override
+  String get makeAdmin => 'Nommer admin';
+
+  @override
+  String get removeAdmin => 'Retirer le rôle d\'admin';
+
+  @override
+  String get transferGroup => 'Transmettre le groupe';
+
+  @override
+  String transferTitle(String name) {
+    return 'Transmettre le groupe à $name ?';
+  }
+
+  @override
+  String transferBody(String name) {
+    return '$name en deviendra propriétaire ; vous resterez admin.';
+  }
+
+  @override
+  String get removeMember => 'Exclure du groupe';
+
+  @override
+  String removeMemberTitle(String name) {
+    return 'Exclure $name ?';
+  }
+
+  @override
+  String get memberRemoved => 'Membre exclu.';
+
+  @override
+  String get roleChanged => 'Rôle mis à jour.';
+
+  @override
+  String get groupTransferred => 'Groupe transmis.';
+
+  @override
+  String get shareSaved => 'Partage enregistré.';
+
+  @override
+  String inviteTitle(String name) {
+    return 'Inviter dans « $name »';
+  }
+
+  @override
+  String inviteCodeHint(String date) {
+    return 'Toute personne qui a ce code peut rejoindre le groupe jusqu\'au $date.';
+  }
+
+  @override
+  String get copyCode => 'Copier le code';
+
+  @override
+  String get copyLink => 'Copier le lien';
+
+  @override
+  String get codeCopied => 'Code copié.';
+
+  @override
+  String get linkCopied => 'Lien copié.';
+
+  @override
+  String get revokeInvite => 'Désactiver ce code';
+
+  @override
+  String get inviteRevoked => 'Code désactivé.';
 }

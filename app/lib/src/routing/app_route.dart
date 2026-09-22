@@ -5,6 +5,9 @@ library;
 
 enum AppRoute {
   home,
+  group,
+  join,
+  joinByCode,
   profile,
   signIn,
   signUp,

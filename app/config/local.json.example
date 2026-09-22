@@ -1,4 +1,5 @@
 {
   "SUPABASE_URL": "http://127.0.0.1:55321",
-  "SUPABASE_PUBLISHABLE_KEY": "<clé publishable affichée par « supabase status »>"
+  "SUPABASE_PUBLISHABLE_KEY": "<clé publishable affichée par « supabase status »>",
+  "AGORA_WEB_URL": "http://localhost:58090"
 }

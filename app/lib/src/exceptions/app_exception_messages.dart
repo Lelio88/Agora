@@ -21,6 +21,10 @@ String messageFor(AppException error, AppLocalizations l10n) => switch (error) {
   InvalidRangeException() => l10n.errorUnknown,
   CalendarNotFoundException() => l10n.errorCalendarNotFound,
   LastNativeCalendarException() => l10n.errorLastCalendar,
+  InvalidInviteException() => l10n.errorInvalidInvite,
+  NotGroupMemberException() => l10n.errorNotGroupMember,
+  NotGroupOwnerException() => l10n.errorNotGroupOwner,
+  InvalidMemberException() => l10n.errorInvalidMember,
   NetworkException() => l10n.errorNetwork,
   UnknownException() => l10n.errorUnknown,
 };
