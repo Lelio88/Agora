@@ -16,8 +16,11 @@ import 'package:agora/src/common_widgets/submit_button.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
+import 'package:agora/src/features/calendar/domain/user_calendar.dart';
+import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -42,12 +45,17 @@ class EventEditorScreen extends StatefulWidget {
   const EventEditorScreen({
     required this.calendarId,
     required this.timezone,
+    this.calendars = const [],
     this.existing,
     this.initialStart,
     super.key,
   });
 
+  /// Agenda proposé (celui du rdv modifié, ou l'agenda par défaut).
   final String calendarId;
+
+  /// Agendas où ranger le rdv ; le choix n'apparaît qu'à partir de deux.
+  final List<UserCalendar> calendars;
 
   /// Fuseau de répétition de la série (celui du profil).
   final String timezone;
@@ -63,6 +71,7 @@ class EventEditorScreen extends StatefulWidget {
     BuildContext context, {
     required String calendarId,
     required String timezone,
+    List<UserCalendar> calendars = const [],
     AgendaItem? existing,
     DateTime? initialStart,
   }) => Navigator.of(context).push<EditorResult>(
@@ -71,6 +80,7 @@ class EventEditorScreen extends StatefulWidget {
       builder: (_) => EventEditorScreen(
         calendarId: calendarId,
         timezone: timezone,
+        calendars: calendars,
         existing: existing,
         initialStart: initialStart,
       ),
@@ -92,6 +102,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   late DateTime _end;
   late bool _isAllDay = widget.existing?.isAllDay ?? false;
   late EventVisibility? _visibility = widget.existing?.visibility;
+  late String _calendarId = widget.existing?.calendarId ?? widget.calendarId;
 
   /// Règle éditable ; `null` sans répétition. Une règle importée hors du
   /// sous-ensemble éditable est gardée telle quelle dans [_advancedRule].
@@ -196,7 +207,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     Navigator.of(context).pop(
       EditorSaved(
         EventDraft(
-          calendarId: widget.existing?.calendarId ?? widget.calendarId,
+          calendarId: _calendarId,
           title: _title.text,
           location: _location.text,
           description: _description.text,
@@ -261,6 +272,14 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                       : null;
                 },
               ),
+              if (widget.calendars.length > 1) ...[
+                const SizedBox(height: 8),
+                _CalendarField(
+                  calendars: widget.calendars,
+                  value: _calendarId,
+                  onChanged: (id) => setState(() => _calendarId = id),
+                ),
+              ],
               const SizedBox(height: 8),
               SwitchListTile(
                 key: CalendarKeys.allDay,
@@ -289,7 +308,8 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 advancedRule: _advancedRule,
                 onChanged: (rule) => setState(() => _recurrence = rule),
               ),
-              _VisibilityField(
+              VisibilityField(
+                key: CalendarKeys.visibility,
                 value: _visibility,
                 onChanged: (value) => setState(() => _visibility = value),
               ),
@@ -385,41 +405,51 @@ class _RepeatField extends StatelessWidget {
 
 /// Visibilité du rdv pour les groupes : hérite, occupé ou invisible. On ne
 /// peut que restreindre, jamais forcer le détail.
-class _VisibilityField extends StatelessWidget {
-  const _VisibilityField({required this.value, required this.onChanged});
 
-  final EventVisibility? value;
-  final ValueChanged<EventVisibility?> onChanged;
+class _CalendarField extends StatelessWidget {
+  const _CalendarField({
+    required this.calendars,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final List<UserCalendar> calendars;
+  final String value;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    String label(EventVisibility? visibility) => switch (visibility) {
-      null || EventVisibility.details => l10n.visibilityInherit,
-      EventVisibility.busy => l10n.visibilityBusy,
-      EventVisibility.invisible => l10n.visibilityInvisible,
-    };
-    return PopupMenuButton<EventVisibility?>(
-      key: CalendarKeys.visibility,
-      onSelected: onChanged,
-      itemBuilder: (context) => [
-        for (final option in [
-          null,
-          EventVisibility.busy,
-          EventVisibility.invisible,
-        ])
-          PopupMenuItem<EventVisibility?>(
-            value: option,
-            child: Text(label(option)),
+    final fallback = Theme.of(context).colorScheme.primary;
+    return DropdownButtonFormField<String>(
+      key: CalendarKeys.eventCalendar,
+      initialValue: calendars.any((c) => c.id == value) ? value : null,
+      // Largeur bornée : sans elle, le nom (Flexible) n'a pas de limite.
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: AppLocalizations.of(context).eventCalendarLabel,
+      ),
+      items: [
+        for (final calendar in calendars)
+          DropdownMenuItem(
+            key: CalendarKeys.eventCalendarOption(calendar.id),
+            value: calendar.id,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 6,
+                  backgroundColor: calendarColor(calendar.colorHex, fallback),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(calendar.name, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
           ),
       ],
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: const Icon(Icons.visibility_outlined),
-        title: Text(l10n.visibilityLabel),
-        subtitle: Text(label(value)),
-        trailing: const Icon(Icons.arrow_drop_down),
-      ),
+      onChanged: (id) {
+        if (id != null) onChanged(id);
+      },
     );
   }
 }

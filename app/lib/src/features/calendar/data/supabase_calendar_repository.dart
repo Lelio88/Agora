@@ -16,8 +16,7 @@ library;
 
 import 'dart:async';
 
-import 'package:agora/src/exceptions/app_exception.dart';
-import 'package:agora/src/exceptions/network_errors.dart';
+import 'package:agora/src/features/calendar/data/postgrest_errors.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
@@ -28,19 +27,6 @@ final class SupabaseCalendarRepository implements CalendarRepository {
   const SupabaseCalendarRepository(this._client);
 
   final SupabaseClient _client;
-
-  @override
-  Future<String> defaultCalendarId() => _guard(() async {
-    final row = await _client
-        .from('calendars')
-        .select('id')
-        .eq('kind', 'native')
-        .isFilter('group_id', null)
-        .order('created_at', ascending: true)
-        .limit(1)
-        .single();
-    return row['id'] as String;
-  });
 
   @override
   Future<List<AgendaItem>> fetchAgenda(DateTime from, DateTime to) =>
@@ -83,6 +69,34 @@ final class SupabaseCalendarRepository implements CalendarRepository {
   @override
   Future<void> updateEvent(String eventId, EventDraft draft) => _guard(
     () => _client.from('events').update(_toRow(draft)).eq('id', eventId),
+  );
+
+  @override
+  Future<void> updateSeries({
+    required String seriesId,
+    required DateTime occurrenceStart,
+    required EventDraft draft,
+    required bool followWeekdays,
+  }) => _guard(
+    // La série se décale côté serveur, dans son fuseau : l'app ne connaît
+    // pas sa ligne maîtresse, seulement l'occurrence touchée.
+    () => _client.rpc<void>(
+      'update_series',
+      params: {
+        'p_series_id': seriesId,
+        'p_occurrence_start': occurrenceStart.toUtc().toIso8601String(),
+        'p_calendar_id': draft.calendarId,
+        'p_title': draft.title.trim(),
+        'p_location': _nullIfBlank(draft.location),
+        'p_description': _nullIfBlank(draft.description),
+        'p_starts_at': draft.start.toUtc().toIso8601String(),
+        'p_ends_at': draft.end.toUtc().toIso8601String(),
+        'p_all_day': draft.isAllDay,
+        'p_rrule': draft.rrule,
+        'p_visibility': draft.visibility?.name,
+        'p_follow_weekdays': followWeekdays,
+      },
+    ),
   );
 
   @override
@@ -164,20 +178,5 @@ final class SupabaseCalendarRepository implements CalendarRepository {
     return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 
-  static Future<T> _guard<T>(Future<T> Function() body) async {
-    try {
-      return await body();
-    } on PostgrestException catch (error) {
-      throw switch (error.message) {
-        'invalid_range' => const InvalidRangeException(),
-        'event_not_found' => const EventNotFoundException(),
-        _ when looksLikeNetworkError(error.message) => const NetworkException(),
-        _ => const UnknownException(),
-      };
-    } on Exception catch (error) {
-      throw looksLikeNetworkError(error.toString())
-          ? const NetworkException()
-          : const UnknownException();
-    }
-  }
+  static Future<T> _guard<T>(Future<T> Function() body) => guardPostgrest(body);
 }

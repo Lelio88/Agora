@@ -176,6 +176,64 @@ void main() {
     );
   });
 
+  testWidgets('dragging an event moves it and keeps its length', (
+    tester,
+  ) async {
+    final dentist = _dentist();
+    final calendar = FakeCalendarRepository()..seed(dentist);
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), calendar: calendar);
+
+    await robot.dragEvent('Dentiste', const Offset(0, 150));
+
+    expect(calendar.writes.last, 'updateEvent');
+    final moved = calendar.items.single;
+    // La case d'arrivée dépend de l'endroit où la tuile est saisie (kalender
+    // part de son bord) : on vérifie qu'elle a bougé, pas où elle tombe.
+    expect(moved.start, isNot(dentist.start));
+    expect(moved.end.difference(moved.start), const Duration(hours: 1));
+    robot.expectText('Rendez-vous déplacé.');
+  });
+
+  testWidgets(
+    'dragging an occurrence asks the scope; cancelling puts it back',
+    (tester) async {
+      final calendar = await _withWeeklyYoga();
+      final before = calendar.items.map((i) => i.start).toList();
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(auth: _signedIn(), calendar: calendar);
+
+      await robot.dragEvent('Yoga', const Offset(0, 150));
+      robot.expectText(
+        'Déplacer seulement cette occurrence, ou toute la série ?',
+      );
+      await tester.tap(find.text('Annuler'));
+      await robot.settle();
+
+      expect(calendar.writes, isEmpty);
+      expect(calendar.items.map((i) => i.start), before);
+      expect(find.text('Yoga'), findsWidgets);
+    },
+  );
+
+  testWidgets('dragging one occurrence moves only that occurrence', (
+    tester,
+  ) async {
+    final calendar = await _withWeeklyYoga();
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), calendar: calendar);
+
+    await robot.dragEvent('Yoga', const Offset(0, 150));
+    await robot.tap(CalendarKeys.scopeOccurrence);
+
+    expect(calendar.writes.last, 'updateOccurrence');
+    final moved = calendar.items.where(
+      (i) => i.kind == InstanceKind.modifiedOccurrence,
+    );
+    expect(moved, hasLength(1));
+    expect(moved.single.start, isNot(moved.single.originalStart));
+  });
+
   testWidgets('a single event is deleted without asking for a scope', (
     tester,
   ) async {

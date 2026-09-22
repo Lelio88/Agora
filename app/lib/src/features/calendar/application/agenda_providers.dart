@@ -5,8 +5,13 @@
 /// pas un provider unique. Les vues (semaine, mois, planning) demandent des
 /// plages différentes, et une plage déjà chargée reste en cache tant qu'un
 /// widget la regarde. Le flux [agendaChangesProvider] les invalide toutes.
+///
+/// [visibleAgendaProvider] retire les agendas que l'utilisateur a masqués
+/// dans sa vue : un simple filtre local, relu à chaque changement de la
+/// liste des agendas, sans recharger les rdv.
 library;
 
+import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,7 +50,16 @@ final agendaProvider = FutureProvider.autoDispose
           .fetchAgenda(range.from, range.to);
     });
 
-/// Identifiant de l'agenda natif par défaut, où les rdv se créent.
-final defaultCalendarIdProvider = FutureProvider<String>(
-  (ref) => ref.watch(calendarRepositoryProvider).defaultCalendarId(),
-);
+/// L'agenda de la plage, sans les agendas masqués par l'utilisateur.
+final visibleAgendaProvider = FutureProvider.autoDispose
+    .family<List<AgendaItem>, AgendaRange>((ref, range) async {
+      final items = await ref.watch(agendaProvider(range).future);
+      final calendars = await ref.watch(calendarsProvider.future);
+      final hidden = {
+        for (final calendar in calendars)
+          if (calendar.hidden) calendar.id,
+      };
+      return items
+          .where((item) => !hidden.contains(item.calendarId))
+          .toList(growable: false);
+    });

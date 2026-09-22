@@ -15,6 +15,8 @@ const _all = <AppException>[
   InvalidTimezoneException(),
   EventNotFoundException(),
   InvalidRangeException(),
+  CalendarNotFoundException(),
+  LastNativeCalendarException(),
   NetworkException(),
   UnknownException(),
 ];

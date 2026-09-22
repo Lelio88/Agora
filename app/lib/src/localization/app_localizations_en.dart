@@ -328,4 +328,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorEventNotFound => 'This event no longer exists.';
+
+  @override
+  String get errorLastCalendar =>
+      'Keep at least one calendar: that is where your new events go.';
+
+  @override
+  String get errorCalendarNotFound => 'This calendar no longer exists.';
+
+  @override
+  String get calendarsTitle => 'My calendars';
+
+  @override
+  String get manageCalendarsTooltip => 'My calendars';
+
+  @override
+  String get newCalendarButton => 'New calendar';
+
+  @override
+  String get newCalendarTitle => 'New calendar';
+
+  @override
+  String get editCalendarTitle => 'Edit calendar';
+
+  @override
+  String get calendarNameLabel => 'Name';
+
+  @override
+  String get calendarColorLabel => 'Color';
+
+  @override
+  String get calendarShownTooltip => 'Show in my agenda';
+
+  @override
+  String calendarVisibilitySummary(String level) {
+    return 'Groups: $level';
+  }
+
+  @override
+  String get validationCalendarName => 'Between 1 and 60 characters.';
+
+  @override
+  String get calendarSaved => 'Calendar saved.';
+
+  @override
+  String get deleteCalendarButton => 'Delete calendar';
+
+  @override
+  String deleteCalendarTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String deleteCalendarBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Its $count events will be deleted with it, permanently.',
+      one: 'Its event will be deleted with it, permanently.',
+      zero: 'It has no events.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarDeleted => 'Calendar deleted.';
+
+  @override
+  String get lastCalendarHint => 'Your only calendar cannot be deleted.';
+
+  @override
+  String get eventCalendarLabel => 'Calendar';
+
+  @override
+  String get scopeMoveBody => 'Move only this occurrence, or the whole series?';
+
+  @override
+  String get scopeCalendarMoveNote =>
+      'Changing the calendar always applies to the whole series.';
+
+  @override
+  String get eventMoved => 'Event moved.';
 }

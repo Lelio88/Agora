@@ -8,7 +8,9 @@ import 'package:agora/src/features/calendar/domain/event_draft.dart';
 /// Faux [CalendarRepository] en mémoire. Il imite le serveur au plus près
 /// de ce que l'app observe : une série créée apparaît par ses occurrences
 /// hebdomadaires (dépliage minimal, 8 semaines), une occurrence modifiée
-/// remplace la sienne, une occurrence supprimée disparaît.
+/// remplace la sienne, une occurrence supprimée disparaît. Modifier toute
+/// la série la décale d'autant que l'occurrence touchée ; un nouvel horaire
+/// efface ses occurrences modifiées, comme le serveur.
 class FakeCalendarRepository implements CalendarRepository {
   static const calendarId = 'cal-1';
 
@@ -44,9 +46,6 @@ class FakeCalendarRepository implements CalendarRepository {
       throw error;
     }
   }
-
-  @override
-  Future<String> defaultCalendarId() async => calendarId;
 
   @override
   Future<List<AgendaItem>> fetchAgenda(DateTime from, DateTime to) async {
@@ -92,6 +91,62 @@ class FakeCalendarRepository implements CalendarRepository {
           originalStart: item.originalStart == null
               ? null
               : draft.start.add(shift),
+        ),
+      );
+    }
+    _notify();
+  }
+
+  /// Dernier appel à [updateSeries], pour les tests du service.
+  ({
+    String seriesId,
+    DateTime occurrenceStart,
+    EventDraft draft,
+    bool followWeekdays,
+  })?
+  lastSeriesUpdate;
+
+  @override
+  Future<void> updateSeries({
+    required String seriesId,
+    required DateTime occurrenceStart,
+    required EventDraft draft,
+    required bool followWeekdays,
+  }) async {
+    await _record('updateSeries');
+    lastSeriesUpdate = (
+      seriesId: seriesId,
+      occurrenceStart: occurrenceStart,
+      draft: draft,
+      followWeekdays: followWeekdays,
+    );
+    final shift = draft.start.difference(occurrenceStart);
+    final duration = draft.end.difference(draft.start);
+    final instances = _items.values
+        .where((i) => i.seriesId == seriesId)
+        .toList();
+    final firstLength = instances
+        .where((i) => i.kind == InstanceKind.seriesOccurrence)
+        .map((i) => i.end.difference(i.start))
+        .firstOrNull;
+    final scheduleChanged = shift != Duration.zero || duration != firstLength;
+    for (final item in instances) {
+      _items.remove(item.instanceKey);
+      if (item.kind == InstanceKind.modifiedOccurrence) {
+        if (!scheduleChanged) {
+          seed(_copy(item, calendarId: draft.calendarId));
+        }
+        continue;
+      }
+      final start = item.start.add(shift);
+      seed(
+        _item(
+          seriesId,
+          draft,
+          start,
+          start.add(duration),
+          seriesId: seriesId,
+          originalStart: start,
         ),
       );
     }
@@ -161,6 +216,22 @@ class FakeCalendarRepository implements CalendarRepository {
     timezone: draft.timezone,
     rrule: draft.rrule,
     visibility: draft.visibility,
+  );
+
+  AgendaItem _copy(AgendaItem item, {required String calendarId}) => AgendaItem(
+    eventId: item.eventId,
+    seriesId: item.seriesId,
+    originalStart: item.originalStart,
+    calendarId: calendarId,
+    title: item.title,
+    location: item.location,
+    description: item.description,
+    start: item.start,
+    end: item.end,
+    isAllDay: item.isAllDay,
+    timezone: item.timezone,
+    rrule: item.rrule,
+    visibility: item.visibility,
   );
 
   /// Ne pas attendre la fermeture : `close()` d'un flux broadcast n'aboutit

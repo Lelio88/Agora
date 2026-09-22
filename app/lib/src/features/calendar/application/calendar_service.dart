@@ -4,16 +4,28 @@
 /// [EditTarget] porte ce choix. Pour un rdv ponctuel, les deux portées se
 /// confondent : on modifie ou supprime le rdv lui-même.
 ///
-/// Choix non évident : chaque action réussie invalide l'agenda elle-même,
-/// sans attendre le temps réel. Celui-ci peut manquer (pile locale sans
-/// Realtime, coupure), et l'utilisateur doit voir sa propre modification
-/// tout de suite.
+/// Choix non évidents :
+/// - chaque action réussie invalide l'agenda elle-même, sans attendre le
+///   temps réel. Celui-ci peut manquer (pile locale sans Realtime,
+///   coupure), et l'utilisateur doit voir sa propre modification tout de
+///   suite ;
+/// - « toute la série » depuis une occurrence : ce que l'utilisateur a
+///   changé dans les dates s'applique en ÉCART au créneau d'origine de
+///   l'occurrence, que le serveur reporte sur la série (`update_series`).
+///   Sans changement de date, la série ne bouge pas, même depuis une
+///   occurrence déjà déplacée ;
+/// - si l'utilisateur n'a pas touché aux jours de répétition, ils suivent
+///   le décalage (un rdv du mardi glissé au mercredi se répète le
+///   mercredi). L'écart de jours est compté par le serveur, dans le fuseau
+///   de la série : compté ici, dans celui de l'appareil, il pouvait
+///   différer près de minuit pour un utilisateur en voyage.
 library;
 
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum EditScope { occurrence, series }
@@ -33,8 +45,9 @@ final class EditTarget {
   bool get isSingleOccurrence =>
       item.isRecurring && scope == EditScope.occurrence;
 
-  /// Ligne à modifier ou supprimer quand l'action porte sur le rdv entier :
-  /// la série pour une occurrence, le rdv lui-même sinon.
+  /// Ligne à supprimer quand l'action porte sur le rdv entier : la série
+  /// pour une occurrence, le rdv lui-même sinon. (Modifier toute une série
+  /// passe par `updateSeries`, qui la décale.)
   String get wholeEventId => item.seriesId ?? item.eventId;
 }
 
@@ -59,7 +72,43 @@ final class CalendarService {
         ),
       );
     }
-    return _then(_repository.updateEvent(target.wholeEventId, draft));
+    final item = target.item;
+    if (item.isRecurring) {
+      final slot = item.originalStart ?? item.start;
+      return _then(
+        _repository.updateSeries(
+          seriesId: item.seriesId!,
+          occurrenceStart: slot,
+          draft: seriesDraft(item, draft),
+          followWeekdays: weekdaysUntouched(item, draft),
+        ),
+      );
+    }
+    return _then(_repository.updateEvent(item.eventId, draft));
+  }
+
+  /// [draft] (saisi sur l'occurrence [item]) ramené au créneau d'origine de
+  /// l'occurrence : l'écart que l'utilisateur a saisi, appliqué à ce créneau.
+  static EventDraft seriesDraft(AgendaItem item, EventDraft draft) {
+    final slot = item.originalStart ?? item.start;
+    final start = slot.add(draft.start.difference(item.start));
+    return draft.copyWith(
+      start: start,
+      end: start.add(draft.end.difference(draft.start)),
+    );
+  }
+
+  /// Vrai si l'utilisateur a laissé les jours de répétition tels quels (ils
+  /// suivront alors le décalage de la série).
+  static bool weekdaysUntouched(AgendaItem item, EventDraft draft) {
+    final rule = draft.recurrence;
+    if (rule == null || rule.weekdays.isEmpty || item.rrule == null) {
+      return false;
+    }
+    final original = RecurrenceRule.parse(item.rrule!);
+    return original != null &&
+        original.weekdays.length == rule.weekdays.length &&
+        original.weekdays.containsAll(rule.weekdays);
   }
 
   Future<void> delete(EditTarget target) {

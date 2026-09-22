@@ -16,9 +16,14 @@ import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendar_service.dart';
+import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
+import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/agenda_event.dart';
+import 'package:agora/src/features/calendar/presentation/calendar_colors.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/scope_dialog.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
@@ -122,6 +127,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       context,
       calendarId: calendarId,
       timezone: timezone,
+      calendars: _writableCalendars,
       initialStart: start,
     );
     if (result is! EditorSaved || !mounted) return;
@@ -136,13 +142,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       context,
       calendarId: item.calendarId,
       timezone: item.timezone,
+      calendars: _writableCalendars,
       existing: item,
     );
     if (result == null || !mounted) return;
     final l10n = AppLocalizations.of(context);
     switch (result) {
       case EditorSaved(:final draft):
-        final target = await _askScope(item, isDeletion: false);
+        final target = await _askScope(
+          item,
+          ScopeQuestion.edit,
+          // Une occurrence vit dans l'agenda de sa série : changer
+          // d'agenda ne peut viser que toute la série.
+          allowOccurrence: draft.calendarId == item.calendarId,
+        );
         if (target == null || !mounted) return;
         await _run(
           () => ref
@@ -151,7 +164,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           l10n.eventSaved,
         );
       case EditorDeleteRequested():
-        final target = await _askScope(item, isDeletion: true);
+        final target = await _askScope(item, ScopeQuestion.delete);
         if (target == null || !mounted) return;
         await _run(
           () => ref.read(calendarServiceProvider).delete(target),
@@ -160,37 +173,106 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     }
   }
 
-  /// Pour une instance de série, demande la portée ; sinon le rdv entier.
-  Future<EditTarget?> _askScope(AgendaItem item, {required bool isDeletion}) {
-    if (!item.isRecurring) return Future.value(EditTarget.series(item));
-    return showScopeDialog(context, item: item, isDeletion: isDeletion);
+  /// Glisser-déposer ou étirement d'une tuile : kalender a déjà déplacé la
+  /// tuile ; on enregistre, ou on la remet en place si l'utilisateur
+  /// renonce ou si l'enregistrement échoue.
+  Future<void> _moveEvent(KalenderEvent original, KalenderEvent moved) async {
+    if (original is! AgendaEvent) return;
+    final item = original.item;
+    final (start, end) = item.isAllDay
+        ? (_calendarDateUtc(moved.start), _calendarDateUtc(moved.end))
+        : (moved.start.toUtc(), moved.end.toUtc());
+    if (start == item.start && end == item.end) return;
+    final draft = EventDraft.fromItem(item).copyWith(start: start, end: end);
+    final target = await _askScope(item, ScopeQuestion.move);
+    if (!mounted) return;
+    final saved =
+        target != null &&
+        await _run(
+          () => ref
+              .read(calendarServiceProvider)
+              .save(target: target, draft: draft),
+          AppLocalizations.of(context).eventMoved,
+        );
+    if (!saved && mounted) _syncEvents(force: true);
   }
 
-  Future<void> _run(Future<void> Function() action, String success) async {
+  /// Date de calendrier d'une journée entière déplacée : kalender la rend
+  /// en minuit local, le stockage la veut en minuit UTC.
+  static DateTime _calendarDateUtc(DateTime instant) {
+    final local = instant.toLocal();
+    return DateTime.utc(local.year, local.month, local.day);
+  }
+
+  /// Pour une instance de série, demande la portée ; sinon le rdv entier.
+  Future<EditTarget?> _askScope(
+    AgendaItem item,
+    ScopeQuestion question, {
+    bool allowOccurrence = true,
+  }) {
+    if (!item.isRecurring) return Future.value(EditTarget.series(item));
+    return showScopeDialog(
+      context,
+      item: item,
+      question: question,
+      allowOccurrence: allowOccurrence,
+    );
+  }
+
+  /// Lance [action] et en affiche l'issue ; vrai si elle a réussi.
+  Future<bool> _run(Future<void> Function() action, String success) async {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
     try {
       await action();
       messenger.showSnackBar(SnackBar(content: Text(success)));
+      return true;
     } on Exception catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text(messageForError(error, l10n))),
       );
+      return false;
     }
   }
 
-  void _syncEvents(List<AgendaItem> items) {
-    _eventsController.replaceEvents(items.map(AgendaEvent.new).toList());
+  List<UserCalendar> get _writableCalendars => [
+    for (final calendar
+        in ref.read(calendarsProvider).value ?? const <UserCalendar>[])
+      if (calendar.isWritable) calendar,
+  ];
+
+  List<AgendaItem>? _syncedItems;
+  List<UserCalendar>? _syncedCalendars;
+
+  /// Pousse les instances dans kalender, seulement si elles ont changé :
+  /// une reconstruction en plein glisser-déposer ne doit pas remettre la
+  /// tuile à sa place. [force] le fait exprès (déplacement abandonné).
+  void _syncEvents({bool force = false}) {
+    final items = ref.read(visibleAgendaProvider(_range)).value;
+    final calendars =
+        ref.read(calendarsProvider).value ?? const <UserCalendar>[];
+    if (items == null) return;
+    if (!force &&
+        identical(items, _syncedItems) &&
+        identical(calendars, _syncedCalendars)) {
+      return;
+    }
+    _syncedItems = items;
+    _syncedCalendars = calendars;
+    final byId = {for (final calendar in calendars) calendar.id: calendar};
+    _eventsController.replaceEvents([
+      for (final item in items)
+        AgendaEvent(item, calendar: byId[item.calendarId]),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final agenda = ref.watch(agendaProvider(_range));
-    ref.listen(agendaProvider(_range), (_, next) {
-      if (next case AsyncData(:final value)) _syncEvents(value);
-    });
-    if (agenda case AsyncData(:final value)) _syncEvents(value);
+    final agenda = ref.watch(visibleAgendaProvider(_range));
+    // Les agendas donnent couleurs et droits de déplacement aux tuiles.
+    ref.watch(calendarsProvider);
+    _syncEvents();
     return Scaffold(
       key: CalendarKeys.screen,
       floatingActionButton: FloatingActionButton(
@@ -207,6 +289,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             onToday: () => _kalenderController.animateToDate(DateTime.now()),
             onPrevious: _kalenderController.animateToPreviousPage,
             onNext: _kalenderController.animateToNextPage,
+            onManageCalendars: () => CalendarsScreen.show(context),
           ),
           Expanded(
             child: AsyncValueWidget<List<AgendaItem>>(
@@ -220,12 +303,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   onEventTapped: (event) {
                     if (event is AgendaEvent) _editEvent(event.item);
                   },
+                  onEventChanged: _moveEvent,
                   onTapped: _createEvent,
                 ),
                 // Les journées entières vivent dans l'en-tête : sans ses
                 // propres tuiles, kalender les dessine sans titre.
-                header: const KalenderHeader(
+                header: KalenderHeader(
                   multiDayTileComponents: _tileComponents,
+                  interaction: _interaction,
                 ),
                 body: KalenderBody(
                   multiDayTileComponents: _tileComponents,
@@ -233,6 +318,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   scheduleTileComponents: const ScheduleTileComponents(
                     tileBuilder: _buildTile,
                   ),
+                  interaction: _interaction,
                 ),
               ),
             ),
@@ -243,6 +329,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 }
 
+/// Déplacer et étirer les tuiles (chacune dit si elle le permet) ; pas de
+/// création par glisser : un appui sur un créneau ouvre déjà l'éditeur.
+final _interaction = KalenderInteraction(allowEventCreation: false);
+
 const _tileComponents = TileComponents(tileBuilder: _buildTile);
 
 Widget _buildTile(
@@ -251,12 +341,18 @@ Widget _buildTile(
   KalenderDateTimeRange tileRange,
 ) {
   final colors = Theme.of(context).colorScheme;
-  final item = event is AgendaEvent ? event.item : null;
+  final agendaEvent = event is AgendaEvent ? event : null;
+  final item = agendaEvent?.item;
+  final colorHex = agendaEvent?.calendar?.colorHex;
+  final background = calendarColor(colorHex, colors.primaryContainer);
+  final foreground = colorHex == null
+      ? colors.onPrimaryContainer
+      : onCalendarColor(background);
   return Container(
     margin: const EdgeInsets.all(1),
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(
-      color: colors.primaryContainer,
+      color: background,
       borderRadius: BorderRadius.circular(6),
     ),
     child: Row(
@@ -264,18 +360,14 @@ Widget _buildTile(
         if (item?.isRecurring ?? false)
           Padding(
             padding: const EdgeInsets.only(right: 4),
-            child: Icon(
-              Icons.repeat,
-              size: 12,
-              color: colors.onPrimaryContainer,
-            ),
+            child: Icon(Icons.repeat, size: 12, color: foreground),
           ),
         Expanded(
           child: Text(
             item?.title ?? '',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: colors.onPrimaryContainer, fontSize: 12),
+            style: TextStyle(color: foreground, fontSize: 12),
           ),
         ),
       ],
@@ -290,6 +382,7 @@ class _Toolbar extends StatelessWidget {
     required this.onToday,
     required this.onPrevious,
     required this.onNext,
+    required this.onManageCalendars,
   });
 
   final AgendaView view;
@@ -297,6 +390,7 @@ class _Toolbar extends StatelessWidget {
   final VoidCallback onToday;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final VoidCallback onManageCalendars;
 
   @override
   Widget build(BuildContext context) {
@@ -346,6 +440,13 @@ class _Toolbar extends StatelessWidget {
             ],
             selected: {view},
             onSelectionChanged: (selection) => onViewChanged(selection.first),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            key: CalendarKeys.manageCalendars,
+            tooltip: l10n.manageCalendarsTooltip,
+            icon: const Icon(Icons.event_note_outlined),
+            onPressed: onManageCalendars,
           ),
         ],
       ),

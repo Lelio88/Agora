@@ -1,0 +1,30 @@
+/// Traduction des erreurs PostgREST de l'agenda en `AppException`, partagée
+/// par les dépôts de la feature.
+///
+/// Les RPC et triggers lèvent des messages stables (`event_not_found`,
+/// `last_native_calendar`…) : c'est eux qu'on lit, jamais le texte libre.
+/// Invariant : aucune `PostgrestException` ne sort d'un dépôt sans passer ici.
+library;
+
+import 'package:agora/src/exceptions/app_exception.dart';
+import 'package:agora/src/exceptions/network_errors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+Future<T> guardPostgrest<T>(Future<T> Function() body) async {
+  try {
+    return await body();
+  } on PostgrestException catch (error) {
+    throw switch (error.message) {
+      'invalid_range' => const InvalidRangeException(),
+      'event_not_found' => const EventNotFoundException(),
+      'calendar_not_found' => const CalendarNotFoundException(),
+      'last_native_calendar' => const LastNativeCalendarException(),
+      _ when looksLikeNetworkError(error.message) => const NetworkException(),
+      _ => const UnknownException(),
+    };
+  } on Exception catch (error) {
+    throw looksLikeNetworkError(error.toString())
+        ? const NetworkException()
+        : const UnknownException();
+  }
+}

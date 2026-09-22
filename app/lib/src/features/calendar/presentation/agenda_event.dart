@@ -1,31 +1,43 @@
 /// Pont entre une instance de l'agenda ([AgendaItem]) et le modèle de
 /// `kalender` ([KalenderEvent]). Chaque instance garde son objet d'origine,
-/// pour que l'appui sur une tuile remonte au bon rdv et au bon créneau.
+/// pour que l'appui sur une tuile remonte au bon rdv et au bon créneau, et
+/// son agenda, pour la couleur de la tuile et le droit de la déplacer.
+///
+/// Invariant : pendant un glisser-déposer, kalender copie l'événement avec de
+/// nouvelles dates ([copyWithData]) ; la copie garde le même [item]. Les
+/// nouvelles dates se lisent sur la copie ([start], [end]), jamais sur
+/// [item], qui décrit le rdv tel qu'il est en base.
 library;
 
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
+import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:kalender/kalender.dart';
 
 final class AgendaEvent extends KalenderEvent {
-  AgendaEvent(this.item)
+  // kalender affiche chaque instant en heure locale : une journée entière
+  // doit lui arriver en minuit LOCAL, sinon elle glisse sur la veille dans
+  // un fuseau négatif.
+  AgendaEvent(AgendaItem item, {UserCalendar? calendar})
+    : this._(item, calendar, item.localStart, item.localEnd);
+
+  AgendaEvent._(this.item, this.calendar, DateTime start, DateTime end)
     : super(
         id: item.instanceKey,
-        // kalender affiche chaque instant en heure locale : une journée
-        // entière doit lui arriver en minuit LOCAL, sinon elle glisse sur
-        // la veille dans un fuseau négatif.
-        start: item.localStart,
-        end: item.localEnd,
+        start: start,
+        end: end,
         isAllDay: item.isAllDay,
-        // Le déplacement se fait par l'éditeur : un glisser-déposer
-        // devrait poser la question « occurrence ou série ».
-        interaction: EventInteraction.fromCanModify(false),
+        // Seuls les rdv d'un agenda où l'on écrit se déplacent ou s'étirent.
+        interaction: EventInteraction.fromCanModify(
+          calendar?.isWritable ?? false,
+        ),
       );
 
   final AgendaItem item;
 
-  /// Exigé par kalender pour ses copies internes (glisser-déposer). Les
-  /// tuiles sont verrouillées : l'objet métier reste le même.
+  /// Agenda du rdv, `null` tant que la liste des agendas n'est pas chargée.
+  final UserCalendar? calendar;
+
   @override
   AgendaEvent copyWithData({required DateTime start, required DateTime end}) =>
-      AgendaEvent(item);
+      AgendaEvent._(item, calendar, start, end);
 }

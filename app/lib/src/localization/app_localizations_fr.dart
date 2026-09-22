@@ -331,4 +331,87 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorEventNotFound => 'Ce rendez-vous n\'existe plus.';
+
+  @override
+  String get errorLastCalendar =>
+      'Gardez au moins un agenda : c\'est là que se rangent vos nouveaux rendez-vous.';
+
+  @override
+  String get errorCalendarNotFound => 'Cet agenda n\'existe plus.';
+
+  @override
+  String get calendarsTitle => 'Mes agendas';
+
+  @override
+  String get manageCalendarsTooltip => 'Mes agendas';
+
+  @override
+  String get newCalendarButton => 'Nouvel agenda';
+
+  @override
+  String get newCalendarTitle => 'Nouvel agenda';
+
+  @override
+  String get editCalendarTitle => 'Modifier l\'agenda';
+
+  @override
+  String get calendarNameLabel => 'Nom';
+
+  @override
+  String get calendarColorLabel => 'Couleur';
+
+  @override
+  String get calendarShownTooltip => 'Afficher dans mon agenda';
+
+  @override
+  String calendarVisibilitySummary(String level) {
+    return 'Groupes : $level';
+  }
+
+  @override
+  String get validationCalendarName => 'Entre 1 et 60 caractères.';
+
+  @override
+  String get calendarSaved => 'Agenda enregistré.';
+
+  @override
+  String get deleteCalendarButton => 'Supprimer l\'agenda';
+
+  @override
+  String deleteCalendarTitle(String name) {
+    return 'Supprimer « $name » ?';
+  }
+
+  @override
+  String deleteCalendarBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Ses $count rendez-vous seront supprimés avec lui, définitivement.',
+      one: 'Son rendez-vous sera supprimé avec lui, définitivement.',
+      zero: 'Il ne contient aucun rendez-vous.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarDeleted => 'Agenda supprimé.';
+
+  @override
+  String get lastCalendarHint => 'Votre seul agenda ne peut pas être supprimé.';
+
+  @override
+  String get eventCalendarLabel => 'Agenda';
+
+  @override
+  String get scopeMoveBody =>
+      'Déplacer seulement cette occurrence, ou toute la série ?';
+
+  @override
+  String get scopeCalendarMoveNote =>
+      'Changer d\'agenda s\'applique toujours à toute la série.';
+
+  @override
+  String get eventMoved => 'Rendez-vous déplacé.';
 }

@@ -80,6 +80,17 @@ final class InvalidRangeException extends AppException {
     : super('invalid-range', 'Agenda range longer than a quarter');
 }
 
+final class CalendarNotFoundException extends AppException {
+  const CalendarNotFoundException()
+    : super('calendar-not-found', 'Calendar not found or not yours');
+}
+
+/// Le dernier agenda natif ne se supprime pas : les rdv s'y créent.
+final class LastNativeCalendarException extends AppException {
+  const LastNativeCalendarException()
+    : super('last-native-calendar', 'The last native calendar cannot go');
+}
+
 // --- Transverse ---------------------------------------------------------------
 
 final class NetworkException extends AppException {

@@ -1,11 +1,12 @@
 # Agenda perso — annexe d'architecture
 
 Annexe de [`architecture.md`](./architecture.md) §2 et §7. Elle décrit les séries de rdv, leur
-dépliage par le worker, et l'agenda dans l'app.
+dépliage par le worker, les agendas de chacun et l'agenda dans l'app.
 
 ## Séries et exceptions (base)
 
-Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurrence.sql`.
+Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurrence.sql`,
+`20260921220100_update_series.sql`.
 
 | Notion | Représentation |
 |---|---|
@@ -36,6 +37,18 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
   affichables : ponctuels, occurrences modifiées, occurrences dépliées ; chaque ligne porte
   `series_id` et `original_start` (nuls pour un ponctuel ; `event_id = series_id` pour une
   occurrence dépliée).
+- **Modifier toute la série depuis une occurrence** : `public.update_series(série, créneau de
+  l'occurrence, …)` (SECURITY INVOKER : RLS et droits par colonne s'appliquent) **décale** la
+  série d'autant que l'occurrence — écart de jours, lu dans le fuseau de la série (en UTC pour
+  une journée entière), et nouvelle heure **locale** de l'occurrence ; la durée est celle de
+  l'occurrence modifiée. Sans changement de date ni d'heure, l'horaire et donc les exceptions
+  restent intacts. Avec `p_follow_weekdays`, les jours d'un BYDAY simple suivent le même écart
+  (`private.shift_weekdays`, triés du lundi au dimanche ; une règle à jour ordinal « 2TU » n'est
+  jamais réécrite) : l'écart se compte dans le fuseau de la série, pas celui de l'appareil. Ne
+  jamais réécrire la ligne maîtresse avec les dates d'une occurrence : la série sauterait à
+  cette date et perdrait ses exceptions.
+- **Une occurrence modifiée porte la règle de sa série** dans `my_agenda` (sa propre ligne n'en a
+  pas) : l'app en bâtit ses brouillons, et une règle vide transformerait la série en rdv unique.
 - **`public.replace_occurrence(...)`** remplace une occurrence (RPC plutôt qu'un upsert : Postgres
   refuse un index unique **partiel** comme cible d'`ON CONFLICT`, erreur `42P10`).
   **`public.delete_occurrence(série, créneau)`** ajoute le créneau aux `exdates`, efface un
@@ -50,6 +63,34 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
 - **`series_expansions`** : une ligne par série, horodatée par le worker quand un dépliage a
   réellement changé ses occurrences ; lisible par qui lit la série. C'est le signal qui fait
   relire l'agenda une fois la série dépliée, chez le créateur comme chez les membres du groupe.
+
+## Les agendas de chacun
+
+Migration : `20260921220000_calendar_management.sql`.
+
+- **Plusieurs agendas natifs par personne**, chacun avec nom, couleur (`#RRGGBB`, palette de
+  l'app) et **masquage pour les groupes** (`calendars.visibility` : selon le groupe, occupé,
+  invisible — il entre dans la règle du « plus restrictif », §3 de l'architecture). L'agenda par
+  défaut, où se créent les rdv, est le plus ancien où l'on peut écrire.
+- **Ranger un rdv dans un autre agenda** : `calendar_id` est modifiable ; la RLS
+  (`can_edit_event` sur l'ancienne ligne **et** la nouvelle) exige un agenda natif où l'on écrit.
+  Une série emmène ses occurrences modifiées (`private.follow_series_calendar`) ; une occurrence
+  seule ne change pas d'agenda (`check_event_series` : `invalid_series`), d'où l'app qui ne
+  propose alors que « toute la série ». **Seul le créateur** d'un rdv le change d'agenda
+  (`private.check_event_move`, sinon `event_not_found`) : sur la ligne d'arrivée, la RLS accepte
+  tout agenda dont on est propriétaire sans regarder le créateur, et un admin de groupe aurait
+  pu sortir le rdv d'un membre vers son agenda personnel, hors de portée du créateur.
+- **Supprimer un agenda** : `public.delete_calendar(id)`, ses rdv partent en cascade. Le DELETE
+  direct est retiré : la RPC refuse le **dernier agenda natif** (`last_native_calendar`), en
+  verrouillant les agendas de la personne avant de compter (deux suppressions simultanées ne
+  vident pas le compte). Une contrainte ou un trigger aurait aussi bloqué la cascade de la
+  suppression du compte.
+- **Masquer un agenda dans SA vue** : `public.calendar_preferences (user_id, calendar_id,
+  hidden)`, une ligne par personne et par agenda (prête pour les agendas de groupe). C'est de
+  l'**affichage**, pas de la vie privée : rien ne change pour les groupes. L'app filtre
+  localement (`visibleAgendaProvider`), sans relire les rdv. Le droit `update (calendar_id)` sur
+  la table existe pour l'upsert de PostgREST, qui réécrit toutes les colonnes envoyées ; la RLS
+  garde la ligne sur un agenda lisible.
 
 ## Le worker déplie (Go, `worker/recurrence/`)
 
@@ -85,8 +126,15 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
 
 - **kalender** (MIT, 0.31) dessine les vues jour, semaine (3 jours sur téléphone), mois et
   planning (**paginé** : la variante continue publie sa plage totale comme plage visible, ce qui
-  rendait le chargement impossible à borner). Le glisser-déposer est désactivé : déplacer une
-  occurrence doit poser la question « occurrence ou série », donc passe par l'éditeur.
+  rendait le chargement impossible à borner).
+- **Glisser-déposer et étirement** (`onEventChanged`) sur les rdv d'un agenda où l'on écrit :
+  appui long sur téléphone, glisser direct à la souris. Pour une occurrence, la question
+  « déplacer cette occurrence ou toute la série » ; annulation ou échec remettent la tuile en
+  place (`_syncEvents(force: true)`). Pas de création par glisser : un appui sur un créneau ouvre
+  déjà l'éditeur. kalender part du **bord** de la tuile saisie pour calculer la case d'arrivée.
+- **Resynchronisation** : les instances ne sont repoussées dans kalender que si la liste ou les
+  agendas ont changé (identité) — une reconstruction en plein glisser ne remet pas la tuile en
+  place.
 - **Plage chargée** : le mois de la page visible ± un mois, rechargée quand la page en sort ;
   une plage visible de plus de 62 jours est ignorée. Le rechargement est différé à la fin de
   l'image (`addPostFrameCallback`) : kalender publie sa plage visible pendant sa construction.
@@ -96,8 +144,15 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
   et `series_expansions`, **exactement** les tables publiées : un abonnement à une table hors
   publication fait échouer tout le canal.
 - **`EditTarget`** porte la portée d'une modification ou suppression : `occurrence` (une
-  occurrence d'une série → `replace_occurrence` / `delete_occurrence`) ou `series` (la maîtresse,
-  ou le rdv ponctuel lui-même). Le dialogue de portée n'est posé que pour une instance de série.
+  occurrence d'une série → `replace_occurrence` / `delete_occurrence`) ou `series` (toute la
+  série → `update_series`, ou le rdv ponctuel lui-même). Le dialogue de portée n'est posé que
+  pour une instance de série.
+- **Toute la série, côté app** (`CalendarService.seriesDraft`) : ce que l'utilisateur a changé
+  dans les dates s'applique en **écart au créneau d'origine** de l'occurrence (pas à sa place
+  actuelle, qui peut déjà être décalée). Si l'utilisateur n'a pas touché aux jours de
+  répétition (`weekdaysUntouched`), l'app demande au serveur de les faire suivre : un rdv du
+  mardi glissé au mercredi se répète le mercredi. L'app ne compte aucun écart de jours elle-même
+  (le fuseau de l'appareil peut différer de celui de la série).
 - **`RecurrenceRule`** couvre le sous-ensemble éditable (fréquence, intervalle, jours, fin par
   date ou nombre). Une règle importée hors de ce sous-ensemble se lit `null`, s'affiche « règle
   avancée » et repart **telle quelle** (`EventDraft.rawRule`) : l'app ne réécrit jamais une
@@ -110,8 +165,15 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
   l'enregistrement. Le fuseau de répétition d'une série est celui du profil.
 - **Tuiles** : les journées entières vivent dans l'en-tête de kalender (vues jour et semaine),
   qui reçoit les mêmes `TileComponents` que le corps — sinon elles s'affichent sans titre.
-- **Visibilité** d'un rdv pour les groupes : hérite, occupé ou invisible — jamais « détails »
-  (contrainte serveur : un rdv ne peut que restreindre).
+- **Visibilité** d'un rdv ou d'un agenda pour les groupes : hérite, occupé ou invisible — jamais
+  « détails » (contrainte serveur : ils ne peuvent que restreindre). `VisibilityField` sert aux
+  deux éditeurs.
+- **« Mes agendas »** (`CalendarsScreen`, bouton de la barre d'agenda) : liste des agendas
+  personnels avec leur masquage, case d'affichage, création et modification
+  (`CalendarEditorScreen`, qui renvoie un résultat comme l'éditeur de rdv). La suppression
+  annonce le nombre de rdv perdus (une série compte pour un) ; le dernier agenda natif n'a pas
+  de bouton de suppression. Les tuiles prennent la couleur de leur agenda, texte clair ou
+  foncé selon la luminance. L'éditeur de rdv propose l'agenda à partir de deux agendas.
 
 ## Fichiers
 
@@ -119,9 +181,13 @@ Migrations : `20260921185718_agenda_series.sql`, `20260921194052_replace_occurre
 |---|---|
 | `supabase/migrations/20260921185718_agenda_series.sql` | séries, exceptions, `my_agenda`, `delete_occurrence`, notification, temps réel, `series_expansions`, rôle du worker |
 | `supabase/migrations/20260921194052_replace_occurrence.sql` | `replace_occurrence` |
+| `supabase/migrations/20260921220000_calendar_management.sql` | agendas multiples : déplacement entre agendas, `delete_calendar`, `calendar_preferences` |
+| `supabase/migrations/20260921220100_update_series.sql` | `update_series` ; `my_agenda` (règle de la série sur une occurrence modifiée) |
 | `supabase/tests/agenda_test.sql` | tests pgTAP : lecture, exceptions, triggers, agenda de groupe, publication temps réel, droits du worker |
+| `supabase/tests/calendars_test.sql` · `series_move_test.sql` | agendas multiples ; décalage d'une série (fuseau, heure d'été, journée entière) |
 | `worker/recurrence/expand.go` · `service.go` · `pgstore.go` | dépliage, orchestration, Postgres |
 | `worker/recurrence/pgstore_integration_test.go` | test taggé `integration` contre la pile locale |
-| `app/lib/src/features/calendar/domain/` | `AgendaItem`, `EventDraft`, `RecurrenceRule`, `EventVisibility`, contrat du dépôt |
-| `app/lib/src/features/calendar/application/` | `agendaProvider`, `CalendarService`, `EditTarget` |
-| `app/lib/src/features/calendar/presentation/` | `CalendarScreen` (kalender), `EventEditorScreen`, dialogue de portée, `CalendarKeys` |
+| `app/lib/src/features/calendar/domain/` | `AgendaItem`, `EventDraft`, `RecurrenceRule`, `EventVisibility`, `UserCalendar`, contrats des dépôts |
+| `app/lib/src/features/calendar/application/` | `agendaProvider`, `visibleAgendaProvider`, `CalendarService`, `EditTarget`, `calendarsProvider`, `CalendarsService` |
+| `app/lib/src/features/calendar/data/` | dépôts Supabase de l'agenda et des agendas, `guardPostgrest` (traduction des erreurs) |
+| `app/lib/src/features/calendar/presentation/` | `CalendarScreen` (kalender, glisser-déposer), `EventEditorScreen`, `CalendarsScreen`, `CalendarEditorScreen`, dialogue de portée, `CalendarKeys` |

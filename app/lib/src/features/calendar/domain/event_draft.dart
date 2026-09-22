@@ -9,6 +9,7 @@
 /// serveur, jamais réécrite. [rrule] est la règle effective.
 library;
 
+import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 
@@ -29,6 +30,25 @@ final class EventDraft {
          recurrence == null || rawRule == null,
          'a raw rule replaces the editable recurrence',
        );
+
+  /// Le brouillon qui décrit [item] tel quel : point de départ d'un
+  /// glisser-déposer, qui n'en change que les dates. Une règle hors du
+  /// sous-ensemble éditable repart telle quelle ([rawRule]).
+  factory EventDraft.fromItem(AgendaItem item) {
+    final rule = item.rrule == null ? null : RecurrenceRule.parse(item.rrule!);
+    return EventDraft(
+      calendarId: item.calendarId,
+      title: item.title,
+      start: item.start,
+      end: item.end,
+      timezone: item.timezone,
+      isAllDay: item.isAllDay,
+      location: item.location,
+      description: item.description,
+      recurrence: rule,
+      visibility: item.visibility,
+    ).withRawRule(rule == null ? item.rrule : null);
+  }
 
   final String calendarId;
   final String title;

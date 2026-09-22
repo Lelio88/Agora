@@ -75,7 +75,7 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 | Modification | Fichier à mettre à jour |
 |---|---|
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
-| Séries, exceptions, dépliage, écran d'agenda | `docs/calendar-architecture.md` + `supabase/tests/agenda_test.sql` + tests Go de `worker/recurrence/` |
+| Séries, exceptions, dépliage, agendas, écran d'agenda | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`) + tests Go de `worker/recurrence/` |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` |
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + variables `GOTRUE_*` du serveur + `docs/auth-architecture.md` |
@@ -87,5 +87,5 @@ AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : agenda perso livré et durci — séries et exceptions sous verrou partagé avec le worker, temps réel limité à `events` + `series_expansions` (les DELETE ignorent la RLS), worker sans accès aux titres, journées entières lues comme dates de calendrier.
-- **Focus immédiat** : masquage par agenda et glisser-déposer (fin de l'étape 2), puis les groupes (étape 3) ; Google et Discord attendent toujours les identifiants OAuth.
+- **Dernier focus** : étape 2 terminée — plusieurs agendas (couleur, masquage pour les groupes, affichage perso, suppression), glisser-déposer, et « toute la série » qui décale la série au lieu de la réécrire.
+- **Focus immédiat** : les groupes (étape 3) : créer, inviter, rejoindre, réglage de partage, vue superposée ; Google et Discord attendent toujours les identifiants OAuth.

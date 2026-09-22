@@ -19,6 +19,8 @@ String messageFor(AppException error, AppLocalizations l10n) => switch (error) {
   InvalidTimezoneException() => l10n.errorInvalidTimezone,
   EventNotFoundException() => l10n.errorEventNotFound,
   InvalidRangeException() => l10n.errorUnknown,
+  CalendarNotFoundException() => l10n.errorCalendarNotFound,
+  LastNativeCalendarException() => l10n.errorLastCalendar,
   NetworkException() => l10n.errorNetwork,
   UnknownException() => l10n.errorUnknown,
 };

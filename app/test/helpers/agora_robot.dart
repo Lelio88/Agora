@@ -4,16 +4,19 @@ import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
+import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:agora/src/logging/app_logger.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_calendar_repository.dart';
+import 'fake_calendars_repository.dart';
 import 'fakes.dart';
 import 'recording_app_logger.dart';
 
@@ -26,6 +29,7 @@ class AgoraRobot {
   late final FakeAuthRepository auth;
   late final FakeProfileRepository profiles;
   late final FakeCalendarRepository calendar;
+  late final FakeCalendarsRepository calendars;
 
   /// Erreurs remontées par les providers, comme en production
   /// (`AsyncErrorLogger`) : un parcours réussi n'en laisse aucune.
@@ -37,12 +41,14 @@ class AgoraRobot {
     FakeAuthRepository? auth,
     FakeProfileRepository? profiles,
     FakeCalendarRepository? calendar,
+    FakeCalendarsRepository? calendars,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
   }) async {
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
     this.calendar = calendar ?? FakeCalendarRepository();
+    this.calendars = calendars ?? FakeCalendarsRepository();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
     await tester.pumpWidget(
@@ -54,6 +60,7 @@ class AgoraRobot {
           authRepositoryProvider.overrideWithValue(this.auth),
           profileRepositoryProvider.overrideWithValue(this.profiles),
           calendarRepositoryProvider.overrideWithValue(this.calendar),
+          calendarsRepositoryProvider.overrideWithValue(this.calendars),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),
           ),
@@ -115,6 +122,43 @@ class AgoraRobot {
     await tester.ensureVisible(tile);
     await tester.pumpAndSettle();
     await tester.tap(tile);
+    await settle();
+  }
+
+  /// Revient à l'écran précédent par la flèche de l'AppBar
+  /// (`pageBack` cherche l'infobulle anglaise « Back »).
+  Future<void> goBack() async {
+    await tester.tap(find.byType(BackButton));
+    await settle();
+  }
+
+  /// Ouvre « Mes agendas » depuis la barre de l'agenda.
+  Future<void> openCalendars() => tap(CalendarKeys.manageCalendars);
+
+  /// Choisit l'agenda [calendarId] dans le menu de l'éditeur de rdv.
+  Future<void> chooseCalendar(String calendarId) async {
+    await tap(CalendarKeys.eventCalendar);
+    // Le menu ouvert duplique chaque entrée : la dernière est celle du menu.
+    await tester.tap(
+      find.byKey(CalendarKeys.eventCalendarOption(calendarId)).last,
+    );
+    await tester.pumpAndSettle();
+  }
+
+  /// Déplace la tuile [title] de [by] comme sur un téléphone (les tests
+  /// tournent en Android) : appui long, puis glisser, puis lâcher.
+  Future<void> dragEvent(String title, Offset by) async {
+    final tile = find.text(title).first;
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    final gesture = await tester.startGesture(tester.getCenter(tile));
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+    // En plusieurs pas : la cible du dépôt suit le doigt.
+    for (var step = 0; step < 4; step++) {
+      await gesture.moveBy(by / 4);
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await gesture.up();
     await settle();
   }
 

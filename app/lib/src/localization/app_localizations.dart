@@ -709,6 +709,138 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ce rendez-vous n\'existe plus.'**
   String get errorEventNotFound;
+
+  /// Refus de supprimer le dernier agenda de l'utilisateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Gardez au moins un agenda : c\'est là que se rangent vos nouveaux rendez-vous.'**
+  String get errorLastCalendar;
+
+  /// L'agenda a été supprimé entre-temps, ou n'appartient pas à l'utilisateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet agenda n\'existe plus.'**
+  String get errorCalendarNotFound;
+
+  /// Titre de l'écran de gestion des agendas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes agendas'**
+  String get calendarsTitle;
+
+  /// Infobulle du bouton qui ouvre la gestion des agendas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes agendas'**
+  String get manageCalendarsTooltip;
+
+  /// Bouton qui crée un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvel agenda'**
+  String get newCalendarButton;
+
+  /// Titre du formulaire de création d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvel agenda'**
+  String get newCalendarTitle;
+
+  /// Titre du formulaire de modification d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier l\'agenda'**
+  String get editCalendarTitle;
+
+  /// Champ du nom d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get calendarNameLabel;
+
+  /// Libellé du choix de couleur d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Couleur'**
+  String get calendarColorLabel;
+
+  /// Case qui montre ou masque un agenda dans sa propre vue (sans effet pour les groupes).
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher dans mon agenda'**
+  String get calendarShownTooltip;
+
+  /// Sous-titre d'un agenda dans la liste : ce que voient les groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupes : {level}'**
+  String calendarVisibilitySummary(String level);
+
+  /// Erreur de saisie : nom d'agenda vide ou trop long.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entre 1 et 60 caractères.'**
+  String get validationCalendarName;
+
+  /// Confirmation après l'enregistrement d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda enregistré.'**
+  String get calendarSaved;
+
+  /// Bouton de suppression d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer l\'agenda'**
+  String get deleteCalendarButton;
+
+  /// Titre de la confirmation de suppression d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer « {name} » ?'**
+  String deleteCalendarTitle(String name);
+
+  /// Conséquence de la suppression d'un agenda : ses rendez-vous disparaissent.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Il ne contient aucun rendez-vous.} =1{Son rendez-vous sera supprimé avec lui, définitivement.} other{Ses {count} rendez-vous seront supprimés avec lui, définitivement.}}'**
+  String deleteCalendarBody(int count);
+
+  /// Confirmation après la suppression d'un agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda supprimé.'**
+  String get calendarDeleted;
+
+  /// Explique pourquoi le dernier agenda n'a pas de bouton de suppression.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre seul agenda ne peut pas être supprimé.'**
+  String get lastCalendarHint;
+
+  /// Choix de l'agenda où ranger un rendez-vous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agenda'**
+  String get eventCalendarLabel;
+
+  /// Question posée après avoir glissé une occurrence d'un rendez-vous répété.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déplacer seulement cette occurrence, ou toute la série ?'**
+  String get scopeMoveBody;
+
+  /// Précision quand on change l'agenda d'un rendez-vous répété : une occurrence seule ne peut pas changer d'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer d\'agenda s\'applique toujours à toute la série.'**
+  String get scopeCalendarMoveNote;
+
+  /// Confirmation après un glisser-déposer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous déplacé.'**
+  String get eventMoved;
 }
 
 class _AppLocalizationsDelegate

@@ -77,7 +77,8 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `groups` | nom, description | `create_group()` ; admins pour renommer |
 | `group_members` | rôle (`owner`/`admin`/`member`) **et `share_level`**, le partage choisi pour ce groupe | `create_group()`, `join_group()` ; chacun règle son `share_level` |
 | `group_invites` | code de 8 caractères, expiration, nombre d'usages | `create_invite()` (tout membre) |
-| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` | l'utilisateur ; `add_ics_calendar()` |
+| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; suppression par `delete_calendar()` |
+| `calendar_preferences` | affichage **par personne** : agenda masqué dans sa propre vue (pas de la vie privée) | l'utilisateur |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
 | `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
 | `event_occurrences` | occurrences dépliées des rdv **récurrents** | le worker seul (rôle `agora_worker`) |
@@ -242,7 +243,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
 | Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
-| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et service de l'agenda sur faux dépôt ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues) ; branchement de `prodOverrides` |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas ») ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; `-tags integration` : `PgStore` et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role
@@ -302,6 +303,14 @@ un oubli ramène le comportement par défaut (lien au lieu de code, e-mail en an
   UTC (`AgendaItem.localStart`).
 - ❌ Lire une série hors du verrou de série avant d'en réécrire les occurrences, ou effacer une
   occurrence dépliée sans prendre ce verrou (`private.lock_series`).
+- ❌ Réécrire la ligne maîtresse d'une série avec les dates d'une de ses occurrences : passer par
+  `update_series`, qui décale la série.
+- ❌ Bâtir le brouillon d'une occurrence modifiée sans la règle de sa série (`my_agenda` la fournit).
+- ❌ Supprimer un agenda autrement que par `delete_calendar` (le dernier agenda natif doit rester).
+- ❌ Se fier à la RLS seule pour un changement de propriétaire ou d'agenda : sur la ligne
+  d'arrivée, `can_edit_event` ne regarde pas le créateur quand on possède l'agenda cible
+  (d'où `check_event_move`).
+- ❌ Confondre `calendar_preferences.hidden` (affichage perso) et `calendars.visibility` (vie privée).
 - ❌ Suivre telle quelle la plage visible de kalender pour charger l'agenda (la vue planning
   continue publie sa plage totale : rechargement sans fin).
 - ❌ Écrire `events.visibility` depuis la synchro iCal.

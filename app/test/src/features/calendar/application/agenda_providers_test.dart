@@ -132,7 +132,117 @@ void main() {
 
     final items = await agenda();
     expect(items.every((i) => i.title == 'Yoga doux'), isTrue);
-    expect(repository.writes.last, 'updateEvent');
+    expect(repository.writes.last, 'updateSeries');
+  });
+
+  test('renaming the series from a later occurrence keeps its start', () async {
+    final service = container.read(calendarServiceProvider);
+    await service.create(
+      _draft(recurrence: const RecurrenceRule(frequency: Frequency.weekly)),
+    );
+    final third = (await agenda())[2];
+
+    await service.save(
+      target: EditTarget.series(third),
+      draft: _draft(
+        title: 'Yoga doux',
+        recurrence: const RecurrenceRule(frequency: Frequency.weekly),
+      ).copyWith(start: third.start, end: third.end),
+    );
+
+    final update = repository.lastSeriesUpdate!;
+    expect(update.occurrenceStart, third.start);
+    expect(update.draft.start, third.start, reason: 'no shift requested');
+    expect((await agenda()).first.start, DateTime.utc(2026, 10, 13, 16));
+  });
+
+  test('from a moved occurrence, unchanged dates keep the schedule', () async {
+    final service = container.read(calendarServiceProvider);
+    await service.create(
+      _draft(recurrence: const RecurrenceRule(frequency: Frequency.weekly)),
+    );
+    final second = (await agenda())[1];
+    await service.save(
+      target: EditTarget.occurrence(second),
+      draft: _draft(title: 'Yoga (décalé)').copyWith(
+        start: second.start.add(const Duration(hours: 2)),
+        end: second.end.add(const Duration(hours: 2)),
+      ),
+    );
+    final moved = (await agenda()).firstWhere(
+      (i) => i.kind == InstanceKind.modifiedOccurrence,
+    );
+
+    await service.save(
+      target: EditTarget.series(moved),
+      draft: _draft(
+        title: 'Yoga doux',
+        recurrence: const RecurrenceRule(frequency: Frequency.weekly),
+      ).copyWith(start: moved.start, end: moved.end),
+    );
+
+    final update = repository.lastSeriesUpdate!;
+    expect(update.occurrenceStart, moved.originalStart);
+    expect(
+      update.draft.start,
+      moved.originalStart,
+      reason: 'the series keeps its own time, not the moved one',
+    );
+  });
+
+  test('untouched weekdays follow the series shift', () async {
+    const tuesdays = RecurrenceRule(
+      frequency: Frequency.weekly,
+      weekdays: {DateTime.tuesday},
+    );
+    final service = container.read(calendarServiceProvider);
+    await service.create(_draft(recurrence: tuesdays));
+    final first = (await agenda()).first;
+
+    await service.save(
+      target: EditTarget.series(first),
+      draft: _draft(recurrence: tuesdays).copyWith(
+        start: first.start.add(const Duration(days: 1)),
+        end: first.end.add(const Duration(days: 1)),
+      ),
+    );
+
+    final update = repository.lastSeriesUpdate!;
+    expect(update.followWeekdays, isTrue);
+    expect(update.draft.recurrence!.weekdays, {
+      DateTime.tuesday,
+    }, reason: 'the server shifts them, in the series time zone');
+  });
+
+  test('weekdays the user changed are kept as chosen', () async {
+    final service = container.read(calendarServiceProvider);
+    await service.create(
+      _draft(
+        recurrence: const RecurrenceRule(
+          frequency: Frequency.weekly,
+          weekdays: {DateTime.tuesday},
+        ),
+      ),
+    );
+    final first = (await agenda()).first;
+
+    await service.save(
+      target: EditTarget.series(first),
+      draft:
+          _draft(
+            recurrence: const RecurrenceRule(
+              frequency: Frequency.weekly,
+              weekdays: {DateTime.thursday},
+            ),
+          ).copyWith(
+            start: first.start.add(const Duration(days: 1)),
+            end: first.end.add(const Duration(days: 1)),
+          ),
+    );
+
+    final update = repository.lastSeriesUpdate!;
+    expect(update.followWeekdays, isFalse);
+    expect(update.draft.recurrence!.weekdays, {DateTime.thursday});
   });
 
   test('deleting one occurrence keeps the others', () async {
