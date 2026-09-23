@@ -68,7 +68,9 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   `SECURITY INVOKER` — la RLS des rdv dit déjà qui peut lire et qui peut supprimer ; une fonction
   `SECURITY DEFINER` devrait refaire ces contrôles et pourrait se tromper. Les occurrences
   modifiées d'une série sont écartées de la liste : elles appartiennent à une série déjà comptée,
-  et la supprimer les emporte.
+  et la supprimer les emporte. **Seuls les groupes qui survivent comptent** : un groupe où l'on
+  est seul est supprimé avec son agenda et ses rdv (`keep_group_alive`), donc rien n'y reste —
+  l'annoncer serait faux, et proposer de l'effacer, inutile.
 - **Compte effacé hors de la RPC** (interface d'administration de Supabase) : seule la cascade
   joue ; le trigger `private.keep_group_alive` transmet alors ou supprime ses groupes
   ([`groups-architecture.md`](./groups-architecture.md)).

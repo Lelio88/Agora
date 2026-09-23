@@ -3,7 +3,7 @@
 -- propose de les effacer — d'où ces deux fonctions.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(11);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('7e000000-0000-0000-0000-000000000001', 'nina@test.local', '{"display_name":"Nina"}'),
@@ -45,9 +45,14 @@ set local request.jwt.claims = '{"sub":"7e000000-0000-0000-0000-000000000001","r
 select results_eq(
   $$select title, group_name from public.my_proposed_group_events() order by starts_at$$,
   $$values ('Sortie au lac'::text, 'Rando'::text),
-           ('Séance de minuit'::text, 'Ciné'::text),
            ('Sortie en forêt'::text, 'Rando'::text)$$,
-  'Nina voit les trois rdv qu''elle a proposés, avec le nom de leur groupe');
+  'Nina voit les rdv qu''elle a proposés à un groupe qui lui survivra');
+-- Nina est SEULE dans « Ciné » : le groupe sera supprimé avec son agenda et
+-- ses rdv, donc « Séance de minuit » ne reste à personne. L'annoncer serait
+-- faux, et proposer de l'effacer, inutile.
+select is(
+  (select count(*)::int from public.my_proposed_group_events() where title = 'Séance de minuit'), 0,
+  'un rdv d''un groupe où elle est seule n''est pas annoncé : il disparaît avec le groupe');
 select is(
   (select count(*)::int from public.my_proposed_group_events() where title = 'Dentiste'), 0,
   'son rdv personnel n''y est pas : il part avec le compte');
@@ -69,8 +74,13 @@ select is((select count(*)::int from public.my_proposed_group_events()), 0,
 
 -- Nina efface les siens ------------------------------------------------------------------
 set local request.jwt.claims = '{"sub":"7e000000-0000-0000-0000-000000000001","role":"authenticated"}';
-select is(public.delete_my_proposed_group_events(), 3,
+select is(public.delete_my_proposed_group_events(), 2,
   'la suppression rend le nombre de rdv effacés');
+select is(
+  (select count(*)::int from public.events e
+   join public.calendars c on c.id = e.calendar_id
+   where c.group_id = current_setting('agora_test.cine')::uuid), 1,
+  'elle n''a pas touché au groupe où elle est seule : il partira entier');
 select is((select count(*)::int from public.my_proposed_group_events()), 0,
   'elle ne laisse plus rien derrière elle');
 select is(
