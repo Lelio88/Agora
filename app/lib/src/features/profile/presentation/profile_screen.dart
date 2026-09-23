@@ -1,15 +1,22 @@
 /// Écran de profil : nom affiché, langue (app et e-mails), fuseau horaire,
-/// déconnexion et suppression du compte.
+/// pages légales, déconnexion et suppression du compte.
 ///
 /// Le fuseau ne se tape pas : on reprend celui de l'appareil. C'est le seul
 /// réglage utile en pratique, et le serveur n'accepte de toute façon que des
 /// identifiants IANA qu'il connaît.
+///
+/// Les pages légales ne sont pas recopiées dans l'app : elles s'ouvrent dans
+/// le navigateur, à l'adresse que donne aussi la fiche Play Store. Un seul
+/// texte à tenir à jour. Sans adresse web dans le build (développement), la
+/// section disparaît plutôt que d'afficher des liens morts.
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/common_widgets/form_error_text.dart';
 import 'package:agora/src/common_widgets/submit_button.dart';
+import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
@@ -110,10 +117,22 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
     }
   }
 
+  Future<void> _openLegal(LegalPage page, Uri base) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    final opened = await ref
+        .read(linkOpenerProvider)
+        .open(legalLink(base, page));
+    if (!opened) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.legalLinkFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
+    final webBaseUrl = ref.watch(webBaseUrlProvider);
     final controller = ref.watch(profileControllerProvider);
     final email = ref.watch(currentUserProvider).value?.email;
     return Center(
@@ -205,6 +224,28 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   onPressed: controller.isLoading ? null : _confirmDeletion,
                   child: Text(l10n.deleteAccountButton),
                 ),
+                if (webBaseUrl != null) ...[
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(l10n.legalSectionTitle, style: text.labelLarge),
+                  const SizedBox(height: 4),
+                  _LegalLink(
+                    buttonKey: ProfileKeys.legalPrivacy,
+                    label: l10n.legalPrivacy,
+                    onPressed: () => _openLegal(LegalPage.privacy, webBaseUrl),
+                  ),
+                  _LegalLink(
+                    buttonKey: ProfileKeys.legalNotice,
+                    label: l10n.legalNotice,
+                    onPressed: () => _openLegal(LegalPage.notice, webBaseUrl),
+                  ),
+                  _LegalLink(
+                    buttonKey: ProfileKeys.legalTerms,
+                    label: l10n.legalTerms,
+                    onPressed: () => _openLegal(LegalPage.terms, webBaseUrl),
+                  ),
+                ],
               ],
             ),
           ),
@@ -212,6 +253,35 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       ),
     );
   }
+}
+
+/// Lien vers une page légale : discret, aligné à gauche, avec l'icône qui
+/// annonce une sortie de l'app.
+///
+/// La clé va sur le BOUTON, pas sur l'alignement qui l'entoure : ce dernier
+/// occupe toute la largeur, et un appui visé en son centre tomberait à côté
+/// du bouton dès que le libellé est court.
+class _LegalLink extends StatelessWidget {
+  const _LegalLink({
+    required this.buttonKey,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final Key buttonKey;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: TextButton.icon(
+      key: buttonKey,
+      onPressed: onPressed,
+      icon: const Icon(Icons.open_in_new, size: 18),
+      label: Text(label),
+    ),
+  );
 }
 
 /// Confirmation de suppression : renvoie `true` si l'on confirme. Le bouton

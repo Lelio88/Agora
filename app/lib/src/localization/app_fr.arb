@@ -96,6 +96,17 @@
   "@saveButton": {"description": "Bouton d'enregistrement d'un formulaire."},
   "profileSaved": "Profil enregistré.",
   "@profileSaved": {"description": "Confirmation après l'enregistrement du profil."},
+  "legalSectionTitle": "Informations légales",
+  "@legalSectionTitle": {"description": "Titre de la section du profil qui renvoie aux pages légales."},
+  "legalPrivacy": "Politique de confidentialité",
+  "@legalPrivacy": {"description": "Lien vers la politique de confidentialité, ouverte dans le navigateur."},
+  "legalNotice": "Mentions légales",
+  "@legalNotice": {"description": "Lien vers les mentions légales (éditeur, hébergeur), ouvertes dans le navigateur."},
+  "legalTerms": "Conditions d'utilisation",
+  "@legalTerms": {"description": "Lien vers les conditions d'utilisation, ouvertes dans le navigateur."},
+  "legalLinkFailed": "Impossible d'ouvrir cette page.",
+  "@legalLinkFailed": {"description": "Message quand l'appareil n'a pas su ouvrir le lien d'une page légale."},
+
   "signOutButton": "Se déconnecter",
   "@signOutButton": {"description": "Bouton de déconnexion."},
 

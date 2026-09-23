@@ -24,7 +24,7 @@ Topologie rapide :
 
 *Versions contraintes par `app/pubspec.yaml` et `worker/go.mod`. N'introduisez aucune dépendance alternative sans approbation.*
 
-- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `flutter_localizations` + `intl`.
+- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `url_launcher` ^6.3 (pages légales ouvertes hors de l'app ; `<queries>` déclaré dans le manifeste Android), `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
 - **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
 - **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.

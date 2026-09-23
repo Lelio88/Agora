@@ -138,6 +138,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaved => 'Profile saved.';
 
   @override
+  String get legalSectionTitle => 'Legal';
+
+  @override
+  String get legalPrivacy => 'Privacy policy';
+
+  @override
+  String get legalNotice => 'Legal notice';
+
+  @override
+  String get legalTerms => 'Terms of use';
+
+  @override
+  String get legalLinkFailed => 'Could not open this page.';
+
+  @override
   String get signOutButton => 'Sign out';
 
   @override

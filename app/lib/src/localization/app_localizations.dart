@@ -338,6 +338,36 @@ abstract class AppLocalizations {
   /// **'Profil enregistré.'**
   String get profileSaved;
 
+  /// Titre de la section du profil qui renvoie aux pages légales.
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations légales'**
+  String get legalSectionTitle;
+
+  /// Lien vers la politique de confidentialité, ouverte dans le navigateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Politique de confidentialité'**
+  String get legalPrivacy;
+
+  /// Lien vers les mentions légales (éditeur, hébergeur), ouvertes dans le navigateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mentions légales'**
+  String get legalNotice;
+
+  /// Lien vers les conditions d'utilisation, ouvertes dans le navigateur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions d\'utilisation'**
+  String get legalTerms;
+
+  /// Message quand l'appareil n'a pas su ouvrir le lien d'une page légale.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir cette page.'**
+  String get legalLinkFailed;
+
   /// Bouton de déconnexion.
   ///
   /// In fr, this message translates to:

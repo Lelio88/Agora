@@ -15,7 +15,9 @@
 library;
 
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/device/platform_device_timezone.dart';
+import 'package:agora/src/device/url_launcher_link_opener.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -44,4 +46,5 @@ List<Override> prodOverrides(SupabaseClient client) => [
     (ref) => SupabaseGroupsRepository(client),
   ),
   deviceTimezoneProvider.overrideWith((ref) => const PlatformDeviceTimezone()),
+  linkOpenerProvider.overrideWith((ref) => const UrlLauncherLinkOpener()),
 ];

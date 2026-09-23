@@ -9,6 +9,9 @@ abstract final class ProfileKeys {
   static const language = ValueKey('profile.language');
   static const useDeviceTimezone = ValueKey('profile.useDeviceTimezone');
   static const save = ValueKey('profile.save');
+  static const legalPrivacy = ValueKey('profile.legalPrivacy');
+  static const legalNotice = ValueKey('profile.legalNotice');
+  static const legalTerms = ValueKey('profile.legalTerms');
   static const signOut = ValueKey('profile.signOut');
   static const deleteAccount = ValueKey('profile.deleteAccount');
   static const confirmDelete = ValueKey('profile.confirmDelete');

@@ -1,6 +1,7 @@
 import 'package:agora/src/app.dart';
 import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
@@ -36,6 +37,7 @@ class AgoraRobot {
   late final FakeCalendarRepository calendar;
   late final FakeCalendarsRepository calendars;
   late final FakeGroupsRepository groups;
+  late final FakeLinkOpener links;
 
   /// Erreurs remontées par les providers, comme en production
   /// (`AsyncErrorLogger`) : un parcours réussi n'en laisse aucune.
@@ -50,6 +52,7 @@ class AgoraRobot {
     FakeCalendarsRepository? calendars,
     FakeGroupsRepository? groups,
     Uri? webBaseUrl,
+    FakeLinkOpener? links,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
   }) async {
@@ -58,6 +61,7 @@ class AgoraRobot {
     this.calendar = calendar ?? FakeCalendarRepository();
     this.calendars = calendars ?? FakeCalendarsRepository();
     this.groups = groups ?? FakeGroupsRepository();
+    this.links = links ?? FakeLinkOpener();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
     addTearDown(this.calendars.dispose);
@@ -73,6 +77,7 @@ class AgoraRobot {
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
           groupsRepositoryProvider.overrideWithValue(this.groups),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),
+          linkOpenerProvider.overrideWithValue(this.links),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),
           ),
@@ -197,6 +202,8 @@ class AgoraRobot {
       200,
       scrollable: find.byType(Scrollable).last,
     );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(target));
     await tester.pumpAndSettle();
   }
 

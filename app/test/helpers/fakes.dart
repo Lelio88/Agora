@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
@@ -159,6 +160,21 @@ class FakeProfileRepository implements ProfileRepository {
       throw error;
     }
     profiles[profile.id] = profile;
+  }
+}
+
+/// Retient les liens qu'on a voulu ouvrir, sans navigateur. [succeeds] à
+/// faux rejoue l'appareil qui n'a rien pour les ouvrir.
+class FakeLinkOpener implements LinkOpener {
+  FakeLinkOpener({this.succeeds = true});
+
+  final bool succeeds;
+  final opened = <Uri>[];
+
+  @override
+  Future<bool> open(Uri url) async {
+    opened.add(url);
+    return succeeds;
   }
 }
 

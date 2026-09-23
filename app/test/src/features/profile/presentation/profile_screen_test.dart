@@ -164,4 +164,56 @@ void main() {
     robot.expectScreen(AuthKeys.signInScreen);
     expect(robot.logger.errorCount, 0);
   });
+
+  testWidgets('opens the legal pages of the web version', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      webBaseUrl: Uri.parse('https://agora.example.com'),
+    );
+    await robot.openProfile();
+
+    for (final lien in [
+      ProfileKeys.legalPrivacy,
+      ProfileKeys.legalNotice,
+      ProfileKeys.legalTerms,
+    ]) {
+      await robot.scrollTo(lien);
+      await robot.tap(lien);
+    }
+
+    expect(robot.links.opened.map((u) => u.toString()), [
+      'https://agora.example.com/legal/confidentialite.html',
+      'https://agora.example.com/legal/mentions-legales.html',
+      'https://agora.example.com/legal/conditions.html',
+    ]);
+  });
+
+  testWidgets('says so when the device cannot open the page', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      webBaseUrl: Uri.parse('https://agora.example.com'),
+      links: FakeLinkOpener(succeeds: false),
+    );
+    await robot.openProfile();
+
+    await robot.scrollTo(ProfileKeys.legalPrivacy);
+    await robot.tap(ProfileKeys.legalPrivacy);
+
+    robot.expectText("Impossible d'ouvrir cette page.");
+  });
+
+  // Un build sans AGORA_WEB_URL (développement) n'a pas d'adresse à ouvrir :
+  // mieux vaut ne rien proposer qu'un lien mort.
+  testWidgets('hides the legal links without a web address', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn());
+
+    await robot.openProfile();
+
+    expect(find.byKey(ProfileKeys.legalPrivacy), findsNothing);
+    expect(find.byKey(ProfileKeys.legalNotice), findsNothing);
+    expect(find.byKey(ProfileKeys.legalTerms), findsNothing);
+  });
 }

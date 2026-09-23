@@ -17,6 +17,7 @@ dependencies:
   intl: ^0.20.3
   kalender: ^0.31.3
   supabase_flutter: ^2.17.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

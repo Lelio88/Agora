@@ -47,6 +47,12 @@
   "useDeviceTimezone": "Use this device's",
   "saveButton": "Save",
   "profileSaved": "Profile saved.",
+  "legalSectionTitle": "Legal",
+  "legalPrivacy": "Privacy policy",
+  "legalNotice": "Legal notice",
+  "legalTerms": "Terms of use",
+  "legalLinkFailed": "Could not open this page.",
+
   "signOutButton": "Sign out",
 
   "validationEmail": "Invalid email address.",
