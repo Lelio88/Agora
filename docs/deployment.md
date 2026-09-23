@@ -82,6 +82,10 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   `AGORA_ANON_KEY` mis à jour, app web et Android reconstruites.
 - **L'app web est remplacée en dernier**, par bascule de dossier, une fois les services sondés ;
   servie en `no-cache` (fichiers Flutter non hachés).
+- **Les pages légales voyagent avec l'app** : `app/web/legal/` est recopié tel quel par
+  `flutter build web`, donc publié sur `/legal/confidentialite.html`, `/legal/mentions-legales.html`
+  et `/legal/conditions.html` sans rien ajouter à Caddy. Ce sont les adresses à donner à la fiche
+  Play Store ; elles ne doivent donc plus changer.
 
 ## Première installation
 

@@ -1,0 +1,117 @@
+/* Pages légales d'Agora — style commun aux trois (confidentialité, mentions,
+   conditions). Aux couleurs de l'app (indigo #3F51B5), clair ou sombre selon
+   le réglage du système. Aucune dépendance, aucune police distante : ces
+   pages doivent s'afficher partout, y compris depuis la fiche Play. */
+
+:root {
+  --fond: #fbfbfd;
+  --carte: #ffffff;
+  --texte: #1b1c22;
+  --doux: #55586b;
+  --accent: #3f51b5;
+  --trait: rgba(27, 28, 34, .12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #14151c;
+    --carte: #1c1d27;
+    --texte: #ecedf3;
+    --doux: #a3a6bb;
+    --accent: #9fa8da;
+    --trait: rgba(255, 255, 255, .12);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.marque {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: .3px;
+}
+
+.langues { display: flex; gap: 4px; }
+
+.langues button {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid var(--trait);
+  background: transparent;
+  color: var(--doux);
+  border-radius: 999px;
+}
+
+.langues button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+main { max-width: 46rem; margin: 0 auto; padding: 0 16px 64px; }
+
+h1 { font-size: clamp(26px, 5vw, 34px); line-height: 1.2; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 34px 0 8px; }
+h3 { font-size: 16px; margin: 22px 0 6px; }
+
+.date { color: var(--doux); font-size: 14px; margin: 0 0 8px; }
+.chapeau { color: var(--doux); font-size: 17px; }
+
+section[hidden] { display: none; }
+
+ul { padding-left: 20px; }
+li { margin: 5px 0; }
+
+a { color: var(--accent); }
+
+.encart {
+  background: var(--carte);
+  border: 1px solid var(--trait);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 18px 0;
+}
+
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--trait);
+}
+
+th { color: var(--doux); font-weight: 600; }
+
+footer {
+  border-top: 1px solid var(--trait);
+  margin-top: 40px;
+  padding-top: 16px;
+  color: var(--doux);
+  font-size: 14px;
+}
+
+footer a { margin-right: 14px; }

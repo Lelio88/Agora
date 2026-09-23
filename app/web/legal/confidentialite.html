@@ -1,0 +1,212 @@
+<!doctype html>
+<!--
+  Politique de confidentialité d'Agora. Bilingue dans un seul fichier, comme
+  les gabarits d'e-mail : un lien unique vaut pour la fiche Play, l'app et les
+  deux langues.
+
+  Servie par le build web (tout ce qui est dans app/web/ est copié dans
+  build/web/), donc déployée par la chaîne habituelle, sans réglage de Caddy.
+
+  Elle décrit le traitement RÉEL : toute évolution du schéma, d'un
+  sous-traitant ou d'une durée de conservation se répercute ici, dans le même
+  commit (voir la table de maintenance du CLAUDE.md).
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agora — Politique de confidentialité</title>
+<meta name="description" content="Ce qu'Agora enregistre, qui peut le voir, où c'est hébergé, et comment tout effacer.">
+<link rel="icon" href="../favicon.png">
+<link rel="stylesheet" href="./legal.css">
+</head>
+<body>
+
+<header>
+  <a class="marque" href="/">Agora</a>
+  <div class="langues">
+    <button type="button" data-langue="fr" aria-pressed="true">Français</button>
+    <button type="button" data-langue="en" aria-pressed="false">English</button>
+  </div>
+</header>
+
+<main>
+
+<section data-langue="fr">
+  <h1>Politique de confidentialité</h1>
+  <p class="date">Dernière mise à jour : 23 septembre 2026</p>
+  <p class="chapeau">Agora met en commun les agendas de plusieurs personnes. Chacun garde le sien et choisit ce que chaque groupe en voit. Cette page dit ce qui est enregistré, qui peut le lire, où c'est hébergé et comment tout effacer.</p>
+
+  <h2>Qui est responsable</h2>
+  <p>Agora est éditée par <strong>Lelio Buton</strong>, particulier, sans structure commerciale. Contact : <a href="mailto:heianenterpriseyt@gmail.com">heianenterpriseyt@gmail.com</a>. C'est la même adresse pour toute question, demande d'accès ou d'effacement.</p>
+
+  <h2>Ce qu'Agora enregistre</h2>
+  <table>
+    <tr><th>Donnée</th><th>Pourquoi</th></tr>
+    <tr><td>Adresse e-mail, mot de passe (jamais en clair : il est haché)</td><td>Créer le compte, s'y connecter, envoyer les codes de confirmation</td></tr>
+    <tr><td>Nom affiché, fuseau horaire, langue, image de profil si vous en fournissez une</td><td>Vous nommer dans vos groupes et afficher les horaires à votre heure</td></tr>
+    <tr><td>Vos agendas et vos rdv : titre, description, lieu, horaires, récurrence, niveau de visibilité</td><td>C'est le contenu de l'application</td></tr>
+    <tr><td>Vos groupes : appartenance, rôle, niveau de partage choisi, invitations créées, réponses aux rdv proposés</td><td>Faire fonctionner les agendas partagés</td></tr>
+    <tr><td>Les liens iCal que vous importez, et les rdv qu'ils contiennent</td><td>Relire l'agenda distant toutes les 30 minutes</td></tr>
+  </table>
+
+  <div class="encart">
+    <strong>Un lien iCal est traité comme un mot de passe.</strong> Il n'est jamais affiché, jamais écrit dans un journal, jamais renvoyé par l'API — même à vous. Un échec de synchronisation est enregistré sous forme de code (« adresse injoignable », « ce n'est pas un agenda »), jamais comme un message d'erreur qui contiendrait l'adresse.
+  </div>
+
+  <h2>Ce qu'Agora ne fait pas</h2>
+  <ul>
+    <li>Aucune publicité, aucun traceur, aucune mesure d'audience, aucun profilage.</li>
+    <li>Aucune revente, location ou partage de vos données à des fins commerciales.</li>
+    <li>Aucun outil d'analyse tiers dans l'application.</li>
+    <li>Aucun cookie publicitaire. Le navigateur garde votre session dans son stockage local, uniquement pour ne pas vous redemander votre mot de passe à chaque visite.</li>
+  </ul>
+
+  <h2>Qui peut voir quoi</h2>
+  <p>C'est le cœur d'Agora, et cela se règle à trois endroits : par groupe, par agenda et par rdv. <strong>Le réglage le plus restrictif l'emporte toujours.</strong></p>
+  <ul>
+    <li><strong>Détail</strong> — les membres du groupe voient le titre et le lieu.</li>
+    <li><strong>Occupé</strong> — ils voient un créneau pris, sans titre ni lieu.</li>
+    <li><strong>Invisible</strong> — ils ne voient rien du tout.</li>
+  </ul>
+  <p>Les rdv proposés <em>à un groupe</em> sont visibles de tous ses membres, ainsi que les réponses (présent, peut-être, absent). Un rdv d'un autre groupe auquel vous avez répondu « présent » vous rend « occupé » ailleurs — jamais plus : ni titre, ni lieu, ni lien avec l'autre groupe.</p>
+  <p>Cette règle est appliquée par le serveur, pas par l'application : ce qui vous est masqué ne quitte jamais la base de données.</p>
+
+  <h2>Où c'est hébergé</h2>
+  <p>Sur un serveur loué chez <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Allemagne), situé à Nuremberg. Vos données ne quittent pas l'Union européenne, à deux exceptions près, décrites ci-dessous.</p>
+
+  <h2>Les tiers qui interviennent</h2>
+  <table>
+    <tr><th>Qui</th><th>Ce qu'il reçoit</th></tr>
+    <tr><td>Hetzner (Allemagne)</td><td>Héberge le serveur, donc l'ensemble des données</td></tr>
+    <tr><td>Brevo — Sendinblue SAS (France)</td><td>Votre adresse e-mail et le contenu des messages d'authentification (codes de confirmation, réinitialisation)</td></tr>
+    <tr><td>Le fournisseur de votre agenda iCal (Google, Microsoft, Apple, autre)</td><td>Voit que le serveur d'Agora relit votre lien. Sa propre politique s'applique</td></tr>
+    <tr><td>Google Play</td><td>Distribue la version Android et connaît vos installations. Sa politique s'applique. La version web n'en dépend pas</td></tr>
+  </table>
+
+  <h2>Journaux et sauvegardes</h2>
+  <ul>
+    <li><strong>Journaux d'accès</strong> : conservés 30 jours au plus, avec les adresses IP <strong>masquées à la source</strong> (les deux derniers segments en IPv4). Les jetons de session et les en-têtes d'authentification en sont retirés avant écriture.</li>
+    <li><strong>Journaux d'authentification</strong> : les connexions et changements de mot de passe sont enregistrés, pour pouvoir constater un accès illégitime.</li>
+    <li><strong>Sauvegardes</strong> : une par nuit, conservée 14 jours sur le serveur, plus une copie hors-site conservée 30 jours. Elles servent à restaurer après une panne, jamais à consulter un compte.</li>
+  </ul>
+
+  <h2>Combien de temps</h2>
+  <p>Vos données vivent tant que votre compte existe. Il n'y a pas de purge automatique d'un compte inactif : vous seul décidez.</p>
+
+  <h2>Supprimer votre compte</h2>
+  <p>Dans l'application : <strong>Profil → Supprimer mon compte</strong>. La même action est disponible depuis la version web, sans installer quoi que ce soit. La suppression est immédiate et définitive.</p>
+  <p>Partent avec le compte : profil, agendas personnels, rdv et occurrences, liens iCal, appartenances aux groupes, invitations créées, réponses aux rdv, identités de connexion et sessions.</p>
+  <div class="encart">
+    <strong>Ce qui reste, et pourquoi.</strong> Les rdv que vous avez <em>proposés à un groupe</em> lui appartiennent : ils restent, sans auteur, <strong>avec leur texte libre</strong> — un titre ou une description peut donc encore vous nommer. Les groupes dont vous étiez propriétaire sont transmis à un autre membre ; un groupe sans autre membre est supprimé avec son agenda. Les sauvegardes déjà faites expirent d'elles-mêmes sous 30 jours.
+  </div>
+
+  <h2>Vos droits</h2>
+  <p>Vous pouvez accéder à vos données, les corriger (directement dans l'application), les faire effacer, en demander une copie, ou vous opposer à un traitement. Écrivez à <a href="mailto:heianenterpriseyt@gmail.com">heianenterpriseyt@gmail.com</a> ; la réponse intervient sous un mois. En cas de désaccord, vous pouvez saisir la <a href="https://www.cnil.fr/fr/plaintes" rel="noopener">CNIL</a>.</p>
+  <p>Le traitement repose sur l'exécution du service que vous demandez : sans compte ni agenda, l'application n'a rien à afficher.</p>
+
+  <h2>Âge minimum</h2>
+  <p>Agora s'adresse aux personnes de <strong>15 ans ou plus</strong>. Aucun compte n'est destiné à un enfant en dessous de cet âge.</p>
+
+  <h2>Le bot Discord</h2>
+  <p>Il n'est <strong>pas encore en service</strong>. Quand il le sera, une commande ne répondra qu'à la personne qui la tape, et toute publication automatique dans un salon plafonnera les rdv personnels à « occupé », sans titre ni lieu. Cette page sera mise à jour avant sa mise en service.</p>
+
+  <h2>Modifications</h2>
+  <p>Cette page change quand l'application change. La date en tête indique la dernière révision ; l'historique complet est public dans le dépôt de code.</p>
+</section>
+
+<section data-langue="en" hidden>
+  <h1>Privacy policy</h1>
+  <p class="date">Last updated: 23 September 2026</p>
+  <p class="chapeau">Agora brings several people's calendars together. Everyone keeps their own and decides what each group sees of it. This page states what is stored, who can read it, where it is hosted, and how to erase everything.</p>
+
+  <h2>Who is responsible</h2>
+  <p>Agora is published by <strong>Lelio Buton</strong>, a private individual, with no company behind it. Contact: <a href="mailto:heianenterpriseyt@gmail.com">heianenterpriseyt@gmail.com</a> — the same address for any question, access or erasure request.</p>
+
+  <h2>What Agora stores</h2>
+  <table>
+    <tr><th>Data</th><th>Why</th></tr>
+    <tr><td>Email address, password (never in clear text: it is hashed)</td><td>Create the account, sign in, send confirmation codes</td></tr>
+    <tr><td>Display name, time zone, language, profile picture if you provide one</td><td>Name you in your groups and show times in your own hours</td></tr>
+    <tr><td>Your calendars and events: title, description, location, times, recurrence, visibility level</td><td>That is the content of the app</td></tr>
+    <tr><td>Your groups: membership, role, chosen sharing level, invitations you create, answers to proposed events</td><td>Make shared calendars work</td></tr>
+    <tr><td>The iCal links you import, and the events they contain</td><td>Re-read the remote calendar every 30 minutes</td></tr>
+  </table>
+
+  <div class="encart">
+    <strong>An iCal link is treated like a password.</strong> It is never displayed, never written to a log, never returned by the API — not even to you. A failed sync is recorded as a code ("address unreachable", "not a calendar"), never as an error message that would contain the address.
+  </div>
+
+  <h2>What Agora does not do</h2>
+  <ul>
+    <li>No advertising, no trackers, no analytics, no profiling.</li>
+    <li>No selling, renting or sharing of your data for commercial purposes.</li>
+    <li>No third-party analytics tool inside the app.</li>
+    <li>No advertising cookies. Your browser keeps your session in local storage for one reason only: not asking for your password on every visit.</li>
+  </ul>
+
+  <h2>Who sees what</h2>
+  <p>This is the heart of Agora, and it is set in three places: per group, per calendar and per event. <strong>The most restrictive setting always wins.</strong></p>
+  <ul>
+    <li><strong>Details</strong> — group members see the title and location.</li>
+    <li><strong>Busy</strong> — they see a taken slot, with no title or location.</li>
+    <li><strong>Invisible</strong> — they see nothing at all.</li>
+  </ul>
+  <p>Events proposed <em>to a group</em> are visible to all its members, along with the answers (going, maybe, not going). An event in another group that you answered "going" makes you "busy" elsewhere — never more: no title, no location, no link to the other group.</p>
+  <p>This rule is enforced by the server, not by the app: what is hidden from you never leaves the database.</p>
+
+  <h2>Where it is hosted</h2>
+  <p>On a server rented from <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Germany), located in Nuremberg. Your data does not leave the European Union, with the two exceptions listed below.</p>
+
+  <h2>Third parties involved</h2>
+  <table>
+    <tr><th>Who</th><th>What they receive</th></tr>
+    <tr><td>Hetzner (Germany)</td><td>Hosts the server, therefore all the data</td></tr>
+    <tr><td>Brevo — Sendinblue SAS (France)</td><td>Your email address and the content of authentication messages (confirmation and reset codes)</td></tr>
+    <tr><td>Your iCal calendar provider (Google, Microsoft, Apple, other)</td><td>Sees Agora's server re-reading your link. Their own policy applies</td></tr>
+    <tr><td>Google Play</td><td>Distributes the Android version and knows about your installs. Their policy applies. The web version does not depend on it</td></tr>
+  </table>
+
+  <h2>Logs and backups</h2>
+  <ul>
+    <li><strong>Access logs</strong>: kept 30 days at most, with IP addresses <strong>masked at the source</strong> (the last two segments in IPv4). Session tokens and authentication headers are stripped before writing.</li>
+    <li><strong>Authentication logs</strong>: sign-ins and password changes are recorded, so that an illegitimate access can be established.</li>
+    <li><strong>Backups</strong>: one per night, kept 14 days on the server, plus an off-site copy kept 30 days. They exist to restore after a failure, never to look into an account.</li>
+  </ul>
+
+  <h2>How long</h2>
+  <p>Your data lives as long as your account does. Inactive accounts are not purged automatically: you alone decide.</p>
+
+  <h2>Deleting your account</h2>
+  <p>In the app: <strong>Profile → Delete my account</strong>. The same action is available from the web version, with nothing to install. Deletion is immediate and final.</p>
+  <p>Deleted with the account: profile, personal calendars, events and occurrences, iCal links, group memberships, invitations you created, answers to events, sign-in identities and sessions.</p>
+  <div class="encart">
+    <strong>What remains, and why.</strong> Events you <em>proposed to a group</em> belong to it: they stay, without an author, <strong>with their free text</strong> — a title or description may therefore still name you. Groups you owned are handed to another member; a group with no other member is deleted along with its calendar. Backups already taken expire by themselves within 30 days.
+  </div>
+
+  <h2>Your rights</h2>
+  <p>You may access your data, correct it (directly in the app), have it erased, request a copy, or object to a processing. Write to <a href="mailto:heianenterpriseyt@gmail.com">heianenterpriseyt@gmail.com</a>; an answer follows within one month. If you disagree with the outcome, you may lodge a complaint with the French data protection authority, the <a href="https://www.cnil.fr/en/plaintes" rel="noopener">CNIL</a>.</p>
+  <p>The processing rests on performing the service you ask for: without an account and a calendar, the app has nothing to show.</p>
+
+  <h2>Minimum age</h2>
+  <p>Agora is meant for people aged <strong>15 or over</strong>. No account is intended for a child below that age.</p>
+
+  <h2>The Discord bot</h2>
+  <p>It is <strong>not in service yet</strong>. When it is, a command will answer only the person who typed it, and any automatic posting in a channel will cap personal events at "busy", with no title or location. This page will be updated before it goes live.</p>
+
+  <h2>Changes</h2>
+  <p>This page changes when the app changes. The date at the top marks the latest revision; the full history is public in the source repository.</p>
+</section>
+
+<footer>
+  <a href="./mentions-legales.html">Mentions légales · Legal notice</a>
+  <a href="./conditions.html">Conditions d'utilisation · Terms</a>
+  <a href="/">Agora</a>
+</footer>
+
+</main>
+
+<script src="./legal.js"></script>
+
+</body>
+</html>

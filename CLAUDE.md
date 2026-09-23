@@ -87,6 +87,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
+| Donnée collectée, sous-traitant, durée de conservation, ou effet de la suppression de compte | `app/web/legal/confidentialite.html` (les deux langues) — la page décrit le traitement réel, pas une intention |
 | Étape de la feuille de route livrée | `docs/roadmap.md` (colonne État) |
 | Mise en ligne, sous-domaine, service serveur, `deploy/` | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) |
 | Nouvel anti-pattern découvert | `docs/architecture.md` §11 |
