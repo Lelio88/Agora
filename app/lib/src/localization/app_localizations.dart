@@ -338,6 +338,30 @@ abstract class AppLocalizations {
   /// **'Profil enregistré.'**
   String get profileSaved;
 
+  /// Avertissement du dialogue de suppression : ce qui survit au compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, mais avec leur texte :'**
+  String get deleteAccountLeftBehind;
+
+  /// Une ligne de la liste des rdv qui resteront : titre et nom du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'{title} — {group}'**
+  String deleteAccountLeftBehindItem(String title, String group);
+
+  /// Fin de la liste des rdv qui resteront, quand elle est tronquée.
+  ///
+  /// In fr, this message translates to:
+  /// **'et {count} autres'**
+  String deleteAccountLeftBehindMore(int count);
+
+  /// Case à cocher qui efface les rdv proposés avant de supprimer le compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer aussi ces rdv'**
+  String get deleteAccountAlsoEvents;
+
   /// Titre de la section du profil qui renvoie aux pages légales.
   ///
   /// In fr, this message translates to:

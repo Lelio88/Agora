@@ -1,5 +1,6 @@
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
@@ -18,6 +19,22 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
 
 Profile? _stored(AgoraRobot robot) =>
     robot.profiles.profiles[FakeAuthRepository.userId];
+
+// « Prévenir plutôt qu'effacer » : un rdv proposé à un groupe lui reste,
+// l'écran le dit avant de supprimer le compte, et propose de l'effacer.
+FakeAuthRepository _withLeftBehind(int count) {
+  final auth = _signedIn();
+  auth.leftBehind = [
+    for (var i = 0; i < count; i++)
+      LeftBehindEvent(
+        id: 'event-$i',
+        title: 'Sortie $i',
+        startsAt: DateTime.utc(2026, 10, 10 + i),
+        groupName: 'Rando',
+      ),
+  ];
+  return auth;
+}
 
 void main() {
   testWidgets('shows the email, name and time zone', (tester) async {
@@ -215,5 +232,68 @@ void main() {
     expect(find.byKey(ProfileKeys.legalPrivacy), findsNothing);
     expect(find.byKey(ProfileKeys.legalNotice), findsNothing);
     expect(find.byKey(ProfileKeys.legalTerms), findsNothing);
+  });
+
+  testWidgets('announces the events that would stay with their group', (
+    tester,
+  ) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _withLeftBehind(2));
+    await robot.openProfile();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+
+    robot.expectText(
+      'Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, '
+      'mais avec leur texte :',
+    );
+    robot.expectText('Sortie 0 — Rando');
+    robot.expectText('Sortie 1 — Rando');
+  });
+
+  testWidgets('deletes the proposed events first when asked', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _withLeftBehind(2));
+    await robot.openProfile();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+    await robot.tap(ProfileKeys.alsoDeleteEvents);
+    await robot.tap(ProfileKeys.confirmDelete);
+
+    expect(
+      robot.auth.calls,
+      containsAllInOrder(<String>[
+        'deleteProposedGroupEvents',
+        'deleteAccount',
+      ]),
+    );
+    expect(robot.auth.leftBehind, isEmpty);
+    robot.expectScreen(AuthKeys.signInScreen);
+  });
+
+  testWidgets('leaves them to the group when the box stays unchecked', (
+    tester,
+  ) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _withLeftBehind(2));
+    await robot.openProfile();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+    await robot.tap(ProfileKeys.confirmDelete);
+
+    expect(robot.auth.calls, isNot(contains('deleteProposedGroupEvents')));
+    expect(robot.auth.calls, contains('deleteAccount'));
+    expect(robot.auth.leftBehind, hasLength(2));
+  });
+
+  testWidgets('says nothing about events when there are none', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn());
+    await robot.openProfile();
+
+    await robot.tap(ProfileKeys.deleteAccount);
+
+    expect(find.byKey(ProfileKeys.alsoDeleteEvents), findsNothing);
+    expect(find.textContaining('resteront à leurs groupes'), findsNothing);
   });
 }

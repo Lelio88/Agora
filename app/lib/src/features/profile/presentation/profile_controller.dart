@@ -39,11 +39,16 @@ final class ProfileController extends AsyncNotifier<void> {
   /// Supprime le compte ; renvoie `true` en cas de succès. La session se
   /// ferme, et le routeur quitte l'écran pendant l'`await` : l'état n'est
   /// écrit que si le contrôleur est encore monté.
-  Future<bool> deleteAccount() async {
+  /// Supprime le compte. [alsoDeleteProposedEvents] efface d'abord les rdv
+  /// proposés à des groupes, qui leur resteraient sinon — dans cet ordre :
+  /// le compte supprimé, plus personne n'aurait le droit de les effacer.
+  Future<bool> deleteAccount({bool alsoDeleteProposedEvents = false}) async {
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).deleteAccount(),
-    );
+    final result = await AsyncValue.guard(() async {
+      final auth = ref.read(authRepositoryProvider);
+      if (alsoDeleteProposedEvents) await auth.deleteProposedGroupEvents();
+      await auth.deleteAccount();
+    });
     if (ref.mounted) state = result;
     return !result.hasError;
   }

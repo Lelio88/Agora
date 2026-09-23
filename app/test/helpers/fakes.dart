@@ -4,6 +4,7 @@ import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/domain/profile_repository.dart';
@@ -27,6 +28,9 @@ class FakeAuthRepository implements AuthRepository {
   final calls = <String>[];
   Map<String, String>? lastSignUp;
   String? lastNewPassword;
+
+  /// Rdv proposés à des groupes, qui resteraient après la suppression.
+  var leftBehind = <LeftBehindEvent>[];
 
   @override
   AppUser? get currentUser => _user;
@@ -115,6 +119,20 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     _emit(null);
     await _record('signOut');
+  }
+
+  @override
+  Future<List<LeftBehindEvent>> proposedGroupEvents() async {
+    calls.add('proposedGroupEvents');
+    return leftBehind;
+  }
+
+  @override
+  Future<int> deleteProposedGroupEvents() async {
+    calls.add('deleteProposedGroupEvents');
+    final count = leftBehind.length;
+    leftBehind = [];
+    return count;
   }
 
   @override

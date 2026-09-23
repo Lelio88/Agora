@@ -60,7 +60,15 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 - **Tout le reste part en cascade** depuis `auth.users` : profil, agendas personnels, rdv et
   occurrences, URL iCal, appartenances, identités et sessions GoTrue. Les rdv de groupe proposés
   par la personne restent, sans auteur (contenu partagé), **avec leur texte libre** (titre, lieu,
-  description), qui peut la nommer. La politique de confidentialité doit le dire.
+  description), qui peut la nommer. La politique de confidentialité le dit.
+- **L'écran le dit avant, et propose d'effacer** : le dialogue de suppression liste ces rdv
+  (`public.my_proposed_group_events`) et offre une case « Supprimer aussi ces rdv »
+  (`public.delete_my_proposed_group_events`). C'est le dernier moment où c'est possible : le
+  compte supprimé, plus personne n'a le droit de les effacer. Les deux fonctions sont
+  `SECURITY INVOKER` — la RLS des rdv dit déjà qui peut lire et qui peut supprimer ; une fonction
+  `SECURITY DEFINER` devrait refaire ces contrôles et pourrait se tromper. Les occurrences
+  modifiées d'une série sont écartées de la liste : elles appartiennent à une série déjà comptée,
+  et la supprimer les emporte.
 - **Compte effacé hors de la RPC** (interface d'administration de Supabase) : seule la cascade
   joue ; le trigger `private.keep_group_alive` transmet alors ou supprime ses groupes
   ([`groups-architecture.md`](./groups-architecture.md)).
@@ -93,4 +101,5 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 | `app/lib/src/features/profile/` | Profil : lecture/écriture de `profiles`, écran, contrôleur |
 | `supabase/migrations/20260921171319_profile_locale_timezone.sql` | Langue et fuseau à l'inscription, validation du fuseau, recopie de la langue |
 | `supabase/migrations/20260921175536_account_deletion.sql` | `delete_my_account()` : transmission des groupes, puis effacement en cascade |
+| `supabase/migrations/20260923000000_left_behind_events.sql` · `tests/left_behind_events_test.sql` | ce que la suppression laisse au groupe : le lister, l'effacer |
 | `supabase/templates/*.html` | Gabarits bilingues |

@@ -91,7 +91,9 @@ dépliage par le worker).
 
 - **Proposer** : tout membre (`private.can_add_event`). **Modifier, supprimer** : son créateur et
   les admins, propriétaire compris (`private.can_edit_event`). Un compte supprimé laisse ses rdv
-  proposés au groupe (`created_by` passe à `null`) ; les admins les gèrent.
+  proposés au groupe (`created_by` passe à `null`) ; les admins les gèrent. L'app annonce ces rdv
+  au moment de supprimer le compte et propose de les effacer d'abord
+  ([`auth-architecture.md`](./auth-architecture.md)).
 - **Répondre** : présent / peut-être / absent (`public.response_status`), par
   `respond_to_event(rdv, créneau, réponse)` — seule écriture de `event_responses`, qui vérifie
   l'appartenance au groupe ; `null` retire la réponse. Une **série se répond occurrence par

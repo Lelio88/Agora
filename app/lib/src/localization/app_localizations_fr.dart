@@ -138,6 +138,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileSaved => 'Profil enregistré.';
 
   @override
+  String get deleteAccountLeftBehind =>
+      'Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, mais avec leur texte :';
+
+  @override
+  String deleteAccountLeftBehindItem(String title, String group) {
+    return '$title — $group';
+  }
+
+  @override
+  String deleteAccountLeftBehindMore(int count) {
+    return 'et $count autres';
+  }
+
+  @override
+  String get deleteAccountAlsoEvents => 'Supprimer aussi ces rdv';
+
+  @override
   String get legalSectionTitle => 'Informations légales';
 
   @override

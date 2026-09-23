@@ -23,6 +23,8 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/data/auth_error_translator.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseAuthRepository implements AuthRepository {
@@ -103,6 +105,26 @@ final class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() => _guard(_auth.signOut);
+
+  @override
+  Future<List<LeftBehindEvent>> proposedGroupEvents() => guardPostgrest(
+    () async {
+      final rows = await _client.rpc<List<dynamic>>('my_proposed_group_events');
+      return [
+        for (final row in rows.cast<Map<String, dynamic>>())
+          LeftBehindEvent(
+            id: row['event_id'] as String,
+            title: row['title'] as String,
+            startsAt: DateTime.parse(row['starts_at'] as String).toLocal(),
+            groupName: row['group_name'] as String,
+          ),
+      ];
+    },
+  );
+
+  @override
+  Future<int> deleteProposedGroupEvents() =>
+      guardPostgrest(() => _client.rpc<int>('delete_my_proposed_group_events'));
 
   @override
   Future<void> deleteAccount() => _guard(() async {

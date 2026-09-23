@@ -12,6 +12,7 @@
 library;
 
 import 'package:agora/src/features/auth/domain/app_user.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 
 abstract interface class AuthRepository {
   AppUser? get currentUser;
@@ -49,8 +50,17 @@ abstract interface class AuthRepository {
 
   Future<void> signOut();
 
+  /// Rdv proposés à des groupes, qui leur resteraient si le compte était
+  /// supprimé maintenant.
+  Future<List<LeftBehindEvent>> proposedGroupEvents();
+
+  /// Efface ces rdv. Rend leur nombre.
+  Future<int> deleteProposedGroupEvents();
+
   /// Supprime définitivement le compte et ses données personnelles, puis
   /// ferme la session. Les groupes possédés sont transmis (voir la
-  /// migration `account_deletion`).
+  /// migration `account_deletion`). Les rdv proposés à un groupe lui
+  /// restent : [proposedGroupEvents] les annonce,
+  /// [deleteProposedGroupEvents] les efface.
   Future<void> deleteAccount();
 }

@@ -96,6 +96,21 @@
   "@saveButton": {"description": "Bouton d'enregistrement d'un formulaire."},
   "profileSaved": "Profil enregistré.",
   "@profileSaved": {"description": "Confirmation après l'enregistrement du profil."},
+  "deleteAccountLeftBehind": "Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, mais avec leur texte :",
+  "@deleteAccountLeftBehind": {"description": "Avertissement du dialogue de suppression : ce qui survit au compte."},
+  "deleteAccountLeftBehindItem": "{title} — {group}",
+  "@deleteAccountLeftBehindItem": {
+    "description": "Une ligne de la liste des rdv qui resteront : titre et nom du groupe.",
+    "placeholders": {"title": {"type": "String"}, "group": {"type": "String"}}
+  },
+  "deleteAccountLeftBehindMore": "et {count} autres",
+  "@deleteAccountLeftBehindMore": {
+    "description": "Fin de la liste des rdv qui resteront, quand elle est tronquée.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "deleteAccountAlsoEvents": "Supprimer aussi ces rdv",
+  "@deleteAccountAlsoEvents": {"description": "Case à cocher qui efface les rdv proposés avant de supprimer le compte."},
+
   "legalSectionTitle": "Informations légales",
   "@legalSectionTitle": {"description": "Titre de la section du profil qui renvoie aux pages légales."},
   "legalPrivacy": "Politique de confidentialité",

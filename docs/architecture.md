@@ -219,6 +219,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   ouvert aux deux états ; `AuthScaffold(busy:)` neutralise l'écran pendant une action.
 - **La langue du profil pilote l'app et les e-mails** (recopiée dans `raw_user_meta_data` par
   `private.sync_profile_locale`) ; **tous** les gabarits GoTrue sont surchargés, bilingues.
+- **Ce que la suppression laisse** : les rdv proposés à un groupe lui restent. Le dialogue les
+  liste et propose de les effacer d'abord (`my_proposed_group_events`,
+  `delete_my_proposed_group_events`) — après, personne n'en aurait plus le droit.
 - **Suppression du compte** par `delete_my_account()` : groupes possédés transmis (admin puis
   membre le plus ancien, groupe vide supprimé), tout le reste en cascade. Une session dont
   l'utilisateur n'a plus de profil est fermée (compte supprimé depuis un autre appareil).

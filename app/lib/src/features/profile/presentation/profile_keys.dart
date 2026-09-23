@@ -14,6 +14,7 @@ abstract final class ProfileKeys {
   static const legalTerms = ValueKey('profile.legalTerms');
   static const signOut = ValueKey('profile.signOut');
   static const deleteAccount = ValueKey('profile.deleteAccount');
+  static const alsoDeleteEvents = ValueKey('profile.alsoDeleteEvents');
   static const confirmDelete = ValueKey('profile.confirmDelete');
   static const cancelDelete = ValueKey('profile.cancelDelete');
 }

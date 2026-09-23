@@ -47,6 +47,11 @@
   "useDeviceTimezone": "Use this device's",
   "saveButton": "Save",
   "profileSaved": "Profile saved.",
+  "deleteAccountLeftBehind": "These events you proposed will stay with their groups, without an author, but with their text:",
+  "deleteAccountLeftBehindItem": "{title} — {group}",
+  "deleteAccountLeftBehindMore": "and {count} more",
+  "deleteAccountAlsoEvents": "Delete these events too",
+
   "legalSectionTitle": "Legal",
   "legalPrivacy": "Privacy policy",
   "legalNotice": "Legal notice",

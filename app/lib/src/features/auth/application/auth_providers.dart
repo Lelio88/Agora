@@ -4,6 +4,7 @@ library;
 
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -11,6 +12,13 @@ final authRepositoryProvider = Provider<AuthRepository>(
     'authRepositoryProvider must be overridden at the composition root.',
   ),
 );
+
+/// Ce qu'une suppression de compte laisserait derrière elle. Relu à chaque
+/// ouverture du dialogue de suppression : un rdv a pu être proposé depuis.
+final proposedGroupEventsProvider =
+    FutureProvider.autoDispose<List<LeftBehindEvent>>(
+      (ref) => ref.watch(authRepositoryProvider).proposedGroupEvents(),
+    );
 
 /// Utilisateur connecté, ou `null` ; se met à jour à chaque connexion et
 /// déconnexion.

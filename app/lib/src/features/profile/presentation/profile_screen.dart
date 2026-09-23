@@ -20,6 +20,7 @@ import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
+import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/presentation/profile_controller.dart';
@@ -104,14 +105,16 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
   Future<void> _confirmDeletion() async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final confirmed = await showDialog<bool>(
+    // Le dialogue rend « null » si l'on renonce, sinon un booléen : faut-il
+    // effacer d'abord les rdv proposés aux groupes ?
+    final alsoEvents = await showDialog<bool>(
       context: context,
       builder: (context) => const _DeleteAccountDialog(),
     );
-    if (confirmed != true) return;
+    if (alsoEvents == null) return;
     final deleted = await ref
         .read(profileControllerProvider.notifier)
-        .deleteAccount();
+        .deleteAccount(alsoDeleteProposedEvents: alsoEvents);
     if (deleted) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.accountDeleted)));
     }
@@ -284,23 +287,77 @@ class _LegalLink extends StatelessWidget {
   );
 }
 
-/// Confirmation de suppression : renvoie `true` si l'on confirme. Le bouton
-/// de confirmation porte la couleur d'erreur du thème, pour qu'on ne le
-/// confonde pas avec une action ordinaire.
-class _DeleteAccountDialog extends StatelessWidget {
+/// Confirmation de suppression : rend `null` si l'on renonce, sinon `true`
+/// ou `false` selon qu'il faut effacer d'abord les rdv proposés aux groupes.
+/// Le bouton de confirmation porte la couleur d'erreur du thème, pour qu'on
+/// ne le confonde pas avec une action ordinaire.
+///
+/// Les rdv qui resteraient sont annoncés ici, et non après coup : c'est le
+/// seul moment où l'on peut encore les effacer — le compte supprimé, plus
+/// personne n'en aurait le droit.
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
   const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() =>
+      _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  /// Trois suffisent à reconnaître de quoi il s'agit ; au-delà, le nombre
+  /// dit le reste sans faire défiler une liste dans un dialogue.
+  static const _shown = 3;
+
+  bool _alsoDeleteEvents = false;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
+    // En cours de lecture, on n'annonce rien plutôt qu'un chiffre faux.
+    final leftBehind =
+        ref.watch(proposedGroupEventsProvider).value ??
+        const <LeftBehindEvent>[];
     return AlertDialog(
       title: Text(l10n.deleteAccountTitle),
-      content: Text(l10n.deleteAccountBody),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.deleteAccountBody),
+            if (leftBehind.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(l10n.deleteAccountLeftBehind),
+              const SizedBox(height: 8),
+              for (final event in leftBehind.take(_shown))
+                Text(
+                  l10n.deleteAccountLeftBehindItem(
+                    event.title,
+                    event.groupName,
+                  ),
+                ),
+              if (leftBehind.length > _shown)
+                Text(
+                  l10n.deleteAccountLeftBehindMore(leftBehind.length - _shown),
+                ),
+              CheckboxListTile(
+                key: ProfileKeys.alsoDeleteEvents,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _alsoDeleteEvents,
+                onChanged: (value) =>
+                    setState(() => _alsoDeleteEvents = value ?? false),
+                title: Text(l10n.deleteAccountAlsoEvents),
+              ),
+            ],
+          ],
+        ),
+      ),
       actions: [
         TextButton(
           key: ProfileKeys.cancelDelete,
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancelButton),
         ),
         FilledButton(
@@ -309,7 +366,7 @@ class _DeleteAccountDialog extends StatelessWidget {
             backgroundColor: colors.error,
             foregroundColor: colors.onError,
           ),
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () => Navigator.of(context).pop(_alsoDeleteEvents),
           child: Text(l10n.deleteAccountConfirm),
         ),
       ],
