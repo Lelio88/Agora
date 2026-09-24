@@ -17,8 +17,9 @@ name: Deploy
 #      migrations, démarre le reste, sonde chaque service, et seulement
 #      alors remplace l'app web (une app neuve sur un schéma ancien casserait).
 #
-# Secrets GitHub attendus : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, et
-# AGORA_ANON_KEY (clé publiable, figée dans l'app web à la compilation). Le
+# Secrets GitHub attendus : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY,
+# AGORA_ANON_KEY et AGORA_TURNSTILE_SITE_KEY (toutes deux publiables, figées
+# dans l'app web à la compilation). Le
 # serveur tire l'image avec le jeton ÉPHÉMÈRE du run, révoqué à la fin :
 # aucun jeton durable n'y est posé.
 #
@@ -129,13 +130,20 @@ jobs:
         working-directory: app
         env:
           ANON_KEY: ${{ secrets.AGORA_ANON_KEY }}
+          TURNSTILE_SITE_KEY: ${{ secrets.AGORA_TURNSTILE_SITE_KEY }}
         run: |
           if [ -z "$ANON_KEY" ]; then
             echo "ERREUR : secret AGORA_ANON_KEY absent."
             exit 1
           fi
-          printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s"}' \
-            "$API_URL" "$ANON_KEY" "$SITE_URL" > "$RUNNER_TEMP/prod.json"
+          # Sans clé de site, l'app n'affiche pas de vérification — et le
+          # serveur la refuserait. Les deux réglages vont ensemble.
+          if [ -z "$TURNSTILE_SITE_KEY" ]; then
+            echo "ERREUR : secret AGORA_TURNSTILE_SITE_KEY absent."
+            exit 1
+          fi
+          printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s","AGORA_TURNSTILE_SITE_KEY":"%s"}' \
+            "$API_URL" "$ANON_KEY" "$SITE_URL" "$TURNSTILE_SITE_KEY" > "$RUNNER_TEMP/prod.json"
           flutter pub get
           flutter build web --release --dart-define-from-file="$RUNNER_TEMP/prod.json"
 

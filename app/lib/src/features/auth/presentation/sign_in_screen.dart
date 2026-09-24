@@ -14,6 +14,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/presentation/auth_action_controller.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/auth/presentation/widgets/captcha_gate.dart';
 import 'package:agora/src/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
@@ -28,7 +29,7 @@ class SignInScreen extends ConsumerStatefulWidget {
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends ConsumerState<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> with CaptchaGate {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -42,18 +43,28 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    await ref
+    final signedIn = await ref
         .read(signInActionProvider.notifier)
         .run(
-          (auth) => auth.signIn(email: _email.text, password: _password.text),
+          (auth) => auth.signIn(
+            email: _email.text,
+            password: _password.text,
+            captchaToken: captchaToken,
+          ),
         );
+    // Le jeton est consommé, même par une tentative refusée.
+    if (!signedIn) resetCaptcha();
   }
 
   Future<void> _requestConfirmationCode() async {
     final email = _email.text.trim();
     final sent = await ref
         .read(resendCodeActionProvider.notifier)
-        .run((auth) => auth.resendSignUpCode(email: email));
+        .run(
+          (auth) =>
+              auth.resendSignUpCode(email: email, captchaToken: captchaToken),
+        );
+    if (!sent) resetCaptcha();
     if (!sent || !mounted) return;
     context.goNamed(
       AppRoute.verifyEmail.name,
@@ -108,6 +119,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               child: Text(l10n.forgotPasswordLink),
             ),
           ),
+          captchaField(),
           if (error != null) FormErrorText(messageForError(error, l10n)),
           if (signIn.error is EmailNotConfirmedException)
             OutlinedButton(
@@ -120,7 +132,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             key: AuthKeys.submit,
             label: l10n.signInButton,
             isLoading: signIn.isLoading,
-            onPressed: _submit,
+            onPressed: captchaSolved ? _submit : null,
           ),
           const SizedBox(height: 16),
           AuthSwitchPrompt(

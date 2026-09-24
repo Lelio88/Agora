@@ -17,6 +17,7 @@ abstract final class AuthKeys {
   static const code = ValueKey('auth.code');
   static const newPassword = ValueKey('auth.newPassword');
 
+  static const captcha = ValueKey('auth.captcha');
   static const submit = ValueKey('auth.submit');
   static const resendCode = ValueKey('auth.resendCode');
   static const confirmEmailAction = ValueKey('auth.confirmEmailAction');

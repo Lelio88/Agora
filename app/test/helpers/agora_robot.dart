@@ -1,6 +1,8 @@
 import 'package:agora/src/app.dart';
 import 'package:agora/src/config/web_links.dart';
+import 'package:agora/src/config/captcha.dart';
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/features/auth/presentation/captcha_field.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
@@ -52,6 +54,7 @@ class AgoraRobot {
     FakeCalendarsRepository? calendars,
     FakeGroupsRepository? groups,
     Uri? webBaseUrl,
+    CaptchaConfig? captcha,
     FakeLinkOpener? links,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
@@ -77,6 +80,10 @@ class AgoraRobot {
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
           groupsRepositoryProvider.overrideWithValue(this.groups),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),
+          if (captcha != null) captchaConfigProvider.overrideWithValue(captcha),
+          captchaFieldBuilderProvider.overrideWithValue(
+            (config, onToken) => FakeCaptchaField(onToken: onToken),
+          ),
           linkOpenerProvider.overrideWithValue(this.links),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),

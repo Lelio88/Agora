@@ -13,6 +13,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/presentation/auth_action_controller.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/auth/presentation/widgets/captcha_gate.dart';
 import 'package:agora/src/features/auth/presentation/password_validation.dart';
 import 'package:agora/src/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -28,7 +29,7 @@ class SignUpScreen extends ConsumerStatefulWidget {
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> with CaptchaGate {
   final _formKey = GlobalKey<FormState>();
   final _displayName = TextEditingController();
   final _email = TextEditingController();
@@ -56,8 +57,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             displayName: _displayName.text,
             locale: locale,
             timezone: await deviceTimezone.current(),
+            captchaToken: captchaToken,
           ),
         );
+    // Le jeton est consommé, même par une inscription refusée.
+    if (!created) resetCaptcha();
     if (!created || !mounted) return;
     context.goNamed(
       AppRoute.verifyEmail.name,
@@ -123,11 +127,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           if (signUp.error case final error?)
             FormErrorText(messageForError(error, l10n)),
           const SizedBox(height: 24),
+          captchaField(),
           SubmitButton(
             key: AuthKeys.submit,
             label: l10n.signUpButton,
             isLoading: signUp.isLoading,
-            onPressed: _submit,
+            onPressed: captchaSolved ? _submit : null,
           ),
           const SizedBox(height: 16),
           AuthSwitchPrompt(

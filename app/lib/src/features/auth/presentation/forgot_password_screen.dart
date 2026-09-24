@@ -11,6 +11,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/presentation/auth_action_controller.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/auth/presentation/widgets/captcha_gate.dart';
 import 'package:agora/src/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
@@ -26,7 +27,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
       _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
+    with CaptchaGate {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
 
@@ -41,7 +43,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final email = _email.text.trim();
     final sent = await ref
         .read(requestResetActionProvider.notifier)
-        .run((auth) => auth.requestPasswordReset(email: email));
+        .run(
+          (auth) => auth.requestPasswordReset(
+            email: email,
+            captchaToken: captchaToken,
+          ),
+        );
     if (!sent || !mounted) return;
     context.goNamed(
       AppRoute.resetPassword.name,
@@ -76,11 +83,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           if (request.error case final error?)
             FormErrorText(messageForError(error, l10n)),
           const SizedBox(height: 24),
+          captchaField(),
           SubmitButton(
             key: AuthKeys.submit,
             label: l10n.sendCodeButton,
             isLoading: request.isLoading,
-            onPressed: _submit,
+            onPressed: captchaSolved ? _submit : null,
           ),
           const SizedBox(height: 8),
           TextButton(

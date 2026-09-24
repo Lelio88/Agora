@@ -48,10 +48,12 @@ final class SupabaseAuthRepository implements AuthRepository {
     required String displayName,
     required String locale,
     required String timezone,
+    String? captchaToken,
   }) => _guard(() async {
     final response = await _auth.signUp(
       email: email.trim(),
       password: password,
+      captchaToken: captchaToken,
       data: {
         'display_name': displayName.trim(),
         'locale': locale,
@@ -76,18 +78,37 @@ final class SupabaseAuthRepository implements AuthRepository {
   );
 
   @override
-  Future<void> resendSignUpCode({required String email}) =>
-      _guard(() => _auth.resend(type: OtpType.signup, email: email.trim()));
+  Future<void> resendSignUpCode({
+    required String email,
+    String? captchaToken,
+  }) => _guard(
+    () => _auth.resend(
+      type: OtpType.signup,
+      email: email.trim(),
+      captchaToken: captchaToken,
+    ),
+  );
 
   @override
-  Future<void> signIn({required String email, required String password}) =>
-      _guard(
-        () => _auth.signInWithPassword(email: email.trim(), password: password),
-      );
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? captchaToken,
+  }) => _guard(
+    () => _auth.signInWithPassword(
+      email: email.trim(),
+      password: password,
+      captchaToken: captchaToken,
+    ),
+  );
 
   @override
-  Future<void> requestPasswordReset({required String email}) =>
-      _guard(() => _auth.resetPasswordForEmail(email.trim()));
+  Future<void> requestPasswordReset({
+    required String email,
+    String? captchaToken,
+  }) => _guard(
+    () => _auth.resetPasswordForEmail(email.trim(), captchaToken: captchaToken),
+  );
 
   @override
   Future<void> resetPassword({

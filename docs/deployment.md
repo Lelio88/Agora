@@ -35,6 +35,7 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
 | `deploy/migrate.sh` | applique `supabase/migrations/` (une transaction par migration, suivi dans la table du CLI), pose le mot de passe du worker, recharge PostgREST |
 | `deploy/caddy/agora.caddy` | les deux vhosts, autonomes (importés par le Caddyfile de l'hôte) |
 | `deploy/production.env.example` · `gen-secrets.sh` | gabarit du `.env` ; secrets aléatoires et clés JWT `anon`/`service_role` signées avec `openssl` |
+| `app/web/captcha.html` | la page du widget Turnstile, servie par le domaine d'Agora (web et Android) |
 | `deploy/bootstrap-server.sh` | première installation d'un serveur, idempotente |
 | `deploy/rehearsal/` | répétition locale : `rehearse.sh`, override (Mailpit, Caddy), `check.dart` |
 | `worker/Dockerfile` | image distroless du worker, dépendances vendorisées |
@@ -70,11 +71,15 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   avec Mailpit sans TLS, envoie sans authentification.
 - **Gabarits d'e-mail lus par URL** (`/email/`) ; un échec de lecture ramène en silence le
   gabarit anglais de GoTrue : la répétition vérifie le corps du message, pas seulement le sujet.
-- **CAPTCHA désactivé** tant que l'app n'envoie pas de jeton : l'activer avant romprait
-  inscription et connexion. Conséquence à assumer : le quota d'e-mails (30 par heure) vaut pour
-  **toute l'instance**, donc n'importe qui peut l'épuiser en enchaînant des inscriptions et
-  priver les autres de leur code. Tolérable tant que l'adresse n'est pas publiée ; **le CAPTCHA
-  conditionne l'ouverture au public**, pas la mise en ligne.
+- **CAPTCHA (Cloudflare Turnstile)** : l'app obtient un jeton avant toute inscription,
+  connexion, réinitialisation ou renvoi de code, et GoTrue le vérifie
+  (`GOTRUE_SECURITY_CAPTCHA_*`). Sans lui, le quota d'e-mails (30 par heure) vaut pour **toute
+  l'instance** : n'importe qui pourrait l'épuiser et priver les autres de leur code.
+  **Les deux côtés vont ensemble** : activer le serveur avant que l'app n'envoie de jeton
+  casserait inscription et connexion ; la clé de site absente du build produit l'inverse. Ordre
+  sûr : déployer l'app d'abord, poser `CAPTCHA_ENABLED=true` ensuite.
+  La page du widget (`app/web/captcha.html`) est servie par le domaine d'Agora, seul autorisé
+  par la clé — le web l'affiche dans une iframe, Android dans une vue web.
 - **Mémoire** (serveur partagé, pic nocturne d'Ollama) : chaque service a sa `mem_limit`, ~1 Go
   de plafonds pour ~350 Mo mesurés en répétition (Realtime ~190, Postgres ~130).
 - **Images épinglées** sur celles de la pile locale, contre lesquelles tournent les tests.

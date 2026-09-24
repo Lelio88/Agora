@@ -22,23 +22,34 @@ abstract interface class AuthRepository {
 
   /// Crée le compte et envoie le code de confirmation. [locale] et
   /// [timezone] initialisent le profil (et la langue des e-mails).
+  ///
+  /// [captchaToken] prouve qu'un humain est derrière la demande. Le serveur
+  /// l'exige dès que le CAPTCHA est activé ; il vaut une fois.
   Future<void> signUp({
     required String email,
     required String password,
     required String displayName,
     required String locale,
     required String timezone,
+    String? captchaToken,
   });
 
   /// Confirme l'adresse avec le code reçu ; ouvre la session.
   Future<void> verifySignUpCode({required String email, required String code});
 
-  Future<void> resendSignUpCode({required String email});
+  Future<void> resendSignUpCode({required String email, String? captchaToken});
 
-  Future<void> signIn({required String email, required String password});
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? captchaToken,
+  });
 
   /// Envoie un code de réinitialisation, si un compte utilise [email].
-  Future<void> requestPasswordReset({required String email});
+  Future<void> requestPasswordReset({
+    required String email,
+    String? captchaToken,
+  });
 
   /// Vérifie le code de réinitialisation (ce qui ouvre une session), puis
   /// enregistre [newPassword].

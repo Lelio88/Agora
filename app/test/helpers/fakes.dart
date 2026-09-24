@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:flutter/material.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
@@ -28,6 +30,9 @@ class FakeAuthRepository implements AuthRepository {
   final calls = <String>[];
   Map<String, String>? lastSignUp;
   String? lastNewPassword;
+
+  /// Jetons « je ne suis pas un robot » reçus, dans l'ordre des appels.
+  final captchaTokens = <String?>[];
 
   /// Rdv proposés à des groupes, qui resteraient après la suppression.
   var leftBehind = <LeftBehindEvent>[];
@@ -67,7 +72,9 @@ class FakeAuthRepository implements AuthRepository {
     required String displayName,
     required String locale,
     required String timezone,
+    String? captchaToken,
   }) async {
+    captchaTokens.add(captchaToken);
     await _record('signUp');
     lastSignUp = {
       'email': email,
@@ -88,18 +95,30 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> resendSignUpCode({required String email}) =>
-      _record('resendSignUpCode');
+  Future<void> resendSignUpCode({required String email, String? captchaToken}) {
+    captchaTokens.add(captchaToken);
+    return _record('resendSignUpCode');
+  }
 
   @override
-  Future<void> signIn({required String email, required String password}) async {
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? captchaToken,
+  }) async {
+    captchaTokens.add(captchaToken);
     await _record('signIn');
     _emit(AppUser(id: userId, email: email));
   }
 
   @override
-  Future<void> requestPasswordReset({required String email}) =>
-      _record('requestPasswordReset');
+  Future<void> requestPasswordReset({
+    required String email,
+    String? captchaToken,
+  }) {
+    captchaTokens.add(captchaToken);
+    return _record('requestPasswordReset');
+  }
 
   @override
   Future<void> resetPassword({
@@ -194,6 +213,23 @@ class FakeLinkOpener implements LinkOpener {
     opened.add(url);
     return succeeds;
   }
+}
+
+/// Case « je ne suis pas un robot » de test : un appui rend un jeton, comme
+/// le ferait Cloudflare. Aucun navigateur, aucune vue web.
+class FakeCaptchaField extends StatelessWidget {
+  const FakeCaptchaField({super.key, required this.onToken});
+
+  static const token = 'jeton-de-test';
+
+  final ValueChanged<String?> onToken;
+
+  @override
+  Widget build(BuildContext context) => ElevatedButton(
+    key: AuthKeys.captcha,
+    onPressed: () => onToken(token),
+    child: const Text('captcha'),
+  );
 }
 
 class FakeDeviceTimezone implements DeviceTimezone {

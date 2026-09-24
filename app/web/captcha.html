@@ -1,0 +1,73 @@
+<!doctype html>
+<!--
+  Le « je ne suis pas un robot » d'Agora (Cloudflare Turnstile).
+
+  Une seule page pour les deux plateformes : le web l'affiche dans une iframe,
+  Android dans une vue web. Elle ne fait que deux choses — dessiner le widget,
+  et rendre le jeton à l'app.
+
+  Choix non évidents :
+    - la page est servie par le domaine d'Agora, seul autorisé par la clé de
+      site : un jeton obtenu ailleurs serait refusé ;
+    - le jeton est rendu par postMessage vers l'origine attendue, passée en
+      paramètre par l'app, et par le canal « Agora » que pose la vue web
+      d'Android. Les deux sont inoffensifs sur l'autre plateforme ;
+    - une erreur, une expiration ou un dépassement rendent une chaîne VIDE :
+      l'app doit alors redésactiver son bouton, plutôt que d'envoyer un jeton
+      périmé que le serveur refuserait.
+
+  Paramètres : ?sitekey=…&theme=light|dark&lang=fr|en&origin=https://…
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agora — vérification</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70px;
+    overflow: hidden;
+  }
+</style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=auTour" async defer></script>
+</head>
+<body>
+
+<div id="widget"></div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+
+  function rendre(jeton) {
+    // Android : canal posé par la vue web de l'app.
+    if (window.Agora && window.Agora.postMessage) {
+      window.Agora.postMessage(jeton);
+    }
+    // Web : la page est dans une iframe ; on ne parle qu'à l'origine annoncée
+    // par l'app, jamais à « * ».
+    if (window.parent !== window) {
+      window.parent.postMessage({ agoraTurnstile: jeton }, params.get('origin') || location.origin);
+    }
+  }
+
+  function auTour() {
+    turnstile.render('#widget', {
+      sitekey: params.get('sitekey'),
+      theme: params.get('theme') === 'dark' ? 'dark' : 'light',
+      language: params.get('lang') === 'en' ? 'en' : 'fr',
+      callback: rendre,
+      'error-callback': function () { rendre(''); },
+      'expired-callback': function () { rendre(''); },
+      'timeout-callback': function () { rendre(''); },
+    });
+  }
+</script>
+
+</body>
+</html>

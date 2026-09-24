@@ -1,5 +1,8 @@
 /// Bouton principal d'un formulaire : désactivé et remplacé par un indicateur
 /// pendant l'envoi, pour qu'un double appui n'envoie pas deux requêtes.
+///
+/// [onPressed] nul le désactive aussi : c'est ainsi qu'un écran attend une
+/// vérification « je ne suis pas un robot » avant d'autoriser l'envoi.
 library;
 
 import 'package:flutter/material.dart';
@@ -14,7 +17,7 @@ class SubmitButton extends StatelessWidget {
 
   final String label;
   final bool isLoading;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => FilledButton(

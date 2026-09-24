@@ -9,6 +9,7 @@ import 'package:agora/src/common_widgets/submit_button.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/presentation/auth_action_controller.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/auth/presentation/widgets/captcha_gate.dart';
 import 'package:agora/src/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:agora/src/features/auth/presentation/widgets/code_field.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -26,7 +27,8 @@ class VerifyEmailScreen extends ConsumerStatefulWidget {
   ConsumerState<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
 }
 
-class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
+class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen>
+    with CaptchaGate {
   final _formKey = GlobalKey<FormState>();
   final _code = TextEditingController();
 
@@ -51,7 +53,13 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final confirmation = AppLocalizations.of(context).codeResent;
     final sent = await ref
         .read(resendCodeActionProvider.notifier)
-        .run((auth) => auth.resendSignUpCode(email: widget.email));
+        .run(
+          (auth) => auth.resendSignUpCode(
+            email: widget.email,
+            captchaToken: captchaToken,
+          ),
+        );
+    resetCaptcha();
     if (sent) messenger.showSnackBar(SnackBar(content: Text(confirmation)));
   }
 
@@ -76,6 +84,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               onSubmitted: _submit,
             ),
           ),
+          captchaField(),
           if (error != null) FormErrorText(messageForError(error, l10n)),
           const SizedBox(height: 16),
           SubmitButton(
@@ -87,7 +96,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           const SizedBox(height: 8),
           TextButton(
             key: AuthKeys.resendCode,
-            onPressed: resend.isLoading ? null : _resend,
+            onPressed: resend.isLoading || !captchaSolved ? null : _resend,
             child: Text(l10n.resendCodeButton),
           ),
           TextButton(

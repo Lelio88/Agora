@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:agora/src/app.dart';
+import 'package:agora/src/config/captcha.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
@@ -191,4 +192,93 @@ void main() {
       robot.expectScreen(AuthKeys.signInScreen);
     });
   }
+
+  // Vérification « je ne suis pas un robot » : le serveur l'exige dès qu'elle
+  // est activée, l'app doit donc l'obtenir AVANT d'envoyer quoi que ce soit.
+  group('vérification humaine', () {
+    final captcha = CaptchaConfig(
+      siteKey: 'cle-de-test',
+      pageUrl: Uri.parse('https://agora.example.com/captcha.html'),
+    );
+
+    testWidgets('la connexion attend la vérification, puis envoie le jeton', (
+      tester,
+    ) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(captcha: captcha);
+
+      await robot.enter(AuthKeys.email, 'zoe@test.local');
+      await robot.enter(AuthKeys.password, 'motdepasse1');
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+        reason: "le bouton reste désactivé tant que la case n'est pas cochée",
+      );
+
+      await robot.tap(AuthKeys.captcha);
+      await robot.tap(AuthKeys.submit);
+
+      expect(robot.auth.calls, contains('signIn'));
+      expect(robot.auth.captchaTokens, [FakeCaptchaField.token]);
+    });
+
+    testWidgets('un refus redemande une vérification', (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(captcha: captcha);
+      robot.auth.nextError = const InvalidCredentialsException();
+
+      await robot.enter(AuthKeys.email, 'zoe@test.local');
+      await robot.enter(AuthKeys.password, 'mauvais-mot-de-passe');
+      await robot.tap(AuthKeys.captcha);
+      await robot.tap(AuthKeys.submit);
+
+      robot.expectText('Adresse ou mot de passe incorrect.');
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+        reason: 'le jeton est consommé : il en faut un nouveau',
+      );
+    });
+
+    testWidgets("l'inscription envoie le jeton", (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(captcha: captcha);
+      await robot.tap(AuthKeys.signUpLink);
+
+      await robot.enter(AuthKeys.displayName, 'Zoé');
+      await robot.enter(AuthKeys.email, 'zoe@test.local');
+      await robot.enter(AuthKeys.password, 'motdepasse1');
+      await robot.tap(AuthKeys.captcha);
+      await robot.tap(AuthKeys.submit);
+
+      expect(robot.auth.calls, contains('signUp'));
+      expect(robot.auth.captchaTokens, [FakeCaptchaField.token]);
+    });
+
+    testWidgets('le mot de passe oublié envoie le jeton', (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(captcha: captcha);
+      await robot.tap(AuthKeys.forgotPasswordLink);
+
+      await robot.enter(AuthKeys.email, 'zoe@test.local');
+      await robot.tap(AuthKeys.captcha);
+      await robot.tap(AuthKeys.submit);
+
+      expect(robot.auth.calls, contains('requestPasswordReset'));
+      expect(robot.auth.captchaTokens, [FakeCaptchaField.token]);
+    });
+
+    testWidgets('sans clé de site, rien ne change', (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp();
+
+      expect(find.byKey(AuthKeys.captcha), findsNothing);
+      await robot.enter(AuthKeys.email, 'zoe@test.local');
+      await robot.enter(AuthKeys.password, 'motdepasse1');
+      await robot.tap(AuthKeys.submit);
+
+      expect(robot.auth.calls, contains('signIn'));
+      expect(robot.auth.captchaTokens, [null]);
+    });
+  });
 }
