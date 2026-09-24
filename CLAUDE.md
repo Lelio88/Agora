@@ -28,7 +28,7 @@ Topologie rapide :
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
 - **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
 - **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.
-- **Android** : `applicationId` **`app.agora`**, figé dès le premier envoi au Play Store.
+- **Android** : `applicationId` **`app.agora`**, figé dès le premier envoi au Play Store. Signature d'envoi : `../.agora-secrets/upload-keystore.jks`, câblée par `app/android/key.properties` (gitignoré) — conventions dans `../android-signing-guide.md`.
 
 ## IV. Garde-Fous non négociables
 

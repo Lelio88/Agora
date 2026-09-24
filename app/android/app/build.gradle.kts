@@ -1,7 +1,18 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Signature de publication : le keystore et son mot de passe vivent hors du
+// dépôt, dans ../.agora-secrets/ (voir ../../android-signing-guide.md).
+// `rootProject` est android/, donc ce chemin désigne android/key.properties.
+val fichierSignature = rootProject.file("key.properties")
+val signatureDisponible = fichierSignature.exists()
+val proprietes = Properties().apply {
+    if (signatureDisponible) fichierSignature.inputStream().use { load(it) }
 }
 
 android {
@@ -29,11 +40,35 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (signatureDisponible) {
+            create("upload") {
+                storeFile = file(proprietes.getProperty("storeFile"))
+                storePassword = proprietes.getProperty("storePassword")
+                keyAlias = proprietes.getProperty("keyAlias")
+                keyPassword = proprietes.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // **Repli sur la clé de débogage, mais jamais en silence.** Sans
+            // `key.properties`, `flutter run --release` doit continuer à
+            // s'installer sur un appareil : Flutter exige une signature,
+            // quelle qu'elle soit. Un binaire ainsi signé est en revanche
+            // refusé par Play — après l'envoi, et sans indice sur la cause.
+            // L'avertissement est le seul endroit où cela se voit à temps.
+            signingConfig = if (signatureDisponible) {
+                signingConfigs.getByName("upload")
+            } else {
+                logger.warn(
+                    "ATTENTION : android/key.properties absent. La version de " +
+                        "publication est signée avec la clé de DÉBOGAGE : " +
+                        "installable localement, refusée par le Play Store."
+                )
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
