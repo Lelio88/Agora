@@ -96,6 +96,9 @@
   "@saveButton": {"description": "Bouton d'enregistrement d'un formulaire."},
   "profileSaved": "Profil enregistré.",
   "@profileSaved": {"description": "Confirmation après l'enregistrement du profil."},
+  "errorCaptchaFailed": "La vérification a échoué. Réessaie dans un instant.",
+  "@errorCaptchaFailed": {"description": "Le serveur a refusé le jeton « je ne suis pas un robot » (absent, périmé ou déjà utilisé)."},
+
   "deleteAccountLeftBehind": "Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, mais avec leur texte :",
   "@deleteAccountLeftBehind": {"description": "Avertissement du dialogue de suppression : ce qui survit au compte."},
   "deleteAccountLeftBehindItem": "{title} — {group}",

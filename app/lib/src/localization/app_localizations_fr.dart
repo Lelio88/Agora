@@ -138,6 +138,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileSaved => 'Profil enregistré.';
 
   @override
+  String get errorCaptchaFailed =>
+      'La vérification a échoué. Réessaie dans un instant.';
+
+  @override
   String get deleteAccountLeftBehind =>
       'Ces rdv que tu as proposés resteront à leurs groupes, sans auteur, mais avec leur texte :';
 

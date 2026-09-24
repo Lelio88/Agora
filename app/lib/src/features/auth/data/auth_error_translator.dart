@@ -2,7 +2,7 @@
 ///
 /// Choix non évident : la traduction se fait d'abord sur `AuthException.code`,
 /// le code stable de GoTrue (relevés sur le serveur local : `weak_password`,
-/// `otp_expired`, `email_not_confirmed`, `invalid_credentials`,
+/// `otp_expired`, `email_not_confirmed`, `invalid_credentials`, `captcha_failed`,
 /// `user_already_exists`). Le texte ne sert que de repli pour les pannes
 /// réseau, que le SDK emballe parfois dans une `AuthException` sans code.
 library;
@@ -21,6 +21,7 @@ const _byCode = <String, AppException>{
   'email_address_invalid': InvalidEmailException(),
   // GoTrue répond `validation_failed` à une adresse mal formée.
   'validation_failed': InvalidEmailException(),
+  'captcha_failed': CaptchaFailedException(),
   'over_email_send_rate_limit': RateLimitedException(),
   'over_request_rate_limit': RateLimitedException(),
 };

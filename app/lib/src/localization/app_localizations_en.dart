@@ -138,6 +138,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaved => 'Profile saved.';
 
   @override
+  String get errorCaptchaFailed => 'The check failed. Try again in a moment.';
+
+  @override
   String get deleteAccountLeftBehind =>
       'These events you proposed will stay with their groups, without an author, but with their text:';
 

@@ -15,6 +15,7 @@ String messageFor(AppException error, AppLocalizations l10n) => switch (error) {
   InvalidCodeException() => l10n.errorInvalidCode,
   WeakPasswordException() => l10n.errorWeakPassword,
   InvalidEmailException() => l10n.errorInvalidEmail,
+  CaptchaFailedException() => l10n.errorCaptchaFailed,
   RateLimitedException() => l10n.errorRateLimited,
   InvalidTimezoneException() => l10n.errorInvalidTimezone,
   EventNotFoundException() => l10n.errorEventNotFound,

@@ -338,6 +338,12 @@ abstract class AppLocalizations {
   /// **'Profil enregistré.'**
   String get profileSaved;
 
+  /// Le serveur a refusé le jeton « je ne suis pas un robot » (absent, périmé ou déjà utilisé).
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification a échoué. Réessaie dans un instant.'**
+  String get errorCaptchaFailed;
+
   /// Avertissement du dialogue de suppression : ce qui survit au compte.
   ///
   /// In fr, this message translates to:

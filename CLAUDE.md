@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : Agora est en ligne (Supabase auto-hébergé + worker sur le Hetzner partagé, déploiement par `release`).
-- **Focus immédiat** : étape 8 — `/agenda` (groupe du salon ou perso), `/dispo` (créneaux communs, à porter en Go), liaison d'un salon choisie dans l'app ; puis CAPTCHA, pages légales, fiche Play.
+- **Dernier focus** : en ligne, avec pages légales et vérification humaine (Turnstile) sur les écrans de compte.
+- **Focus immédiat** : fiche Play Store (dernier point avant l'ouverture au public) ; puis étape 8 — `/agenda` (groupe du salon ou perso), `/dispo` (créneaux communs, à porter en Go), liaison d'un salon choisie dans l'app.

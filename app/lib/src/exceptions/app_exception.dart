@@ -56,6 +56,13 @@ final class InvalidEmailException extends AppException {
     : super('invalid-email', 'Email address rejected by the server');
 }
 
+/// Vérification « je ne suis pas un robot » refusée par le serveur : jeton
+/// absent, périmé, ou déjà utilisé. L'écran en redemande une.
+final class CaptchaFailedException extends AppException {
+  const CaptchaFailedException()
+    : super('captcha-failed', 'Captcha verification failed');
+}
+
 final class RateLimitedException extends AppException {
   const RateLimitedException()
     : super('rate-limited', 'Too many requests, retry later');

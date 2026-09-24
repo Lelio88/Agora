@@ -47,6 +47,8 @@
   "useDeviceTimezone": "Use this device's",
   "saveButton": "Save",
   "profileSaved": "Profile saved.",
+  "errorCaptchaFailed": "The check failed. Try again in a moment.",
+
   "deleteAccountLeftBehind": "These events you proposed will stay with their groups, without an author, but with their text:",
   "deleteAccountLeftBehindItem": "{title} — {group}",
   "deleteAccountLeftBehindMore": "and {count} more",

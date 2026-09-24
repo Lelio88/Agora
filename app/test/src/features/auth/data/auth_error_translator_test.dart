@@ -14,6 +14,9 @@ void main() {
     'weak_password': WeakPasswordException,
     'email_address_invalid': InvalidEmailException,
     'validation_failed': InvalidEmailException,
+    // Relevé en production le 2026-09-24, vérification activée : un jeton
+    // absent ou périmé donne ce code, et non un message libre.
+    'captcha_failed': CaptchaFailedException,
     'over_email_send_rate_limit': RateLimitedException,
     'over_request_rate_limit': RateLimitedException,
   };
