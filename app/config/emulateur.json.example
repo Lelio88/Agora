@@ -1,0 +1,5 @@
+{
+  "_": "Build de développement pour l'émulateur Android : depuis la machine virtuelle, l'hôte s'appelle 10.0.2.2. Copier en emulateur.json (gitignoré) et remplacer la clé par celle qu'affiche « supabase status ».",
+  "SUPABASE_URL": "http://10.0.2.2:55321",
+  "SUPABASE_PUBLISHABLE_KEY": "<clé publishable affichée par « supabase status »>"
+}
