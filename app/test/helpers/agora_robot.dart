@@ -62,6 +62,7 @@ class AgoraRobot {
     bool intro = false,
     IntroSound? sound,
     bool disableAnimations = false,
+    bool settle = true,
   }) async {
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
@@ -102,11 +103,19 @@ class AgoraRobot {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      // Deux images suffisent à monter l'arbre. `pumpAndSettle` irait, lui,
+      // jusqu'au bout de l'animation **et** du minuteur qui la retire : il n'y
+      // aurait plus rien à observer.
+      await tester.pump();
+      await tester.pump();
+    }
   }
 
-  /// Monte l'app **avec** son écran d'introduction, sans attendre qu'il se
-  /// termine : `pumpAndSettle` tournerait pendant toute l'animation.
+  /// Monte l'app **avec** son écran d'introduction, arrêté à son premier
+  /// instant : c'est là qu'on peut encore le voir.
   Future<void> pumpIntro({
     IntroSound? sound,
     bool disableAnimations = false,
@@ -115,6 +124,7 @@ class AgoraRobot {
       intro: true,
       sound: sound,
       disableAnimations: disableAnimations,
+      settle: false,
     );
   }
 
