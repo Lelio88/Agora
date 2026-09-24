@@ -20,3 +20,6 @@ worker/bin/
 
 # Répétition locale de la mise en ligne (secrets jetables)
 deploy/rehearsal/.work/
+
+# Caches Python de l'outillage (tools/)
+__pycache__/

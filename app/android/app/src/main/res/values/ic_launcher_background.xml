@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Le haut du dégradé dessiné par tools/store/make_store_assets.py :
+         Android ne sait poser qu'une couleur pleine derrière une icône
+         adaptative. -->
+    <color name="ic_launcher_background">#1A1B3A</color>
+</resources>

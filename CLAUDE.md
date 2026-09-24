@@ -90,7 +90,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Vérification humaine (CAPTCHA) : clé, page du widget, écrans concernés | `app/web/captcha.html` + `captcha_gate.dart` + `GOTRUE_SECURITY_CAPTCHA_*` de `deploy/docker-compose.prod.yml` + `docs/deployment.md` |
 | Donnée collectée, sous-traitant, durée de conservation, ou effet de la suppression de compte | `app/web/legal/confidentialite.html` (les deux langues) — la page décrit le traitement réel, pas une intention |
 | Étape de la feuille de route livrée | `docs/roadmap.md` (colonne État) |
-| Mise en ligne, sous-domaine, service serveur, `deploy/`, ou fiche Play Store | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) + `app/store/` (textes et captures, scène rejouable par `tools/store/seed_demo.py`) |
+| Mise en ligne, `deploy/`, fiche Play Store, ou identité visuelle | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) ; fiche : `app/store/` (scène rejouable par `tools/store/seed_demo.py`, images par `make_store_assets.py`) ; intro : `tools/mockups/agora_intro.html` et `tools/sounds/gen_intro_jingle.py`, dont les `BATTUES` sont jumelles |
 | Nouvel anti-pattern découvert | `docs/architecture.md` §11 |
 | Changement de dépendance critique | Section III + `pubspec.yaml` / `go.mod` |
 
