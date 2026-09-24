@@ -59,7 +59,12 @@ agora.heianenterprise.com {
 	header {
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
-		X-Frame-Options DENY
+		# SAMEORIGIN et non DENY : l'app encadre sa PROPRE page de
+		# vérification (/captcha.html) dans une iframe. Avec DENY, le
+		# navigateur refusait de l'afficher et aucun jeton n'arrivait —
+		# constaté en production. Un site tiers reste incapable d'encadrer
+		# Agora, ce que cet en-tête protège réellement.
+		X-Frame-Options SAMEORIGIN
 		-Server
 	}
 
