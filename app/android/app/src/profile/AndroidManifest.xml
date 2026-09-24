@@ -4,4 +4,9 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Même raison que dans la variante debug : un build de développement
+         joint la pile Supabase locale en HTTP (http://10.0.2.2:55321 depuis
+         l'émulateur). Le binaire publié reste en HTTPS strict. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
