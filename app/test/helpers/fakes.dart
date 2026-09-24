@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
@@ -202,6 +203,18 @@ class FakeProfileRepository implements ProfileRepository {
 
 /// Retient les liens qu'on a voulu ouvrir, sans navigateur. [succeeds] à
 /// faux rejoue l'appareil qui n'a rien pour les ouvrir.
+/// Lecteur de jingle de test : il compte, il ne joue rien.
+class FakeIntroSound implements IntroSound {
+  int plays = 0;
+  int disposals = 0;
+
+  @override
+  Future<void> play() async => plays++;
+
+  @override
+  Future<void> dispose() async => disposals++;
+}
+
 class FakeLinkOpener implements LinkOpener {
   FakeLinkOpener({this.succeeds = true});
 

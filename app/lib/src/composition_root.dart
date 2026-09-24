@@ -14,7 +14,9 @@
 /// un hot reload ne réévalue pas les overrides.
 library;
 
+import 'package:agora/src/device/audioplayers_intro_sound.dart';
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/device/platform_device_timezone.dart';
 import 'package:agora/src/device/url_launcher_link_opener.dart';
@@ -47,4 +49,5 @@ List<Override> prodOverrides(SupabaseClient client) => [
   ),
   deviceTimezoneProvider.overrideWith((ref) => const PlatformDeviceTimezone()),
   linkOpenerProvider.overrideWith((ref) => const UrlLauncherLinkOpener()),
+  introSoundProvider.overrideWith((ref) => AudioPlayersIntroSound()),
 ];

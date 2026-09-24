@@ -1,10 +1,12 @@
-/// Widget racine d'Agora : thème, langues (FR par défaut, EN) et routeur.
+/// Widget racine d'Agora : thème, langues (FR par défaut, EN), routeur et
+/// écran d'introduction.
 ///
 /// Langue retenue, dans l'ordre : [locale] (forcée par les tests), celle du
 /// profil une fois connecté, celle de l'appareil, et le français en dernier
 /// recours.
 library;
 
+import 'package:agora/src/features/intro/presentation/intro_gate.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_router.dart';
@@ -15,9 +17,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 const _seedColor = Color(0xFF3F51B5);
 
 class AgoraApp extends ConsumerWidget {
-  const AgoraApp({super.key, this.locale});
+  const AgoraApp({super.key, this.locale, this.intro = true});
 
   final Locale? locale;
+
+  /// L'écran d'introduction. **Faux dans les tests** : une animation de deux
+  /// secondes ferait expirer chaque `pumpAndSettle`, dans deux cent trente
+  /// tests qui n'ont rien à voir avec elle. `intro_test.dart` la rallume.
+  final bool intro;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,6 +42,12 @@ class AgoraApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       localeResolutionCallback: _resolveLocale,
       routerConfig: ref.watch(goRouterProvider),
+      // `builder` plutôt qu'une route : l'intro recouvre l'app où qu'elle
+      // ouvre — connexion ou agenda selon la session — sans entrer dans
+      // l'historique de navigation ni pouvoir être retrouvée par un lien.
+      builder: intro
+          ? (context, child) => IntroGate(child: child ?? const SizedBox())
+          : null,
     );
   }
 }

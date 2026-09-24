@@ -2,6 +2,7 @@ import 'package:agora/src/app.dart';
 import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/config/captcha.dart';
 import 'package:agora/src/device/device_timezone.dart';
+import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/features/auth/presentation/captcha_field.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
@@ -58,6 +59,9 @@ class AgoraRobot {
     FakeLinkOpener? links,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
+    bool intro = false,
+    IntroSound? sound,
+    bool disableAnimations = false,
   }) async {
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
@@ -85,14 +89,33 @@ class AgoraRobot {
             (config, onToken) => FakeCaptchaField(onToken: onToken),
           ),
           linkOpenerProvider.overrideWithValue(this.links),
+          introSoundProvider.overrideWithValue(sound ?? FakeIntroSound()),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),
           ),
         ],
-        child: AgoraApp(locale: locale),
+        child: MediaQuery(
+          // Le réglage « réduire les animations » du téléphone : l'intro le
+          // respecte, les tests doivent donc pouvoir le poser.
+          data: MediaQueryData(disableAnimations: disableAnimations),
+          child: AgoraApp(locale: locale, intro: intro),
+        ),
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  /// Monte l'app **avec** son écran d'introduction, sans attendre qu'il se
+  /// termine : `pumpAndSettle` tournerait pendant toute l'animation.
+  Future<void> pumpIntro({
+    IntroSound? sound,
+    bool disableAnimations = false,
+  }) async {
+    await pumpApp(
+      intro: true,
+      sound: sound,
+      disableAnimations: disableAnimations,
+    );
   }
 
   Future<void> enter(Key field, String text) async {

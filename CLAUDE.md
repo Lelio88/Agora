@@ -24,7 +24,7 @@ Topologie rapide :
 
 *Versions contraintes par `app/pubspec.yaml` et `worker/go.mod`. N'introduisez aucune dépendance alternative sans approbation.*
 
-- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `url_launcher` ^6.3 (pages légales ouvertes hors de l'app ; `<queries>` déclaré dans le manifeste Android), `webview_flutter` ^4.14 (Android seul : le widget Turnstile, servi par `app/web/captcha.html`), `flutter_localizations` + `intl`.
+- **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `url_launcher` ^6.3 (pages légales ouvertes hors de l'app ; `<queries>` déclaré dans le manifeste Android), `webview_flutter` ^4.14 (Android seul : le widget Turnstile, servi par `app/web/captcha.html`), `audioplayers` ^6.8 (le seul jingle de l'app, celui de l'intro), `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
 - **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
 - **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.
@@ -90,7 +90,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Vérification humaine (CAPTCHA) : clé, page du widget, écrans concernés | `app/web/captcha.html` + `captcha_gate.dart` + `GOTRUE_SECURITY_CAPTCHA_*` de `deploy/docker-compose.prod.yml` + `docs/deployment.md` |
 | Donnée collectée, sous-traitant, durée de conservation, ou effet de la suppression de compte | `app/web/legal/confidentialite.html` (les deux langues) — la page décrit le traitement réel, pas une intention |
 | Étape de la feuille de route livrée | `docs/roadmap.md` (colonne État) |
-| Mise en ligne, `deploy/`, fiche Play Store, ou identité visuelle | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) ; fiche : `app/store/` (scène rejouable par `tools/store/seed_demo.py`, images par `make_store_assets.py`) ; intro : `tools/mockups/agora_intro.html` et `tools/sounds/gen_intro_jingle.py`, dont les `BATTUES` sont jumelles |
+| Mise en ligne, `deploy/`, fiche Play Store, ou identité visuelle | `docs/deployment.md` + `rehearse.sh` vert + `../INFRASTRUCTURE.md` (une fois en ligne) ; fiche : `app/store/` (scène rejouable par `tools/store/seed_demo.py`, images par `make_store_assets.py`) ; intro : la maquette `tools/mockups/agora_intro.html` fait foi, `gen_intro_jingle.py` et `intro_screen.dart` en sont les traductions — les trois `BATTUES` bougent ensemble |
 | Nouvel anti-pattern découvert | `docs/architecture.md` §11 |
 | Changement de dépendance critique | Section III + `pubspec.yaml` / `go.mod` |
 

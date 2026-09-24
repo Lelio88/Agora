@@ -7,6 +7,9 @@ environment:
   sdk: ^3.13.2
 
 dependencies:
+  # Le jingle de l'écran d'introduction, rien d'autre. Même bibliothèque que
+  # DewDrop et DeckHand : une seule à suivre pour les trois applications.
+  audioplayers: ^6.8.1
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -29,3 +32,6 @@ flutter:
   uses-material-design: true
   # Génère AppLocalizations depuis lib/src/localization/*.arb (voir l10n.yaml).
   generate: true
+  assets:
+    # Produit par tools/sounds/gen_intro_jingle.py, jamais édité à la main.
+    - assets/audio/agora_intro.mp3
