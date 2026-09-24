@@ -5,26 +5,23 @@ traîne, un volume qui gêne sur haut-parleur de téléphone, une battue qu'on
 déplace dans l'animation. Le script le régénère à l'identique ; un WAV figé
 oblige à rouvrir un éditeur et à retrouver les valeurs de départ.
 
-**Le rythme est celui de l'animation, pas l'inverse.** Une note par geste :
-les trois agendas qui se posent l'un après l'autre, l'accord où ils se
-rejoignent, le créneau libre qui s'allume, et le mot qui monte. Déplacer une
-battue ici sans la déplacer dans l'intro désynchronise le tout, et cela ne
-s'entend qu'à l'oreille — d'où [BATTUES], seule source des deux côtés.
+**Chaque application a son univers, et celui d'Agora est la quinte ouverte.**
+DewDrop monte un arpège de do majeur en onde carrée 8-bit, cristallin.
+DeckHand descend sur du bois, en sol mixolydien. Agora n'a **aucune tierce** :
+ré, la, mi — des quintes empilées. C'est ce qui lui donne sa couleur : une
+sonorité ouverte, ni majeure ni mineure, qui ne prend pas parti. Cinq autres
+mélodies ont été comparées à l'écoute avant celle-ci — une descente, un appel
+et sa réponse, une montée chromatique, un carillon lent, un motif rapide.
 
-**Six notes, comme DewDrop et DeckHand, et c'est délibéré.** Les trois
-applications partagent une grammaire : une intro d'environ 2,2 s, six notes,
-le logo qui apparaît dedans. Ce qui change est la couleur, et elle doit dire
-le produit. DewDrop monte un arpège de do majeur en onde carrée 8-bit —
-cristallin, aérien. DeckHand descend sur du bois — sol mixolydien, corde
-pincée. Agora **converge** : trois notes séparées (ré, fa dièse, la — une par
-membre), puis les trois ensemble, et c'est tout le sujet de l'app. Trois voix
-qui deviennent un accord.
+**Les trois premières notes montent séparément, la quatrième les superpose.**
+C'est la seule fois où les trois sonnent ensemble, et cela tombe sur le geste
+de l'animation où les trois agendas se rejoignent. La cinquième note (si)
+ouvre, la dernière répond à l'octave.
 
-**Le timbre est une cloche douce, pas une corde ni un carré.** Les cloches
-n'ont pas des harmoniques entières : leurs partiels sont légèrement décalés
-(voir [PARTIELS]), et c'est ce décalage qui produit le halo métallique. Les
-coefficients ne sont donc pas un réglage de volume mais la description d'un
-instrument : les toucher change la cloche, pas son intensité.
+**Le timbre n'est pas arrêté.** Celui-ci — une corde frappée feutrée — est
+celui sur lequel la mélodie a été retenue ; l'instrument définitif se choisira
+ensuite, sans toucher aux hauteurs. Les coefficients de [corde_feutree] sont
+donc la seule partie de ce fichier qu'on peut remplacer sans rien recalculer.
 
 Usage :
 
@@ -50,49 +47,40 @@ RACINE = Path(__file__).resolve().parents[2]
 SORTIE = RACINE / "app" / "assets" / "audio"
 NOM = "agora_intro"
 
-#: Les six battues de l'animation, en secondes depuis le premier trait posé.
+#: Les six gestes de l'animation, en secondes depuis la première note.
 #:
-#: **Jumelle de `BATTUES` dans `tools/mockups/agora_intro.html`**, et plus tard
-#: de `IntroTiming` côté Dart. L'intro démarre le son avec le premier trait ;
-#: ces valeurs sont donc relatives à cet instant, pas au début de l'écran.
-BATTUES = [0.00, 0.30, 0.60, 0.90, 1.10, 1.40]
+#: **Jumelle de `battues` dans `app/lib/src/features/intro/presentation/`** et
+#: de `BATTUES` dans la maquette. Déplacer l'une sans les autres désynchronise
+#: l'intro, et cela ne s'entend qu'à l'oreille.
+BATTUES = [0.0, 0.30, 0.60, 0.90, 1.10, 1.40]
 
 #: Durée de chaque note. La dernière tient pendant que le mot monte en fondu.
-DUREES = [0.32, 0.32, 0.32, 0.40, 0.30, 1.10]
+DUREES = [0.30, 0.30, 0.30, 0.48, 0.28, 1.20]
 
-#: Ré majeur. Les trois premières notes sont les trois membres du groupe, dans
-#: l'ordre où leurs agendas se posent ; la quatrième les superpose — c'est le
-#: seul moment de l'intro où les trois sonnent ensemble, et il tombe sur le
-#: geste où les trois colonnes se rejoignent. La cinquième (si) ouvre : c'est
-#: la sixte, elle sonne comme une question qu'on pose au groupe. La dernière
-#: répond à l'octave.
+#: Ré, la, mi : deux quintes empilées, jouées une par une, puis ensemble.
+#:
+#: **L'absence de tierce est le sujet, pas un oubli.** Une tierce dirait
+#: majeur (joyeux) ou mineur (triste) ; la quinte ne dit ni l'un ni l'autre,
+#: elle ouvre. Ajouter un fa dièse ici rendrait le jingle plus consonant et lui
+#: ferait perdre exactement ce qui le distingue des deux autres applications.
 VOIX = [
     ["D4"],
-    ["F#4"],
     ["A4"],
-    ["D4", "F#4", "A4"],
+    ["E5"],
+    ["D4", "A4", "E5"],
     ["B4"],
     ["D5", "A4"],
 ]
 
-#: Basse tenue sous les six notes. Sans elle, les cloches flottent sans sol.
+#: Basse tenue sous les six notes. Sans elle, les quintes flottent sans sol.
 BASSE = "D2"
 
 #: Volumes calés à l'oreille. La mélodie porte ; la basse et le souffle ne
 #: s'entendent pas séparément — ils s'entendent quand on les retire.
 VOL_VOIX, VOL_SOUFFLE, VOL_BASSE = 0.085, 0.020, 0.060
 
-#: Au-delà, le halo métallique devient sifflant au casque.
+#: Au-delà, les harmoniques hautes deviennent sifflantes au casque.
 COUPURE_HZ = 6000
-
-#: Rangs d'une cloche : (multiple de la fondamentale, poids, décroissance).
-#:
-#: Les multiples ne sont pas entiers — 2,76 et 5,40 sont relevés sur les
-#: partiels d'une cloche tubulaire. C'est ce décalage qui fait la cloche ; avec
-#: 2, 3, 4 on obtient un orgue. Les rangs hauts s'éteignent plus vite, sinon la
-#: note siffle longtemps après avoir été jouée.
-PARTIELS = [(1.00, 1.00, 2.2), (2.00, 0.42, 3.0), (2.76, 0.26, 4.2),
-            (4.07, 0.14, 5.6), (5.40, 0.07, 7.0)]
 
 DEMI_TONS = {
     "C": 0, "C#": 1, "D": 2, "D#": 3, "E": 4, "F": 5,
@@ -106,29 +94,34 @@ def hauteur(nom: str) -> float:
     return 440.0 * 2 ** ((DEMI_TONS[note] + 12 * (octave - 4) - 9) / 12)
 
 
-def cloche(freq: float, duree: float, chaleur: float = 1.0) -> np.ndarray:
-    """Une cloche douce : partiels inharmoniques, rangs hauts éteints d'abord.
+def corde_feutree(freq: float, duree: float, chaleur: float = 1.0) -> np.ndarray:
+    """Une corde frappée, feutrée : harmoniques entières dont les rangs hauts
+    s'éteignent d'abord, très légèrement étirées vers l'aigu comme sur un vrai
+    piano.
 
     [chaleur] allonge la décroissance — au-dessus de 1 la note traîne, ce qui
-    convient à la basse, jamais aux trois premières notes : elles doivent se
-    poser distinctement, sinon on n'entend plus trois membres mais une nappe.
+    convient à la basse, jamais aux trois premières : elles doivent se poser
+    distinctement, sinon on n'entend plus trois notes mais une nappe.
     """
     t = np.arange(int(duree * SR)) / SR
     voix = np.zeros_like(t)
-    for multiple, poids, declin in PARTIELS:
-        partiel = freq * multiple
+    for rang in range(1, 7):
+        # L'inharmonicité d'une corde réelle : le rang n n'est pas exactement
+        # n fois le fondamental. Sans ce décalage, on obtient un orgue.
+        partiel = freq * rang * (1 + 0.0004 * rang * rang)
         if partiel > SR / 2:
             break
-        voix += poids * np.exp(-t * declin / chaleur) * np.sin(
-            2 * np.pi * partiel * t + multiple
+        declin = 1.8 + rang * 0.9
+        voix += (1.0 / rang ** 1.4) * np.exp(-t * declin / chaleur) * np.sin(
+            2 * np.pi * partiel * t + rang
         )
     # Attaque courte mais pas nulle : à zéro, le haut-parleur d'un téléphone
     # claque.
-    return voix * np.clip(t / 0.006, 0, 1)
+    return voix * np.clip(t / 0.008, 0, 1)
 
 
 def souffle(freq: float, duree: float) -> np.ndarray:
-    """Un sous-corps sinus très doux : le feutre sous le métal."""
+    """Un sous-corps sinus très doux : le feutre sous la corde."""
     t = np.arange(int(duree * SR)) / SR
     return np.sin(2 * np.pi * freq * t) * np.exp(-t * 2.4) * np.clip(t / 0.01, 0, 1)
 
@@ -144,8 +137,8 @@ def pose(buffer: np.ndarray, voix: np.ndarray, debut: float, volume: float) -> N
 def reverb(x: np.ndarray, humide: float = 0.24) -> np.ndarray:
     """Réverbération de Schroeder légère, en peignes à rétroaction.
 
-    Une place publique, pas une cathédrale : au-delà de 0,3 les six notes se
-    confondent et la convergence ne s'entend plus.
+    Une place publique, pas une cathédrale : au-delà de 0,3 les notes se
+    confondent et l'empilement des quintes ne s'entend plus.
     """
     sortie = x.copy()
     for retard_s, retour in ((0.0297, 0.80), (0.0371, 0.77),
@@ -159,7 +152,7 @@ def reverb(x: np.ndarray, humide: float = 0.24) -> np.ndarray:
 
 
 def passe_bas(x: np.ndarray, coupure: float = COUPURE_HZ) -> np.ndarray:
-    """Un pôle, pour ôter le sifflant des partiels hauts."""
+    """Un pôle, pour ôter le sifflant des harmoniques hautes."""
     a = np.exp(-2 * np.pi * coupure / SR)
     y = np.zeros_like(x)
     accumule = 0.0
@@ -175,15 +168,15 @@ def construire() -> np.ndarray:
     buffer = np.zeros(int(SR * total))
 
     for notes, debut, duree in zip(VOIX, BATTUES, DUREES):
-        # L'accord de la quatrième battue tient trois notes : les répartir au
-        # même volume le ferait sonner trois fois plus fort que les autres.
+        # L'accord de la quatrième battue tient trois notes : les jouer au même
+        # volume que les autres le ferait sonner trois fois plus fort.
         volume = VOL_VOIX / max(1, len(notes)) ** 0.5
         for nom in notes:
-            pose(buffer, cloche(hauteur(nom), duree), debut, volume)
+            pose(buffer, corde_feutree(hauteur(nom), duree), debut, volume)
         pose(buffer, souffle(hauteur(notes[0]), duree * 0.6), debut, VOL_SOUFFLE)
 
-    # La basse entre avec le premier agenda et tient jusqu'au mot.
-    pose(buffer, cloche(hauteur(BASSE), 2.4, chaleur=3.0), 0.0, VOL_BASSE)
+    # La basse entre avec la première note et tient jusqu'au mot.
+    pose(buffer, corde_feutree(hauteur(BASSE), 2.4, chaleur=3.0), 0.0, VOL_BASSE)
 
     buffer = passe_bas(reverb(buffer))
     crete = float(np.max(np.abs(buffer)))
