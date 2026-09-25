@@ -29,8 +29,29 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
-API = 'http://127.0.0.1:55321'
+#: Cible et clés, posées par [configurer] plutôt que résolues à l'import :
+#: `seed_review.py` vise la production, et n'a aucune raison d'exiger qu'une
+#: pile locale tourne pour être importé.
+API = ''
+ANON = ''
+SECRET = ''
+
 PASSWORD = 'Demonstration2026'
+
+#: Les comptes de la scène, dans l'ordre : le principal, puis ses compagnons.
+#: `seed_review.py` les remplace par des adresses du domaine d'Agora.
+ADRESSES = {
+    'principal': ('camille@demo.local', 'Camille'),
+    'lea': ('lea@demo.local', 'Léa'),
+    'malo': ('malo@demo.local', 'Malo'),
+    'ines': ('ines@demo.local', 'Inès'),
+}
+
+
+def configurer(api: str, anon: str, secret: str) -> None:
+    """Pointe le script sur une pile. À appeler avant [main]."""
+    global API, ANON, SECRET
+    API, ANON, SECRET = api, anon, secret
 
 
 def cles() -> tuple[str, str]:
@@ -54,8 +75,6 @@ def cles() -> tuple[str, str]:
     etat = json.loads(sortie.stdout)
     return etat['ANON_KEY'], etat['SERVICE_ROLE_KEY']
 
-
-ANON, SECRET = cles()
 
 # Lundi de la semaine courante, à minuit local (les vues d'agenda l'ouvrent).
 TODAY = datetime.now()
@@ -159,10 +178,10 @@ def groupe_avec(nom, hote, membres):
 
 
 def main() -> None:
-    camille = compte('camille@demo.local', 'Camille')
-    lea = compte('lea@demo.local', 'Léa')
-    malo = compte('malo@demo.local', 'Malo')
-    ines = compte('ines@demo.local', 'Inès')
+    camille = compte(*ADRESSES['principal'])
+    lea = compte(*ADRESSES['lea'])
+    malo = compte(*ADRESSES['malo'])
+    ines = compte(*ADRESSES['ines'])
 
     # --- Deux groupes, deux niveaux de confidentialité pour le MÊME agenda.
     coloc = groupe_avec(
@@ -256,9 +275,14 @@ def main() -> None:
             key=SECRET,
         )
 
-    print('Scène prête — camille@demo.local /', PASSWORD)
+    # **Le mot de passe ne s'imprime pas.** Il est fixe et sans valeur pour la
+    # pile locale, mais `seed_review.py` réutilise cette fonction avec un mot
+    # de passe de production : l'afficher le déverserait dans un terminal, un
+    # journal de session et tout ce qui les relit.
+    print('Scène prête —', ADRESSES['principal'][0])
     print('Semaine affichée : du', MONDAY.date(), 'au', (MONDAY + timedelta(days=6)).date())
 
 
 if __name__ == '__main__':
+    configurer('http://127.0.0.1:55321', *cles())
     main()
