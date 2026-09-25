@@ -54,6 +54,26 @@ Trois pièges qui coûtent une heure chacun :
 - **La langue** vient de `cmd locale set-app-locales`, pas des réglages de
   l'émulateur : c'est la préférence par application d'Android 13.
 
+## Construire le binaire à envoyer
+
+```bash
+# config/prod.json est gitignoré : le recomposer depuis le coffre si besoin
+# (SUPABASE_URL et AGORA_WEB_URL = API_URL et SITE_URL de ../.agora-secrets/
+# supabase.env ; SUPABASE_PUBLISHABLE_KEY = ANON_KEY ; la clé de site
+# Turnstile est dans turnstile.env).
+cd app && flutter build appbundle --release --dart-define-from-file=config/prod.json
+
+# Vérifier la signature AVANT d'envoyer, jamais après : un binaire signé avec
+# la clé de débogage est accepté par Gradle sans un mot et refusé par Play une
+# demi-heure plus tard, sans indice sur la cause.
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe"   -printcert -jarfile build/app/outputs/bundle/release/app-release.aab
+# Doit afficher : CN=Lelio Buton, OU=Agora, O=Heian Enterprise
+# Ne doit jamais afficher : CN=Android Debug
+```
+
+Le fichier reste dans `app/build/app/outputs/bundle/release/` — les artefacts
+de compilation ne remontent pas à la racine du conteneur.
+
 ## Les textes de la fiche
 
 ### Titre — validé
