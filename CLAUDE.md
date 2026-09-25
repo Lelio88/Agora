@@ -27,7 +27,7 @@ Topologie rapide :
 - **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `url_launcher` ^6.3 (pages légales ouvertes hors de l'app ; `<queries>` déclaré dans le manifeste Android), `webview_flutter` ^4.14 (Android seul : le widget Turnstile, servi par `app/web/captcha.html`), `audioplayers` ^6.8 (le seul jingle de l'app, celui de l'intro), `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
 - **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
-- **Auth** : e-mail (SMTP Brevo), Google, Discord ; liaison manuelle d'identités activée.
+- **Auth** : e-mail + mot de passe (SMTP Brevo) — **seule méthode livrée**. Google et Discord sont câblés côté serveur (`GOTRUE_EXTERNAL_*`) mais désactivés faute de clés, et aucun bouton n'existe dans l'app : ne pas les déclarer au Play Store tant que c'est le cas.
 - **Android** : `applicationId` **`app.agora`**, figé dès le premier envoi au Play Store. Signature d'envoi : `../.agora-secrets/upload-keystore.jks`, câblée par `app/android/key.properties` (gitignoré) — conventions dans `../android-signing-guide.md`.
 
 ## IV. Garde-Fous non négociables
