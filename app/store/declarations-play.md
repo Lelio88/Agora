@@ -96,6 +96,46 @@ couleurs vives, mais ce sont des blocs d'agenda abstraits.
 
 ---
 
+## Classification du contenu (IARC)
+
+| Champ | Réponse |
+|---|---|
+| Catégorie | Application → **Utilitaire, productivité, communication ou autre** |
+| E-mail de contact | `heianenterpriseyt@gmail.com` (la même que sur les pages légales) |
+
+Pas « Réseaux sociaux » : ni fil, ni profil public, ni découverte. On rejoint
+un groupe **uniquement par code** (`join_group(p_code)`), et aucune recherche
+d'utilisateurs ou de groupes n'existe dans l'app.
+
+| Question | Réponse |
+|---|---|
+| Violence, contenu sexuel, langage grossier, drogues, jeux d'argent, horreur | **Non** |
+| Achats de biens numériques | **Non** |
+| Accès non filtré à Internet (navigateur intégré) | **Non** |
+| Partage de la position physique avec d'autres utilisateurs | **Non** |
+| Les utilisateurs peuvent-ils interagir ou échanger du contenu ? | **Oui** |
+| Ce contenu est-il accessible publiquement ? | **Non** |
+
+**Le « oui » est obligatoire et se vérifie.** Les membres d'un groupe voient le
+texte que les autres saisissent : titres de rendez-vous (200 caractères),
+descriptions (5 000), lieux (300), noms et descriptions de groupes. C'est du
+contenu généré par les utilisateurs, même sans messagerie.
+
+**Le « non » au partage de position** tient parce que le champ « lieu » est du
+texte libre au clavier, pas une position d'appareil : l'app ne demande aucune
+permission de localisation.
+
+Classification obtenue attendue : **PEGI 3 / ESRB Everyone**, avec la mention
+« interaction entre utilisateurs », qui n'empêche rien.
+
+**Ce que Google peut soulever** : répondre « oui » à l'interaction amène
+parfois des questions sur la modération. Agora n'a ni signalement, ni blocage.
+C'est défendable — le contenu n'est visible que par les membres d'un groupe
+privé rejoint sur code, jamais par des inconnus — mais si Google insiste, il
+faudra un moyen de signaler un abus (quitter un groupe existe déjà).
+
+---
+
 ## Sécurité des données
 
 ### Les trois questions d'ouverture
@@ -183,4 +223,5 @@ Une page `/legal/suppression.html` reste à faire.
 | Clés OAuth posées en production | Création de compte → ajouter OAuth |
 | Achat intégré ajouté | Accès complet au contenu → fournir un compte payant |
 | Mascotte, gamification ou univers ludique ajouté | Âge cible → les trois « non » ne tiennent plus |
+| Messagerie, commentaires ou groupes publics ajoutés | Classification → interaction, contenu public, modération |
 | Crash reporting ou analytics ajouté | Infos sur l'app et performances |
