@@ -10,6 +10,7 @@ regarde sur un vrai téléphone.
 
 | Fichier | Produit par |
 |---|---|
+| [`declarations-play.md`](declarations-play.md) | les réponses aux questionnaires obligatoires, et ce qui les justifie |
 | `01-agenda.png` … `06-import.png` | captures d'émulateur, scène posée par [`tools/store/seed_demo.py`](../../tools/store/seed_demo.py) |
 | `icon-512.png`, `feature-1024x500.png` | [`tools/store/make_store_assets.py`](../../tools/store/make_store_assets.py) |
 
