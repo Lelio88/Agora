@@ -302,6 +302,30 @@ dont les tags ne correspondent pas au produit.
 
 ---
 
+## Éléments d'IA sur la fiche
+
+**Ne pas signaler les éléments.**
+
+| Élément | Comment il est produit |
+|---|---|
+| Icône 512×512 | `tools/store/make_store_assets.py` — dessin procédural avec Pillow : rectangles arrondis, dégradé, aucune image source |
+| Bandeau 1024×500 | le même script, plus du texte tracé avec une police système |
+| Six captures | `adb exec-out screencap` sur émulateur : des photographies de l'app réelle |
+| Vidéo promotionnelle | aucune |
+
+Aucun modèle génératif d'images n'intervient — ni Imagen, ni DALL·E, ni
+Midjourney, ni retouche par IA. Les pixels viennent soit d'un programme
+géométrique déterministe, soit de l'écran d'un téléphone, et relancer le
+script redonne exactement les mêmes.
+
+**La zone grise, pour mémoire** : le script et le dessin ont été conçus avec
+l'assistance d'une IA. La réglementation vise les contenus synthétiques
+susceptibles de tromper, ce que n'est pas un logo tracé par des formes ; si
+l'interprétation devait se durcir, il faudrait libeller l'icône et le bandeau,
+jamais les captures.
+
+---
+
 ## Règles et confidentialité
 
 | Champ | Valeur |

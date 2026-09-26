@@ -96,7 +96,51 @@ Chacun partage ce qu'il veut, le groupe voit qui est pris et trouve un créneau.
 le bénéfice (on trouve une date) — c'est l'ordre dans lequel l'app est
 construite.
 
-### Description longue, notes de version, questionnaires
+### Description longue — validée
 
-À valider ; ils viendront ici au fur et à mesure, pour que la fiche se
-reconstitue depuis le dépôt et non depuis la mémoire de la console.
+1 743 caractères sur 4 000. **Chaque paragraphe tient sur une seule ligne** :
+la console affiche le texte tel quel, et des retours à la ligne au milieu
+d'une phrase donneraient un rendu haché sur téléphone. Les intertitres sont en
+capitales et non en gras — ce champ n'accepte qu'un HTML très limité, des
+astérisques s'y afficheraient tels quels.
+
+```
+Agora, c'est votre agenda — et celui de vos groupes.
+
+Chacun a le sien : les rendez-vous que vous y notez, et ceux qui arrivent de Google Agenda, Outlook ou Apple par un simple lien iCal. Vous rejoignez ensuite un groupe — la coloc, la famille, l'équipe, le club — et c'est là que vous choisissez ce que vous montrez.
+
+UN NIVEAU DE DÉTAIL PAR GROUPE
+
+Pour chaque groupe, vous décidez : tous les détails, ou seulement « occupé » sans dire de quoi il s'agit. Le même jeudi soir peut être « Cours de dessin » pour vos colocataires et « occupé » pour le club de rando. Un rendez-vous précis, ou un agenda entier, peut aussi rester invisible.
+
+VOIR QUI EST PRIS, SANS DEMANDER À PERSONNE
+
+L'agenda du groupe superpose les semaines de ses membres, une couleur chacun. On y lit les creux, pas les secrets.
+
+TROUVER LE CRÉNEAU QUI VA À TOUT LE MONDE
+
+Dites la durée qu'il vous faut et la période à regarder : Agora liste les moments où personne n'est pris. Il n'y a plus qu'à en choisir un, et le rendez-vous est proposé au groupe.
+
+PROPOSER, ET SAVOIR QUI VIENT
+
+Un rendez-vous de groupe se répond en un appui : présent, peut-être, absent. Chacun voit où en sont les autres.
+
+VOS AGENDAS EXTÉRIEURS, À JOUR TOUT SEULS
+
+Collez le lien iCal de votre agenda Google, Outlook ou Apple, de votre emploi du temps ou de votre planning de travail : Agora le relit régulièrement. Ce lien n'est jamais affiché ni transmis à qui que ce soit.
+
+CE QU'AGORA NE FAIT PAS
+
+Pas de publicité, pas de revente de données, pas de profilage. Vos rendez-vous ne servent qu'à ce que vous en faites. Vous supprimez votre compte quand vous voulez, depuis l'application, et vos agendas partent avec.
+
+Agora fonctionne aussi dans un navigateur : https://agora.heianenterprise.com
+```
+
+Trois absences volontaires : **le bot Discord** (il n'existe pas ; Google
+sanctionne les descriptions qui promettent des fonctions absentes), **les
+liens légaux** (Play a des champs dédiés) et **tout superlatif**. Seule
+l'adresse web de l'app figure, parce qu'aucun champ ne la met en avant.
+
+### Notes de version
+
+À rédiger au premier envoi.
