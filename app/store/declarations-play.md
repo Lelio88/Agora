@@ -169,11 +169,46 @@ hachage, dépendance de Supabase.
 Classification attendue : **PEGI 3 / ESRB Everyone**, assortie du descripteur
 d'interaction. L'effet exact sur l'âge dépend de chaque organisme.
 
-**Ce que Google peut soulever** : répondre « oui » à l'interaction amène
-parfois des questions sur la modération. Agora n'a ni signalement, ni blocage.
-C'est défendable — le contenu n'est visible que par les membres d'un groupe
-privé rejoint sur code, jamais par des inconnus — mais si Google insiste, il
-faudra un moyen de signaler un abus (quitter un groupe existe déjà).
+### Les sept sous-questions ouvertes par ce « oui »
+
+Répondre « oui » au partage de contenu utilisateur déclenche un second bloc.
+
+| Sous-question | Réponse |
+|---|---|
+| Le contenu utilisateur partagé est-il la **source principale** du contenu ? | **Non** |
+| Partage **public** de nudité | **Non** |
+| Partage **public** de violence explicite réelle | **Non** |
+| Possibilité de **bloquer** des utilisateurs ou du contenu | **Non** |
+| Possibilité de **signaler** | **Non** |
+| **Modération** des conversations | **Non** |
+| Interactions limitables **aux invités uniquement** | **Oui** |
+
+**La première est un piège, et la réponse est non.** Répondre oui classerait
+Agora comme plateforme de contenu généré par les utilisateurs, ce qui
+déclenche la politique UGC de Google : signalement, modération et blocage
+deviennent exigibles. L'app n'en a aucun, et le refus serait quasi certain.
+C'est aussi faux : la source principale du contenu, pour chaque utilisateur,
+est **son propre agenda** — ce qu'il saisit et ce qu'il importe par iCal. Le
+contenu d'autrui n'apparaît que s'il rejoint un groupe, et un compte sans
+aucun groupe est pleinement fonctionnel.
+
+**Nudité et violence publiques : non, doublement.** Rien n'est public dans
+Agora, et aucune image ne peut être envoyée — il n'existe ni `image_picker`,
+ni `file_picker`, ni stockage de fichiers.
+
+**Le trio blocage / signalement / modération est à « non », et c'est exact** :
+aucune de ces fonctions n'existe. Sur une application sociale, ce trio pèserait
+lourd ; ici la dernière question l'annule.
+
+**« Oui » aux interactions limitées aux invités, et c'est ce qui tient
+l'ensemble.** On ne rejoint un groupe que par un code transmis de la main à la
+main (`join_group(p_code)`) : ni annuaire, ni recherche, ni profil public.
+Aucun inconnu ne peut atteindre un utilisateur.
+
+Nuance à connaître si Google revient sur le blocage : `leaveGroup` permet de
+quitter un groupe et `removeMember` d'en retirer quelqu'un. Ce n'est pas un
+blocage au sens de la question — il n'y a pas de liste de personnes bloquées —
+mais c'est l'argument à avancer, avec pour parade l'ajout d'un signalement.
 
 ---
 
