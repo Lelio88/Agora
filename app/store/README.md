@@ -141,6 +141,33 @@ sanctionne les descriptions qui promettent des fonctions absentes), **les
 liens légaux** (Play a des champs dédiés) et **tout superlatif**. Seule
 l'adresse web de l'app figure, parce qu'aucun champ ne la met en avant.
 
-### Notes de version
+### Notes de version — 0.1.0+1
 
-À rédiger au premier envoi.
+**500 caractères par langue.** Une *première* version n'a pas de nouveautés à
+annoncer : ces notes décrivent ce que l'app fait, puisque c'est ce que les
+testeurs liront en premier, et se terminent par une invitation à écrire — en
+test fermé, un retour vaut mieux qu'une liste de correctifs.
+
+Français (454) :
+
+```
+Première version de test d'Agora.
+
+Vos agendas au même endroit : ceux que vous saisissez, ceux que vous importez par lien iCal, et ceux de vos groupes — avec, pour chaque groupe, le niveau de détail que vous choisissez. L'agenda du groupe montre qui est pris sans dire pourquoi, « Créneaux communs » trouve les moments libres de tout le monde, et un rendez-vous proposé se répond en un appui.
+
+Vos retours sont les bienvenus : heianenterpriseyt@gmail.com
+```
+
+Anglais (405), si la fiche porte `en-US` :
+
+```
+First test release of Agora.
+
+All your calendars in one place: the ones you type in, the ones you import from an iCal link, and your groups' — each group seeing only the level of detail you choose. The group calendar shows who is busy without saying why, "Common free times" finds the slots that suit everyone, and a proposed event is answered in one tap.
+
+Feedback is welcome: heianenterpriseyt@gmail.com
+```
+
+**Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
+depuis la précédente. Et il faut incrémenter `version:` dans
+`app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
