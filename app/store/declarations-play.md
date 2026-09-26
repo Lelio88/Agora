@@ -98,14 +98,28 @@ couleurs vives, mais ce sont des blocs d'agenda abstraits.
 
 ## Classification du contenu (IARC)
 
+### Le premier écran : trois champs
+
 | Champ | Réponse |
 |---|---|
-| Catégorie | Application → **Utilitaire, productivité, communication ou autre** |
-| E-mail de contact | `heianenterpriseyt@gmail.com` (la même que sur les pages légales) |
+| Adresse e-mail (saisie) | `heianenterpriseyt@gmail.com` — la même que sur les pages légales |
+| Catégorie (trois boutons radio) | **Tous les autres types d'applications** |
+| Conditions de l'IARC (case à cocher) | **Cocher** — obligatoire, sans alternative |
 
-Pas « Réseaux sociaux » : ni fil, ni profil public, ni découverte. On rejoint
-un groupe **uniquement par code** (`join_group(p_code)`), et aucune recherche
-d'utilisateurs ou de groupes n'existe dans l'app.
+**Le piège est le bouton du milieu.** « Social ou Communication » se définit
+par son *objectif principal* : rencontrer des personnes ou communiquer avec
+elles (Facebook, Skype, SMS). Agora n'a aucune messagerie — pas de chat, pas
+de commentaire, pas de fil, pas de profil public — et on ne rejoint un groupe
+que par code (`join_group(p_code)`). Son objet est d'organiser des agendas ;
+le partage est le moyen, pas la finalité.
+
+Ce choix ne dissimule rien : le questionnaire qui suit pose quand même la
+question de l'interaction entre utilisateurs, et la réponse y est **oui**.
+
+L'adresse est transmise aux organismes de classification (PEGI, ESRB, USK) :
+c'est l'objet même des conditions à cocher.
+
+### Le questionnaire qui suit
 
 | Question | Réponse |
 |---|---|
