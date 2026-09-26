@@ -7,11 +7,18 @@ passe mal sur fond sombre, une marge de sécurité qu'Android rogne davantage
 qu'on croyait. Le script les régénère toutes d'un coup et garde les cinq
 tailles cohérentes entre elles ; cinq PNG figés divergent au premier retour.
 
-**Le dessin est celui de l'intro, réduit.** Trois colonnes — un membre
-chacune, aux couleurs de `app/lib/src/common_widgets/palette.dart` — et la
-bande indigo du créneau commun qui les traverse. C'est le même geste que
-`tools/mockups/agora_intro.html` arrêté sur sa cinquième battue : qui voit
-l'icône a déjà vu l'app.
+**Le dessin est l'arrêt sur image de l'intro.** Une grille de créneaux — les
+couleurs de membres de `app/lib/src/common_widgets/palette.dart` — traversée
+par la bande du créneau commun, là où personne n'est pris. C'est ce que
+`tools/mockups/agora_intro.html` construit en deux secondes : qui voit l'icône
+a déjà vu l'app.
+
+**L'ordre compte, et il a été corrigé.** La première icône avait été dessinée
+d'après une animation écartée depuis : trois colonnes d'agenda qui se
+rejoignent. L'animation retenue montre une grille, donc l'icône montre une
+grille. La bande, elle, a été conservée de la version précédente — elle porte
+le sens (le créneau que personne n'occupe), elle reste lisible à 48 px, et
+elle évite que l'icône change du tout au tout pour qui l'a déjà installée.
 
 **Les proportions ne sont pas libres.** Android rogne l'icône adaptative en
 cercle, en carré arrondi ou en goutte selon le lanceur : seuls les 66 % du
@@ -57,18 +64,13 @@ NUIT_BAS = (38, 40, 80)
 #: contre du blanc.
 BANDE = (124, 140, 255)
 
-#: Le fût d'un agenda, posé sur le fond nuit.
-FUT = BLANC
-
-#: Les mêmes créneaux que l'intro, en fraction de la hauteur de colonne, et la
-#: même bande libre. Les changer ici sans les changer là-bas ferait diverger
-#: l'icône de l'animation qu'elle résume.
-BLOCS = [
-    [(0.06, 0.26), (0.70, 0.86)],
-    [(0.13, 0.35), (0.76, 0.96)],
-    [(0.41, 0.56), (0.82, 0.98)],
+#: Qui occupe quelle case, sur les deux rangs qui encadrent la bande. Le rang
+#: du milieu n'est pas dessiné : c'est la bande qui le remplace, et c'est tout
+#: le propos — ce créneau-là, personne ne l'a pris.
+RANGS = [
+    [0, 1, 0],
+    [2, 0, 1],
 ]
-LIBRE = (0.58, 0.70)
 
 #: Part du côté occupée par le dessin sur l'icône adaptative. Android ne
 #: garantit que les 66 % centraux ; en deçà de cette marge, un lanceur rond
@@ -83,43 +85,35 @@ MIPMAPS = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 
 
 def dessiner_marque(img: Image.Image, cote: float, cx: float, cy: float) -> None:
-    """Pose la marque — trois colonnes et la bande — centrée sur (cx, cy).
+    """Pose la marque — deux rangs de créneaux et la bande — centrée sur
+    (cx, cy).
 
-    [cote] est le côté du carré qui la contient ; tout le reste en découle,
-    de sorte que le dessin soit identique à toutes les tailles.
+    [cote] est le côté du carré qui la contient ; tout le reste en découle, de
+    sorte que le dessin soit identique à toutes les tailles. La bande déborde
+    volontairement des blocs : elle traverse la semaine au lieu de s'y ranger.
     """
     d = ImageDraw.Draw(img)
 
-    col_l = cote * 0.26
-    ecart = cote * 0.37
-    col_h = cote
-    haut = cy - col_h / 2
+    bloc = cote / 3.6
+    ecart = bloc * 0.22
+    total = bloc * 3 + ecart * 2
+    rayon = bloc * 0.24
+    x0 = cx - total / 2
+    y0 = cy - total / 2
 
-    for i, (couleur, blocs) in enumerate(zip(MEMBRES, BLOCS)):
-        x = cx + (i - 1) * ecart - col_l / 2
-        rayon = col_l * 0.22
-        d.rounded_rectangle(
-            [x, haut, x + col_l, haut + col_h], radius=rayon, fill=FUT
-        )
-        marge = col_l * 0.16
-        for a, b in blocs:
+    for indice, rang in enumerate(RANGS):
+        # Le deuxième rang saute la ligne du milieu, occupée par la bande.
+        y = y0 + (0 if indice == 0 else 2) * (bloc + ecart)
+        for colonne, qui in enumerate(rang):
+            x = x0 + colonne * (bloc + ecart)
             d.rounded_rectangle(
-                [x + marge, haut + a * col_h, x + col_l - marge, haut + b * col_h],
-                radius=col_l * 0.14,
-                fill=couleur,
+                [x, y, x + bloc, y + bloc], radius=rayon, fill=MEMBRES[qui]
             )
 
-    # La bande du créneau commun traverse les trois colonnes : dans l'app comme
-    # ici, elle n'appartient à personne.
-    large = ecart * 2 + col_l
+    haut = y0 + bloc + ecart
     d.rounded_rectangle(
-        [
-            cx - large / 2,
-            haut + LIBRE[0] * col_h,
-            cx + large / 2,
-            haut + LIBRE[1] * col_h,
-        ],
-        radius=col_l * 0.18,
+        [x0 - ecart, haut, x0 + total + ecart, haut + bloc],
+        radius=bloc * 0.28,
         fill=BANDE,
     )
 

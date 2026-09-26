@@ -89,8 +89,9 @@ agendas n'y survit pas.
 qui s'appliqueraient dès la tranche 16-17.
 
 Ce qui rend les trois « non » défendables : utilitaire d'organisation, sans
-personnage, sans univers ludique, sans gamification. Icône en grille d'agenda
-sur fond nuit, captures montrant des semaines de travail et des créneaux,
+personnage, sans univers ludique, sans gamification. Icône : une grille de créneaux
+traversée par la bande du créneau commun, sur fond nuit. Captures montrant
+des semaines de travail et des créneaux,
 description parlant de colocation, d'équipe et de club. L'intro emploie des
 couleurs vives, mais ce sont des blocs d'agenda abstraits.
 
