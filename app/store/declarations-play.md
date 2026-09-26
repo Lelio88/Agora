@@ -123,6 +123,7 @@ c'est l'objet même des conditions à cocher.
 
 | Question | Réponse |
 |---|---|
+| Contenu classifiable **livré dans le paquet** (code, ressources) | **Non** |
 | Violence, contenu sexuel, langage grossier, drogues, jeux d'argent, horreur | **Non** |
 | Achats de biens numériques | **Non** |
 | Accès non filtré à Internet (navigateur intégré) | **Non** |
@@ -130,7 +131,14 @@ c'est l'objet même des conditions à cocher.
 | Les utilisateurs peuvent-ils interagir ou échanger du contenu ? | **Oui** |
 | Ce contenu est-il accessible publiquement ? | **Non** |
 
-**Le « oui » est obligatoire et se vérifie.** Les membres d'un groupe voient le
+**« Non » au contenu livré dans le paquet** : l'application n'embarque qu'un
+seul asset, `app/assets/audio/agora_intro.mp3` — le jingle de six notes. Ni
+image hors icônes de lanceur, ni vidéo, ni police tierce. Le reste est du code
+et des chaînes d'interface. À ne pas confondre avec le contenu créé par les
+utilisateurs, qui arrive du serveur à l'exécution et relève de la question
+suivante.
+
+**Le « oui » à l'interaction est obligatoire et se vérifie.** Les membres d'un groupe voient le
 texte que les autres saisissent : titres de rendez-vous (200 caractères),
 descriptions (5 000), lieux (300), noms et descriptions de groupes. C'est du
 contenu généré par les utilisateurs, même sans messagerie.
