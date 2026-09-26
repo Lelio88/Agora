@@ -69,6 +69,33 @@ compte de revue ne les utilise pas.
 
 ---
 
+## Âge cible et contenu
+
+| Question | Réponse |
+|---|---|
+| Tranches d'âge visées | **18 ans et plus**, uniquement |
+| Application conçue pour les enfants ? | **Non** |
+| Les visuels pourraient-ils attirer involontairement les enfants ? | **Non** |
+| La fiche cible-t-elle les enfants ? | **Non** |
+
+**Aucune tranche sous 13 ans, jamais.** Cocher 12 ans ou moins ferait entrer
+Agora dans le programme Familles : conformité COPPA, interdiction de collecter
+des données personnelles d'enfants sans consentement parental vérifiable,
+revue renforcée. Une application qui demande une adresse e-mail et stocke des
+agendas n'y survit pas.
+
+18+ ne restreint pas l'installation — le champ déclare le public visé, pas un
+âge minimum. Il évite en revanche les règles Play sur les données de mineurs,
+qui s'appliqueraient dès la tranche 16-17.
+
+Ce qui rend les trois « non » défendables : utilitaire d'organisation, sans
+personnage, sans univers ludique, sans gamification. Icône en grille d'agenda
+sur fond nuit, captures montrant des semaines de travail et des créneaux,
+description parlant de colocation, d'équipe et de club. L'intro emploie des
+couleurs vives, mais ce sont des blocs d'agenda abstraits.
+
+---
+
 ## Sécurité des données
 
 ### Les trois questions d'ouverture
@@ -155,4 +182,5 @@ Une page `/legal/suppression.html` reste à faire.
 | Envoi d'image de profil enfin implémenté | Photos et vidéos |
 | Clés OAuth posées en production | Création de compte → ajouter OAuth |
 | Achat intégré ajouté | Accès complet au contenu → fournir un compte payant |
+| Mascotte, gamification ou univers ludique ajouté | Âge cible → les trois « non » ne tiennent plus |
 | Crash reporting ou analytics ajouté | Infos sur l'app et performances |
