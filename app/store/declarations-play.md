@@ -275,6 +275,33 @@ reprendre si Google ajoute un type adapté.
 
 ---
 
+## Catégorie et tags
+
+| Champ | Réponse |
+|---|---|
+| Type | **Applications** (pas Jeux) |
+| Catégorie | **Productivité** |
+| Tags | cinq au maximum, liste fermée — voir ci-dessous |
+
+**Productivité**, parce que c'est là que vivent les agendas : Google Agenda,
+Outlook, Todoist. Les deux tentations à écarter : **Outils** est un fourre-tout
+de lampes de poche et de convertisseurs, où une app d'agenda est invisible ;
+**Social** décrirait un réseau, et contredirait la catégorie refusée à l'IARC.
+
+Tags, par ordre de pertinence — les libellés exacts dépendent de la liste que
+propose la console :
+
+1. Agenda / Calendrier — le cœur du produit
+2. Planification ou Gestion du temps
+3. Collaboration ou Travail d'équipe — ce qui distingue Agora d'un agenda seul
+4. Organisation personnelle
+5. Groupes ou Partage, s'il existe
+
+N'en prendre cinq que s'ils collent : Google dégrade la visibilité des fiches
+dont les tags ne correspondent pas au produit.
+
+---
+
 ## Règles et confidentialité
 
 | Champ | Valeur |
