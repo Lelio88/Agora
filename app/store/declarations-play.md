@@ -121,34 +121,53 @@ c'est l'objet même des conditions à cocher.
 
 ### Le questionnaire qui suit
 
-| Question | Réponse |
+Neuf questions, toutes en oui/non. **Une seule réponse est positive.**
+
+| Question (libellé de la console) | Réponse |
 |---|---|
-| Contenu classifiable **livré dans le paquet** (code, ressources) | **Non** |
-| Violence, contenu sexuel, langage grossier, drogues, jeux d'argent, horreur | **Non** |
-| Achats de biens numériques | **Non** |
-| Accès non filtré à Internet (navigateur intégré) | **Non** |
-| Partage de la position physique avec d'autres utilisateurs | **Non** |
-| Les utilisateurs peuvent-ils interagir ou échanger du contenu ? | **Oui** |
-| Ce contenu est-il accessible publiquement ? | **Non** |
+| Contenu classifiable livré dans le paquet (code, ressources) | **Non** |
+| Partage de contenu utilisateur (voix, texte, images, audio) | **Oui** |
+| Contenu en ligne hors téléchargement initial (type Netflix, Amazon, IA) | **Non** |
+| Promotion ou vente de produits soumis à l'âge | **Non** |
+| Partage de l'emplacement physique précis avec d'autres utilisateurs | **Non** |
+| Achat d'articles numériques | **Non** |
+| Récompenses en espèces, cartes cadeaux, play-to-earn, crypto, NFT | **Non** |
+| Navigateur Web ou moteur de recherche | **Non** |
+| Produit essentiellement d'actualité ou d'éducation | **Non** |
 
 **« Non » au contenu livré dans le paquet** : l'application n'embarque qu'un
 seul asset, `app/assets/audio/agora_intro.mp3` — le jingle de six notes. Ni
 image hors icônes de lanceur, ni vidéo, ni police tierce. Le reste est du code
-et des chaînes d'interface. À ne pas confondre avec le contenu créé par les
-utilisateurs, qui arrive du serveur à l'exécution et relève de la question
-suivante.
+et des chaînes d'interface.
 
-**Le « oui » à l'interaction est obligatoire et se vérifie.** Les membres d'un groupe voient le
-texte que les autres saisissent : titres de rendez-vous (200 caractères),
-descriptions (5 000), lieux (300), noms et descriptions de groupes. C'est du
-contenu généré par les utilisateurs, même sans messagerie.
+**« Oui » au partage de contenu utilisateur**, et c'est la réponse qui coûte
+quelque chose. Agora n'a ni voix, ni image, ni audio, ni messagerie, ni
+commentaire — mais du texte libre circule entre membres : `events.title`
+(200 caractères), `events.description` (**5 000**), `events.location` (300),
+`groups.name` (60) et sa description (500). Un membre écrit, les autres
+lisent. Répondre non se démentirait en ouvrant le rendez-vous « Raclette » du
+compte de revue, et une classification obtenue sur une réponse fausse
+s'annule. Coût assumé : le descripteur « interaction entre utilisateurs ».
 
-**Le « non » au partage de position** tient parce que le champ « lieu » est du
-texte libre au clavier, pas une position d'appareil : l'app ne demande aucune
-permission de localisation.
+**« Non » au contenu en ligne** : l'app ne propose aucun catalogue, aucun flux
+éditorial, aucun contenu généré par IA. Les agendas importés par iCal viennent
+bien de l'extérieur, mais ce sont les données de l'utilisateur lui-même, qu'il
+a désignées par un lien — pas du contenu distribué par l'application.
 
-Classification obtenue attendue : **PEGI 3 / ESRB Everyone**, avec la mention
-« interaction entre utilisateurs », qui n'empêche rien.
+**« Non » au navigateur** : `webview_flutter` sert uniquement à afficher la
+page du CAPTCHA, à une URL construite par `captchaConfigProvider` sur le
+domaine d'Agora. Aucune navigation libre, aucune barre d'adresse.
+
+**« Non » aux achats et à la crypto** : aucune permission `com.android.vending
+.BILLING` dans le manifeste fusionné, aucune dépendance `in_app_purchase`. Les
+deux occurrences de « crypto » dans `pubspec.lock` sont le paquet Dart de
+hachage, dépendance de Supabase.
+
+**« Non » à l'emplacement** : aucune permission de localisation ; le champ
+« lieu » est du texte saisi au clavier.
+
+Classification attendue : **PEGI 3 / ESRB Everyone**, assortie du descripteur
+d'interaction. L'effet exact sur l'âge dépend de chaque organisme.
 
 **Ce que Google peut soulever** : répondre « oui » à l'interaction amène
 parfois des questions sur la modération. Agora n'a ni signalement, ni blocage.
