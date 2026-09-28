@@ -168,6 +168,18 @@ All your calendars in one place: the ones you type in, the ones you import from 
 Feedback is welcome: heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.2.0+3 (bot Discord)
+
+Français (454), envoyées sur `alpha` :
+
+```
+Nouveau : le bot Discord d'Agora.
+
+Reliez votre compte Discord (Profil → Discord), puis un salon à votre groupe (menu du groupe → Salon Discord). Dans Discord, /agenda montre votre agenda ou celui du groupe, /dispo trouve les créneaux libres de tout le monde. Le salon peut recevoir un récap quotidien ou hebdomadaire et des rappels avant les rdv du groupe ; vos rdv perso n'y apparaissent que comme « occupé ».
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
