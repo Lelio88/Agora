@@ -332,11 +332,13 @@ jamais les captures.
 | Champ | Valeur |
 |---|---|
 | Politique de confidentialité | `https://agora.heianenterprise.com/legal/confidentialite.html` |
-| Suppression du compte | même URL, section « Supprimer votre compte » |
+| Suppression du compte | `https://agora.heianenterprise.com/legal/suppression.html` |
 
-**Limite connue** : Google préfère une page dédiée à la suppression, et cette
-section n'a même pas d'ancre — le relecteur arrive en haut d'une page longue.
-Une page `/legal/suppression.html` reste à faire.
+La page de suppression est dédiée, comme Google l'attend : nom de l'app tel que
+sur la fiche, étapes dans l'app, chemin sans l'app (version web, ou e-mail
+depuis l'adresse du compte), ce qui est effacé, ce qui reste et combien de
+temps. Elle se renseigne dans **Contenu de l'application → Suppression des
+données**, et la console la vérifie à chaque envoi.
 
 ---
 

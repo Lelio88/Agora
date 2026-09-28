@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+  Suppression du compte Agora : la page dédiée qu'exige le champ « Suppression
+  du compte » de la fiche Play. Google y attend le nom de l'app tel que sur la
+  fiche, les étapes pour demander la suppression, ce qui est effacé, ce qui est
+  conservé et combien de temps.
+
+  Bilingue dans un seul fichier, comme les autres pages légales : l'adresse
+  donnée à Play vaut pour les deux langues et ne doit plus changer.
+
+  Elle recoupe la section « Supprimer votre compte » de confidentialite.html :
+  toute évolution de l'effet d'une suppression se répercute dans les deux
+  pages, dans le même commit.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agora — Supprimer votre compte</title>
+<meta name="description" content="Comment supprimer votre compte Agora, ce qui est effacé et ce qui reste.">
+<link rel="icon" href="../favicon.png">
+<link rel="stylesheet" href="./legal.css">
+</head>
+<body>
+
+<header>
+  <a class="marque" href="/">Agora</a>
+  <div class="langues">
+    <button type="button" data-langue="fr" aria-pressed="true">Français</button>
+    <button type="button" data-langue="en" aria-pressed="false">English</button>
+  </div>
+</header>
+
+<main>
+
+<section data-langue="fr">
+  <h1>Supprimer votre compte</h1>
+  <p class="date">Dernière mise à jour : 28 septembre 2026</p>
+  <p class="chapeau">Cette page concerne l'application <strong>Agora — agendas partagés</strong>, publiée par Lelio Buton. La suppression est immédiate, définitive, et vous la faites vous-même.</p>
+
+  <h2>Depuis l'application Android</h2>
+  <ol>
+    <li>Ouvrez Agora et connectez-vous.</li>
+    <li>Touchez l'icône <strong>Profil</strong>, en haut de l'écran.</li>
+    <li>Descendez jusqu'à <strong>Supprimer mon compte</strong>.</li>
+    <li>Lisez ce qui restera à vos groupes, cochez au besoin <strong>Supprimer aussi ces rdv</strong>, puis confirmez avec <strong>Supprimer définitivement</strong>.</li>
+  </ol>
+
+  <h2>Sans l'application</h2>
+  <p>Vous n'avez plus l'application ? Ouvrez la version web sur <a href="/">agora.heianenterprise.com</a>, connectez-vous avec la même adresse et le même mot de passe, puis suivez les mêmes étapes : <strong>Profil → Supprimer mon compte</strong>. Rien à installer.</p>
+  <p>Vous ne pouvez plus vous connecter ? Écrivez à <a href="mailto:heianenterpriseyt@gmail.com?subject=Suppression%20de%20compte%20Agora">heianenterpriseyt@gmail.com</a> <strong>depuis l'adresse de votre compte</strong>, avec pour objet « Suppression de compte Agora ». Le compte est supprimé sous un mois au plus, et vous recevez une confirmation.</p>
+
+  <h2>Ce qui est effacé</h2>
+  <p>Tout de suite, et sans retour possible :</p>
+  <ul>
+    <li>votre profil : adresse e-mail, mot de passe haché, nom affiché, fuseau, langue ;</li>
+    <li>vos agendas personnels, vos rdv et leurs occurrences ;</li>
+    <li>vos liens iCal importés et les rdv qu'ils contenaient ;</li>
+    <li>vos appartenances aux groupes, les invitations que vous avez créées, vos réponses aux rdv ;</li>
+    <li>vos identités de connexion et vos sessions ouvertes.</li>
+  </ul>
+
+  <h2>Ce qui reste, et combien de temps</h2>
+  <div class="encart">
+    <strong>Les rdv que vous avez proposés à un groupe</strong> lui appartiennent : ils restent, sans auteur, mais <strong>avec leur texte libre</strong> — un titre ou une description peut donc encore vous nommer. L'application vous les montre avant la suppression et propose de les effacer : c'est le dernier moment où c'est possible. Ils restent tant que le groupe existe.
+  </div>
+  <ul>
+    <li><strong>Vos groupes</strong> : ceux dont vous étiez propriétaire passent à un autre membre ; un groupe sans autre membre est supprimé avec son agenda.</li>
+    <li><strong>Les sauvegardes</strong> déjà faites contiennent encore votre compte : elles expirent d'elles-mêmes sous <strong>30 jours</strong>, et ne servent qu'à restaurer après une panne.</li>
+    <li><strong>Les journaux d'accès</strong> (adresses IP masquées) sont effacés sous 30 jours.</li>
+  </ul>
+  <p>Le détail de ce qu'Agora enregistre est dans la <a href="./confidentialite.html">politique de confidentialité</a>.</p>
+</section>
+
+<section data-langue="en" hidden>
+  <h1>Delete your account</h1>
+  <p class="date">Last updated: 28 September 2026</p>
+  <p class="chapeau">This page is about the app <strong>Agora — agendas partagés</strong>, published by Lelio Buton. Deletion is immediate, final, and you do it yourself.</p>
+
+  <h2>From the Android app</h2>
+  <ol>
+    <li>Open Agora and sign in.</li>
+    <li>Tap the <strong>Profile</strong> icon at the top of the screen.</li>
+    <li>Scroll down to <strong>Delete my account</strong>.</li>
+    <li>Read what will remain with your groups, tick <strong>Delete these events too</strong> if you wish, then confirm with <strong>Delete permanently</strong>.</li>
+  </ol>
+
+  <h2>Without the app</h2>
+  <p>No longer have the app? Open the web version at <a href="/">agora.heianenterprise.com</a>, sign in with the same email and password, and follow the same steps: <strong>Profile → Delete my account</strong>. Nothing to install.</p>
+  <p>Can no longer sign in? Write to <a href="mailto:heianenterpriseyt@gmail.com?subject=Agora%20account%20deletion">heianenterpriseyt@gmail.com</a> <strong>from your account's email address</strong>, with the subject "Agora account deletion". The account is deleted within one month at most, and you receive a confirmation.</p>
+
+  <h2>What is deleted</h2>
+  <p>Right away, with no way back:</p>
+  <ul>
+    <li>your profile: email address, hashed password, display name, time zone, language;</li>
+    <li>your personal calendars, your events and their occurrences;</li>
+    <li>your imported iCal links and the events they contained;</li>
+    <li>your group memberships, the invitations you created, your answers to events;</li>
+    <li>your sign-in identities and open sessions.</li>
+  </ul>
+
+  <h2>What remains, and for how long</h2>
+  <div class="encart">
+    <strong>Events you proposed to a group</strong> belong to it: they stay, without an author, but <strong>with their free text</strong> — a title or description may therefore still name you. The app shows them to you before deletion and offers to erase them: that is the last moment it is possible. They stay as long as the group exists.
+  </div>
+  <ul>
+    <li><strong>Your groups</strong>: those you owned are handed to another member; a group with no other member is deleted along with its calendar.</li>
+    <li><strong>Backups</strong> already taken still contain your account: they expire by themselves within <strong>30 days</strong>, and only serve to restore after a failure.</li>
+    <li><strong>Access logs</strong> (IP addresses masked) are erased within 30 days.</li>
+  </ul>
+  <p>What Agora stores is detailed in the <a href="./confidentialite.html">privacy policy</a>.</p>
+</section>
+
+<footer>
+  <a href="./confidentialite.html">Confidentialité · Privacy</a>
+  <a href="./mentions-legales.html">Mentions légales · Legal notice</a>
+  <a href="./conditions.html">Conditions d'utilisation · Terms</a>
+  <a href="/">Agora</a>
+</footer>
+
+</main>
+
+<script src="./legal.js"></script>
+
+</body>
+</html>
