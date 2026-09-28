@@ -1,5 +1,5 @@
 """Dessine l'identité visuelle d'Agora : icône, icône adaptative Android,
-écran de démarrage et bandeau du Play Store.
+écran de démarrage, bandeau du Play Store et bannière du bot Discord.
 
 **Un script plutôt que des PNG déposés**, pour la même raison que
 `tools/sounds/gen_intro_jingle.py` : une icône se reprend — une teinte qui
@@ -189,6 +189,21 @@ def bandeau() -> Image.Image:
     return img
 
 
+def banniere_discord() -> Image.Image:
+    """La bannière du profil du bot Discord, 680 x 240 (ratio 17:6).
+
+    Discord pose l'avatar du bot — l'icône, donc déjà la marque — à cheval
+    sur le bas gauche de la bannière : la marque n'y est pas répétée, et le
+    texte se tient à droite, loin de cette zone.
+    """
+    img = Image.new("RGBA", (680, 240))
+    fond_nuit(img)
+    d = ImageDraw.Draw(img)
+    d.text((300, 62), "Agora", font=police(64), fill=BLANC)
+    d.text((303, 142), "Vos agendas, ensemble.", font=police(26), fill=(178, 186, 235))
+    return img
+
+
 #: Déclaration de l'icône adaptative. Sans elle, Android 8+ rogne le PNG carré
 #: et le pose dans une pastille blanche — ce qui cernerait d'un liseré clair
 #: une icône dont tout le propos est le fond nuit.
@@ -230,6 +245,7 @@ def main() -> int:
     # 512 x 512, sans transparence : le Play Store refuse un PNG à couche alpha.
     carre(512, SUR_PLEINE).convert("RGB").save(STORE / "icon-512.png")
     bandeau().convert("RGB").save(STORE / "feature-1024x500.png")
+    banniere_discord().convert("RGB").save(STORE / "discord-banner-680x240.png")
 
     for densite, taille in MIPMAPS.items():
         dossier = RES / f"mipmap-{densite}"
