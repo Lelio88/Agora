@@ -1,6 +1,7 @@
 import 'package:agora/src/app.dart';
 import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/config/captcha.dart';
+import 'package:agora/src/config/discord_bot.dart';
 import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/features/auth/presentation/captcha_field.dart';
@@ -11,6 +12,7 @@ import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
@@ -25,6 +27,7 @@ import 'package:go_router/go_router.dart';
 
 import 'fake_calendar_repository.dart';
 import 'fake_calendars_repository.dart';
+import 'fake_discord_repository.dart';
 import 'fake_groups_repository.dart';
 import 'fakes.dart';
 import 'recording_app_logger.dart';
@@ -40,6 +43,7 @@ class AgoraRobot {
   late final FakeCalendarRepository calendar;
   late final FakeCalendarsRepository calendars;
   late final FakeGroupsRepository groups;
+  late final FakeDiscordRepository discord;
   late final FakeLinkOpener links;
 
   /// Erreurs remontées par les providers, comme en production
@@ -54,6 +58,8 @@ class AgoraRobot {
     FakeCalendarRepository? calendar,
     FakeCalendarsRepository? calendars,
     FakeGroupsRepository? groups,
+    FakeDiscordRepository? discord,
+    Uri? discordBotInvite,
     Uri? webBaseUrl,
     CaptchaConfig? captcha,
     FakeLinkOpener? links,
@@ -69,6 +75,8 @@ class AgoraRobot {
     this.calendar = calendar ?? FakeCalendarRepository();
     this.calendars = calendars ?? FakeCalendarsRepository();
     this.groups = groups ?? FakeGroupsRepository();
+    this.discord = discord ?? FakeDiscordRepository();
+    addTearDown(this.discord.dispose);
     this.links = links ?? FakeLinkOpener();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
@@ -84,6 +92,8 @@ class AgoraRobot {
           calendarRepositoryProvider.overrideWithValue(this.calendar),
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
           groupsRepositoryProvider.overrideWithValue(this.groups),
+          discordRepositoryProvider.overrideWithValue(this.discord),
+          discordBotInviteProvider.overrideWithValue(discordBotInvite),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),
           if (captcha != null) captchaConfigProvider.overrideWithValue(captcha),
           captchaFieldBuilderProvider.overrideWithValue(

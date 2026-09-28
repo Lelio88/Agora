@@ -20,6 +20,7 @@ import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
+import 'package:agora/src/features/discord/presentation/discord_channel_screen.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
@@ -36,7 +37,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kalender/kalender.dart';
 
-enum _MenuAction { rename, leave, delete }
+enum _MenuAction { discord, rename, leave, delete }
 
 class GroupScreen extends ConsumerStatefulWidget {
   const GroupScreen({required this.groupId, super.key});
@@ -295,6 +296,8 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
     final l10n = AppLocalizations.of(context);
     final service = ref.read(groupsServiceProvider);
     switch (action) {
+      case _MenuAction.discord:
+        await DiscordChannelScreen.show(context, group.id);
       case _MenuAction.rename:
         final draft = await GroupEditorScreen.show(
           context,
@@ -483,6 +486,11 @@ class _GroupMenu extends StatelessWidget {
       key: GroupKeys.menu,
       onSelected: (action) => onSelected(action, group),
       itemBuilder: (context) => [
+        PopupMenuItem(
+          key: GroupKeys.discord,
+          value: _MenuAction.discord,
+          child: Text(l10n.groupDiscordMenu),
+        ),
         if (group.role.canManage)
           PopupMenuItem(
             key: GroupKeys.rename,

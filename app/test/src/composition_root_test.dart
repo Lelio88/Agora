@@ -9,6 +9,8 @@ import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendar_repository.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendars_repository.dart';
+import 'package:agora/src/features/discord/application/discord_providers.dart';
+import 'package:agora/src/features/discord/data/supabase_discord_repository.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
@@ -49,6 +51,10 @@ void main() {
     expect(
       container.read(groupsRepositoryProvider),
       isA<SupabaseGroupsRepository>(),
+    );
+    expect(
+      container.read(discordRepositoryProvider),
+      isA<SupabaseDiscordRepository>(),
     );
   });
 }

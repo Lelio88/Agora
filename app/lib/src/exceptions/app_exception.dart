@@ -135,6 +135,20 @@ final class InvalidMemberException extends AppException {
     : super('invalid-member', 'This person is not a member you can manage');
 }
 
+/// Réservé aux admins du groupe (relier un salon Discord, le régler).
+final class NotGroupAdminException extends AppException {
+  const NotGroupAdminException()
+    : super('not-group-admin', 'Only an admin of the group can do this');
+}
+
+// --- Discord ------------------------------------------------------------------
+
+/// Ce compte Discord est déjà relié à un autre compte Agora.
+final class DiscordAlreadyLinkedException extends AppException {
+  const DiscordAlreadyLinkedException()
+    : super('discord-already-linked', 'Discord account linked elsewhere');
+}
+
 // --- Transverse ---------------------------------------------------------------
 
 final class NetworkException extends AppException {

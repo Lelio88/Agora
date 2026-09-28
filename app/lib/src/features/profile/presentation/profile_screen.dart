@@ -1,5 +1,5 @@
 /// Écran de profil : nom affiché, langue (app et e-mails), fuseau horaire,
-/// pages légales, déconnexion et suppression du compte.
+/// compte Discord relié, pages légales, déconnexion et suppression du compte.
 ///
 /// Le fuseau ne se tape pas : on reprend celui de l'appareil. C'est le seul
 /// réglage utile en pratique, et le serveur n'accepte de toute façon que des
@@ -21,6 +21,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/discord/presentation/discord_account_section.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/presentation/profile_controller.dart';
@@ -206,6 +207,8 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   onPressed: _save,
                 ),
                 const SizedBox(height: 32),
+                const Divider(),
+                const DiscordAccountSection(),
                 const Divider(),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(

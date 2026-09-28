@@ -122,6 +122,13 @@ api.agora.heianenterprise.com {
 		reverse_proxy 127.0.0.1:9402
 	}
 
+	# Interactions du bot Discord : le worker vérifie la signature Ed25519 de
+	# chaque appel (et rend 401 sinon, ce que Discord exige) ; Caddy ne fait
+	# que transmettre. Sans clé publique, le worker rend 404.
+	handle /discord/interactions {
+		reverse_proxy 127.0.0.1:9404
+	}
+
 	handle_path /realtime/v1/* {
 		rewrite * /socket{path}
 		reverse_proxy 127.0.0.1:9403 {

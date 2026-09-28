@@ -15,15 +15,16 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
 │   /         → /opt/agora/web           /auth/v1/*      → 127.0.0.1:9401 GoTrue    │
 │   /email/*  → /opt/agora/email         /rest/v1/*      → 127.0.0.1:9402 PostgREST │
 │               (gabarits pour GoTrue)   /realtime/v1/*  → 127.0.0.1:9403 Realtime  │
+│                                        /discord/interactions → 127.0.0.1:9404     │
 │                                        CORS : Caddy tient le rôle de Kong         │
 └──────────────────────────────────────────────┬────────────────────────────────────┘
                                                │ boucle locale uniquement
 ┌── docker compose « agora » (/opt/agora) ─────▼────────────────────────────────────┐
 │ agora_auth ─────┐   agora_rest ─────┐   agora_realtime ─────┐                     │
 │ agora_worker ───┴───────────────────┴──► agora_db (supabase/postgres, volume)     │
-│   :9404 /healthz                         ne publie aucun port                     │
+│   :9404 /healthz, bot Discord            ne publie aucun port                     │
 └───────────────────────────────────────────────────────────────────────────────────┘
-  GoTrue ── SMTP 587 (STARTTLS) ──► Brevo          worker ── HTTPS ──► flux iCal
+  GoTrue ── SMTP 587 (STARTTLS) ──► Brevo          worker ── HTTPS ──► flux iCal, API Discord
 ```
 
 ## Fichiers
@@ -107,6 +108,9 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
 6. `git push origin main:release`, puis s'inscrire sur l'app web : le code doit arriver.
 7. Consigner le service dans `../INFRASTRUCTURE.md` ; vérifier que le rapatriement des
    sauvegardes récupère les dumps d'Agora.
+8. Bot Discord (facultatif) : variables `DISCORD_*` du `.env`, inscription des commandes et URL
+   d'interactions — pas à pas dans [`discord-architecture.md`](./discord-architecture.md)
+   §Mise en service.
 
 ## Mettre en ligne, revenir en arrière
 

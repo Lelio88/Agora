@@ -28,6 +28,8 @@ String messageFor(AppException error, AppLocalizations l10n) => switch (error) {
   NotGroupMemberException() => l10n.errorNotGroupMember,
   NotGroupOwnerException() => l10n.errorNotGroupOwner,
   InvalidMemberException() => l10n.errorInvalidMember,
+  NotGroupAdminException() => l10n.errorNotGroupAdmin,
+  DiscordAlreadyLinkedException() => l10n.errorDiscordAlreadyLinked,
   NetworkException() => l10n.errorNetwork,
   UnknownException() => l10n.errorUnknown,
 };

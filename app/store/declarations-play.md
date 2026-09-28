@@ -58,14 +58,15 @@ Facebook Audience, Adjust ni AppsFlyer.
 
 **Nom d'utilisateur et mot de passe** — et rien d'autre.
 
-Google et Discord sont câblés côté serveur (`GOTRUE_EXTERNAL_*` dans
-`deploy/docker-compose.prod.yml`) mais **désactivés** : les clés ne sont pas
-dans le `.env` de production, donc les variables retombent sur `false`, et
-aucun écran de compte n'a de bouton pour eux. Les déclarer se vérifierait d'un
-coup d'œil sur l'écran de connexion.
+Google est câblé côté serveur (`GOTRUE_EXTERNAL_*` dans
+`deploy/docker-compose.prod.yml`) mais **désactivé**. Discord, lui, est
+activé, mais seulement pour **relier** un compte Discord à un compte déjà
+créé (Profil → Discord). Aucun écran de connexion ou d'inscription ne propose
+Google ou Discord : un relecteur le vérifie d'un coup d'œil sur l'écran de
+connexion.
 
-Le jour où ils sont activés : cocher **OAuth** en plus, et prévenir que le
-compte de revue ne les utilise pas.
+Le jour où un bouton « Se connecter avec… » apparaît : cocher **OAuth** en
+plus, et prévenir que le compte de revue ne l'utilise pas.
 
 ---
 
@@ -236,7 +237,9 @@ Pour **tous** : partagées = **Non**, éphémères = **Non**.
 | Activité dans l'app → **Autres actions** | Facultative | Fonctionnalité |
 
 « Autres actions » couvre l'appartenance aux groupes, le rôle, le niveau de
-partage, les invitations créées et les réponses aux rendez-vous.
+partage, les invitations créées, les réponses aux rendez-vous et les
+réglages du salon Discord d'un groupe. Le compte Discord relié (identifiant
+et nom) entre dans **ID utilisateur** et **Nom**, déjà déclarés.
 
 **Éphémère : non, pour les cinq.** Une donnée éphémère est lue en mémoire le
 temps d'une requête puis jetée ; chacun de ces types atterrit dans une table
@@ -252,7 +255,9 @@ compte peut en revanche rester sans aucun rendez-vous ni groupe.
 **Partagées : non.** Google définit le partage comme un transfert vers un
 tiers et **exclut les transferts déclenchés par l'utilisateur**. Voir l'agenda
 d'un colocataire suppose d'avoir rejoint son groupe et choisi son niveau de
-partage. Hetzner et Brevo sont des sous-traitants, pas des destinataires.
+partage. De même, le récap publié par le bot dans un salon Discord ne part
+que parce qu'un admin a relié ce salon. Hetzner et Brevo sont des
+sous-traitants, pas des destinataires.
 
 ### Les types que l'on ne déclare pas
 
@@ -265,7 +270,8 @@ partage. Hetzner et Brevo sont des sous-traitants, pas des destinataires.
 | Contacts, Fichiers, Messages, Navigation Web, Santé, Finances | rien de tel dans les dix tables du schéma |
 
 Les seuls hôtes contactés par l'app sont le serveur Supabase d'Agora et
-`challenges.cloudflare.com` pour le CAPTCHA.
+`challenges.cloudflare.com` pour le CAPTCHA. La liaison d'un compte Discord
+s'ouvre dans le navigateur, sur `discord.com`, et non dans l'app.
 
 ### Le point non tranché
 

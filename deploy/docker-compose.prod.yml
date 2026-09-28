@@ -236,6 +236,11 @@ services:
       # Rôle restreint : son mot de passe est posé par deploy/migrate.sh.
       AGORA_DATABASE_URL: postgres://agora_worker:${AGORA_WORKER_PASSWORD:?AGORA_WORKER_PASSWORD manquant dans .env}@db:5432/postgres?sslmode=disable
       AGORA_HTTP_ADDR: ":8080"
+      # Bot Discord, facultatif : sans clé publique, pas d'interactions ;
+      # sans jeton, ni récaps ni rappels. Le jeton est un secret (coffre).
+      AGORA_DISCORD_PUBLIC_KEY: ${DISCORD_PUBLIC_KEY:-}
+      AGORA_DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      AGORA_DISCORD_APPLICATION_ID: ${DISCORD_APPLICATION_ID:-}
     ports:
       - "127.0.0.1:9404:8080"
 

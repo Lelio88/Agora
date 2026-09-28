@@ -131,6 +131,9 @@ jobs:
         env:
           ANON_KEY: ${{ secrets.AGORA_ANON_KEY }}
           TURNSTILE_SITE_KEY: ${{ secrets.AGORA_TURNSTILE_SITE_KEY }}
+          # Identifiant public de l'application Discord (variable du dépôt,
+          # facultative) : sans lui, l'app ne propose pas d'inviter le bot.
+          DISCORD_APPLICATION_ID: ${{ vars.AGORA_DISCORD_APPLICATION_ID }}
         run: |
           if [ -z "$ANON_KEY" ]; then
             echo "ERREUR : secret AGORA_ANON_KEY absent."
@@ -142,8 +145,8 @@ jobs:
             echo "ERREUR : secret AGORA_TURNSTILE_SITE_KEY absent."
             exit 1
           fi
-          printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s","AGORA_TURNSTILE_SITE_KEY":"%s"}' \
-            "$API_URL" "$ANON_KEY" "$SITE_URL" "$TURNSTILE_SITE_KEY" > "$RUNNER_TEMP/prod.json"
+          printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s","AGORA_TURNSTILE_SITE_KEY":"%s","AGORA_DISCORD_APPLICATION_ID":"%s"}' \
+            "$API_URL" "$ANON_KEY" "$SITE_URL" "$TURNSTILE_SITE_KEY" "$DISCORD_APPLICATION_ID" > "$RUNNER_TEMP/prod.json"
           flutter pub get
           flutter build web --release --dart-define-from-file="$RUNNER_TEMP/prod.json"
 

@@ -941,4 +941,134 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get slotMoreCriteria => 'Heures, jours et membres';
+
+  @override
+  String get errorNotGroupAdmin => 'Seul un admin du groupe peut faire cela.';
+
+  @override
+  String get errorDiscordAlreadyLinked =>
+      'Ce compte Discord est déjà relié à un autre compte Agora.';
+
+  @override
+  String get discordSectionTitle => 'Discord';
+
+  @override
+  String discordAccountLinked(String name) {
+    return 'Relié à $name';
+  }
+
+  @override
+  String get discordAccountNotLinked =>
+      'Relie ton compte Discord pour utiliser /agenda et /dispo avec le bot Agora.';
+
+  @override
+  String get discordLinkButton => 'Relier Discord';
+
+  @override
+  String get discordUnlinkButton => 'Délier';
+
+  @override
+  String get discordLinkFailed => 'Impossible d\'ouvrir Discord.';
+
+  @override
+  String get groupDiscordMenu => 'Salon Discord';
+
+  @override
+  String get discordChannelTitle => 'Salon Discord';
+
+  @override
+  String get discordChannelNone =>
+      'Aucun salon Discord n\'est relié à ce groupe.';
+
+  @override
+  String get discordChannelAskAdmin => 'Un admin du groupe peut en relier un.';
+
+  @override
+  String discordChannelLinked(String name) {
+    return 'Relié à #$name';
+  }
+
+  @override
+  String get discordChannelLinkedUnnamed => 'Relié à un salon Discord';
+
+  @override
+  String get discordLinkSteps =>
+      'Invite le bot sur ton serveur, puis crée un code et tape la commande dans le salon voulu. Il faut pouvoir gérer ce salon.';
+
+  @override
+  String get discordInviteBot => 'Inviter le bot sur un serveur';
+
+  @override
+  String get discordCreateCode => 'Créer un code de liaison';
+
+  @override
+  String get discordCodeInstructions =>
+      'Dans les 10 minutes, tape dans le salon à relier :';
+
+  @override
+  String discordLinkCommand(String code) {
+    return '/relier $code';
+  }
+
+  @override
+  String get discordCopyCommand => 'Copier';
+
+  @override
+  String get discordCommandCopied => 'Commande copiée.';
+
+  @override
+  String get discordCheckLink => 'J\'ai tapé la commande';
+
+  @override
+  String get discordRecapLabel => 'Récap dans le salon';
+
+  @override
+  String get discordRecapOff => 'Aucun';
+
+  @override
+  String get discordRecapDaily => 'Chaque jour';
+
+  @override
+  String get discordRecapWeekly => 'Chaque semaine';
+
+  @override
+  String get discordRecapDay => 'Jour';
+
+  @override
+  String get discordRecapHour => 'Heure';
+
+  @override
+  String discordRecapHourValue(int hour) {
+    return '$hour h';
+  }
+
+  @override
+  String discordRecapTimezone(String timezone) {
+    return 'Heures de $timezone';
+  }
+
+  @override
+  String get discordReminderLabel => 'Rappel avant les rdv du groupe';
+
+  @override
+  String get discordReminderOff => 'Aucun';
+
+  @override
+  String get discordReminder15 => '15 min avant';
+
+  @override
+  String get discordReminder60 => '1 h avant';
+
+  @override
+  String get discordReminder1440 => 'La veille';
+
+  @override
+  String get discordPublicNotice =>
+      'Tout le salon voit les récaps et les rappels, même des personnes hors du groupe : les rdv du groupe y figurent en détail, les rdv personnels seulement comme « occupé ».';
+
+  @override
+  String get discordSaved => 'Réglages enregistrés.';
+
+  @override
+  String get discordUnlinkChannel => 'Délier le salon';
 }

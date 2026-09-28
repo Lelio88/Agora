@@ -1717,6 +1717,234 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Heures, jours et membres'**
   String get slotMoreCriteria;
+
+  /// Action réservée aux admins du groupe (salon Discord).
+  ///
+  /// In fr, this message translates to:
+  /// **'Seul un admin du groupe peut faire cela.'**
+  String get errorNotGroupAdmin;
+
+  /// Liaison refusée : le compte Discord appartient déjà à quelqu'un d'autre sur Agora.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce compte Discord est déjà relié à un autre compte Agora.'**
+  String get errorDiscordAlreadyLinked;
+
+  /// Titre de la section Discord du profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Discord'**
+  String get discordSectionTitle;
+
+  /// Compte Discord relié ; name est le nom Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relié à {name}'**
+  String discordAccountLinked(String name);
+
+  /// Profil : le compte Discord n'est pas relié.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relie ton compte Discord pour utiliser /agenda et /dispo avec le bot Agora.'**
+  String get discordAccountNotLinked;
+
+  /// Bouton qui ouvre la liaison du compte Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier Discord'**
+  String get discordLinkButton;
+
+  /// Bouton qui retire la liaison du compte Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délier'**
+  String get discordUnlinkButton;
+
+  /// La page de liaison Discord n'a pas pu s'ouvrir.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir Discord.'**
+  String get discordLinkFailed;
+
+  /// Entrée du menu d'un groupe qui ouvre le réglage du salon Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Salon Discord'**
+  String get groupDiscordMenu;
+
+  /// Titre de l'écran du salon Discord d'un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Salon Discord'**
+  String get discordChannelTitle;
+
+  /// Écran salon Discord : aucun salon relié.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun salon Discord n\'est relié à ce groupe.'**
+  String get discordChannelNone;
+
+  /// Écran salon Discord, vu par un simple membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un admin du groupe peut en relier un.'**
+  String get discordChannelAskAdmin;
+
+  /// Nom du salon relié.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relié à #{name}'**
+  String discordChannelLinked(String name);
+
+  /// Salon relié dont Discord n'a pas donné le nom.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relié à un salon Discord'**
+  String get discordChannelLinkedUnnamed;
+
+  /// Mode d'emploi de la liaison d'un salon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Invite le bot sur ton serveur, puis crée un code et tape la commande dans le salon voulu. Il faut pouvoir gérer ce salon.'**
+  String get discordLinkSteps;
+
+  /// Bouton qui ouvre l'installation du bot Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inviter le bot sur un serveur'**
+  String get discordInviteBot;
+
+  /// Bouton qui crée le code à taper dans Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un code de liaison'**
+  String get discordCreateCode;
+
+  /// Consigne affichée au-dessus de la commande à taper.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans les 10 minutes, tape dans le salon à relier :'**
+  String get discordCodeInstructions;
+
+  /// Commande Discord qui relie un salon ; code est le code de liaison.
+  ///
+  /// In fr, this message translates to:
+  /// **'/relier {code}'**
+  String discordLinkCommand(String code);
+
+  /// Bouton qui copie la commande.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier'**
+  String get discordCopyCommand;
+
+  /// Confirmation de copie de la commande.
+  ///
+  /// In fr, this message translates to:
+  /// **'Commande copiée.'**
+  String get discordCommandCopied;
+
+  /// Bouton qui relit l'état du salon après la commande dans Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'ai tapé la commande'**
+  String get discordCheckLink;
+
+  /// Réglage du récap publié dans le salon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récap dans le salon'**
+  String get discordRecapLabel;
+
+  /// Pas de récap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun'**
+  String get discordRecapOff;
+
+  /// Récap quotidien.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque jour'**
+  String get discordRecapDaily;
+
+  /// Récap hebdomadaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque semaine'**
+  String get discordRecapWeekly;
+
+  /// Jour du récap hebdomadaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jour'**
+  String get discordRecapDay;
+
+  /// Heure du récap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Heure'**
+  String get discordRecapHour;
+
+  /// Heure pleine.
+  ///
+  /// In fr, this message translates to:
+  /// **'{hour} h'**
+  String discordRecapHourValue(int hour);
+
+  /// Fuseau dans lequel s'entend l'heure du récap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Heures de {timezone}'**
+  String discordRecapTimezone(String timezone);
+
+  /// Réglage des rappels.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rappel avant les rdv du groupe'**
+  String get discordReminderLabel;
+
+  /// Pas de rappel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun'**
+  String get discordReminderOff;
+
+  /// Rappel 15 minutes avant.
+  ///
+  /// In fr, this message translates to:
+  /// **'15 min avant'**
+  String get discordReminder15;
+
+  /// Rappel une heure avant.
+  ///
+  /// In fr, this message translates to:
+  /// **'1 h avant'**
+  String get discordReminder60;
+
+  /// Rappel 24 heures avant.
+  ///
+  /// In fr, this message translates to:
+  /// **'La veille'**
+  String get discordReminder1440;
+
+  /// Avertissement sur ce que voit un salon Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout le salon voit les récaps et les rappels, même des personnes hors du groupe : les rdv du groupe y figurent en détail, les rdv personnels seulement comme « occupé ».'**
+  String get discordPublicNotice;
+
+  /// Confirmation d'enregistrement des réglages Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réglages enregistrés.'**
+  String get discordSaved;
+
+  /// Bouton qui délie le salon Discord du groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délier le salon'**
+  String get discordUnlinkChannel;
 }
 
 class _AppLocalizationsDelegate

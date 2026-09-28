@@ -12,6 +12,8 @@
 //   - toute réponse à une commande est éphémère (flag 64), visible du seul
 //     demandeur. C'est la règle de vie privée côté Discord : un salon a une
 //     audience plus large que le groupe (§6 de docs/architecture.md) ;
+//   - aucune réponse ne notifie qui que ce soit (allowed_mentions vide) :
+//     un titre de rdv qui contient « @everyone » reste un texte ;
 //   - les messages naissent bilingues, choisis sur la locale du demandeur
 //     (Text), comme les chaînes de l'app naissent dans les deux ARB.
 //
@@ -58,10 +60,15 @@ type Interaction struct {
 	// GuildID et ChannelID sont vides en message privé.
 	GuildID   string
 	ChannelID string
+	// ChannelName est le nom du salon, tel que Discord le joint à l'appel.
+	ChannelName string
 	// Locale est celle du client Discord du demandeur (« fr », « en-US »).
 	Locale string
 	// Options porte les valeurs des options de la commande, par nom.
 	Options map[string]string
+	// Permissions est le champ de bits des droits du demandeur dans le
+	// salon, tel que Discord le calcule (vide en message privé).
+	Permissions string
 }
 
 // Reply est la réponse rendue au demandeur, toujours éphémère.
@@ -104,11 +111,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload struct {
-		Type   int    `json:"type"`
-		Locale string `json:"locale"`
-		Guild  string `json:"guild_id"`
-		Chan   string `json:"channel_id"`
-		Data   struct {
+		Type    int    `json:"type"`
+		Locale  string `json:"locale"`
+		Guild   string `json:"guild_id"`
+		Chan    string `json:"channel_id"`
+		Channel struct {
+			Name string `json:"name"`
+		} `json:"channel"`
+		Data struct {
 			Name    string `json:"name"`
 			Options []struct {
 				Name  string          `json:"name"`
@@ -116,7 +126,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			} `json:"options"`
 		} `json:"data"`
 		Member struct {
-			User struct {
+			Permissions string `json:"permissions"`
+			User        struct {
 				ID string `json:"id"`
 			} `json:"user"`
 		} `json:"member"`
@@ -139,12 +150,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			userID = payload.User.ID
 		}
 		in := Interaction{
-			Command:   payload.Data.Name,
-			UserID:    userID,
-			GuildID:   payload.Guild,
-			ChannelID: payload.Chan,
-			Locale:    payload.Locale,
-			Options:   make(map[string]string, len(payload.Data.Options)),
+			Command:     payload.Data.Name,
+			UserID:      userID,
+			GuildID:     payload.Guild,
+			ChannelID:   payload.Chan,
+			ChannelName: payload.Channel.Name,
+			Locale:      payload.Locale,
+			Options:     make(map[string]string, len(payload.Data.Options)),
+			Permissions: payload.Member.Permissions,
 		}
 		for _, option := range payload.Data.Options {
 			value := string(option.Value)
@@ -231,9 +244,17 @@ func writeStatus(w http.ResponseWriter, err error) {
 func writeReply(w http.ResponseWriter, reply Reply) {
 	writeJSON(w, map[string]any{
 		"type": replyMessage,
-		"data": map[string]any{"content": reply.Content, "flags": flagEphemeral},
+		"data": map[string]any{
+			"content": reply.Content,
+			"flags":   flagEphemeral,
+			// Un titre de rdv est un texte libre : il ne notifie jamais personne.
+			"allowed_mentions": noMentions,
+		},
 	})
 }
+
+// noMentions interdit toute notification dans un message du bot.
+var noMentions = map[string]any{"parse": []string{}}
 
 func writeJSON(w http.ResponseWriter, payload any) {
 	w.Header().Set("Content-Type", "application/json")

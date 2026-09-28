@@ -931,4 +931,134 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get slotMoreCriteria => 'Hours, days and members';
+
+  @override
+  String get errorNotGroupAdmin => 'Only an admin of the group can do this.';
+
+  @override
+  String get errorDiscordAlreadyLinked =>
+      'This Discord account is already linked to another Agora account.';
+
+  @override
+  String get discordSectionTitle => 'Discord';
+
+  @override
+  String discordAccountLinked(String name) {
+    return 'Linked to $name';
+  }
+
+  @override
+  String get discordAccountNotLinked =>
+      'Link your Discord account to use /agenda and /free with the Agora bot.';
+
+  @override
+  String get discordLinkButton => 'Link Discord';
+
+  @override
+  String get discordUnlinkButton => 'Unlink';
+
+  @override
+  String get discordLinkFailed => 'Could not open Discord.';
+
+  @override
+  String get groupDiscordMenu => 'Discord channel';
+
+  @override
+  String get discordChannelTitle => 'Discord channel';
+
+  @override
+  String get discordChannelNone =>
+      'No Discord channel is linked to this group.';
+
+  @override
+  String get discordChannelAskAdmin => 'An admin of the group can link one.';
+
+  @override
+  String discordChannelLinked(String name) {
+    return 'Linked to #$name';
+  }
+
+  @override
+  String get discordChannelLinkedUnnamed => 'Linked to a Discord channel';
+
+  @override
+  String get discordLinkSteps =>
+      'Add the bot to your server, then create a code and type the command in the channel you want. You need to be able to manage that channel.';
+
+  @override
+  String get discordInviteBot => 'Add the bot to a server';
+
+  @override
+  String get discordCreateCode => 'Create a link code';
+
+  @override
+  String get discordCodeInstructions =>
+      'Within 10 minutes, type in the channel to link:';
+
+  @override
+  String discordLinkCommand(String code) {
+    return '/link $code';
+  }
+
+  @override
+  String get discordCopyCommand => 'Copy';
+
+  @override
+  String get discordCommandCopied => 'Command copied.';
+
+  @override
+  String get discordCheckLink => 'I typed the command';
+
+  @override
+  String get discordRecapLabel => 'Recap in the channel';
+
+  @override
+  String get discordRecapOff => 'None';
+
+  @override
+  String get discordRecapDaily => 'Daily';
+
+  @override
+  String get discordRecapWeekly => 'Weekly';
+
+  @override
+  String get discordRecapDay => 'Day';
+
+  @override
+  String get discordRecapHour => 'Time';
+
+  @override
+  String discordRecapHourValue(int hour) {
+    return '$hour:00';
+  }
+
+  @override
+  String discordRecapTimezone(String timezone) {
+    return 'Times in $timezone';
+  }
+
+  @override
+  String get discordReminderLabel => 'Reminder before group events';
+
+  @override
+  String get discordReminderOff => 'None';
+
+  @override
+  String get discordReminder15 => '15 min before';
+
+  @override
+  String get discordReminder60 => '1 h before';
+
+  @override
+  String get discordReminder1440 => 'The day before';
+
+  @override
+  String get discordPublicNotice =>
+      'Everyone in the channel sees recaps and reminders, including people outside the group: group events appear in full, personal events only as \"busy\".';
+
+  @override
+  String get discordSaved => 'Settings saved.';
+
+  @override
+  String get discordUnlinkChannel => 'Unlink the channel';
 }

@@ -81,6 +81,14 @@ func TestLoad(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "rejects a Discord application id that is not a number",
+			env: map[string]string{
+				"AGORA_DATABASE_URL":           localURL,
+				"AGORA_DISCORD_APPLICATION_ID": "agora",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

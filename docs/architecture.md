@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
-| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses) et [`ics-architecture.md`](./ics-architecture.md) (import iCal), et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses), [`ics-architecture.md`](./ics-architecture.md) (import iCal) et [`discord-architecture.md`](./discord-architecture.md) (bot Discord), et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -44,7 +44,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 |---|---|
 | `app/lib/src/composition_root.dart` | Seul point (avec `main.dart`) qui importe les couches `data/` ; `prodOverrides` branche chaque `*RepositoryProvider` |
 | `app/lib/src/supabase/` | `SupabaseConfig` : URL + clé lues au build, sans valeur par défaut ; `http` limité aux hôtes locaux ; `guardPostgrest` : erreurs PostgREST → `AppException` (messages stables des RPC) |
-| `app/lib/src/config/` | `web_links.dart` : adresse de la version web (`AGORA_WEB_URL`, facultative) et lien d'invitation |
+| `app/lib/src/config/` | `web_links.dart` : adresse de la version web (`AGORA_WEB_URL`, facultative) et lien d'invitation ; `discord_bot.dart` : lien d'installation du bot (`AGORA_DISCORD_APPLICATION_ID`, facultatif) |
 | `app/lib/src/exceptions/` | `AppException` scellée (switch exhaustif des messages) ; `AsyncErrorLogger` transmet toute erreur de provider à `AppLogger` |
 | `app/lib/src/logging/` | `AppLogger`, seule surface de journalisation (`dart:developer` par défaut) |
 | `app/lib/src/routing/` | GoRouter, navigation par nom (`AppRoute` dans `app_route.dart`) ; `auth_redirect.dart` : règle de redirection pure, testée seule |
@@ -52,10 +52,11 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` ; `agenda_view.dart` (vues kalender, barre, suivi de la plage chargée) ; `palette.dart` (couleurs des agendas et des membres) |
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
-| `worker/internal/httpx/` | Routes HTTP du worker (`/healthz`, puis interactions Discord) |
+| `worker/internal/httpx/` | Routes HTTP du worker : `/healthz`, et `/discord/interactions` si la clé publique Discord est fournie |
 | `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage ; `Listen` : une connexion `LISTEN` dédiée, partagée par canaux (`agora_recurrence`, `agora_ics`), reconnexion avec repli |
 | `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore` — détail dans l'annexe agenda |
 | `worker/ics/` | Relecture des flux iCal : garde SSRF, téléchargement borné, lecture go-ical, `Service`, `PgStore` (fonctions `private.ics_*`) — détail dans l'annexe iCal |
+| `worker/discord/` | Bot Discord : interactions signées, commandes, créneaux (`/dispo`), récaps et rappels, inscription des commandes, `PgStore` (fonctions `private.discord_*`) — détail dans l'annexe Discord |
 | `worker/vendor/` | Dépendances vendorisées (`go mod vendor`) : build hors ligne, version exacte relue |
 
 ### Règles de couplage
@@ -87,6 +88,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `event_occurrences` | occurrences dépliées des rdv **récurrents** | le worker seul (rôle `agora_worker`) |
 | `event_responses` | réponse d'un membre à un rdv de groupe (présent / peut-être / absent), par instance : `occurrence_start` pour une occurrence de série | `respond_to_event()` seul ; lisible des membres du groupe |
 | `series_expansions` | horodatage du dernier dépliage **qui a changé** une série : signal temps réel pour l'app | le worker seul |
+| `discord_channels` | salon Discord relié à un groupe, et réglages des récaps et rappels | `/relier` (worker) ; admins pour régler et délier — voir [`discord-architecture.md`](./discord-architecture.md) |
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom
   vient des métadonnées du fournisseur (`display_name`, `full_name`, `global_name` Discord,
@@ -195,16 +197,24 @@ Détail complet : [`ics-architecture.md`](./ics-architecture.md). Invariants :
 
 ## 6. Bot Discord
 
-- **Interactions en HTTP** : Discord appelle le worker sur une URL d'interactions, avec une
-  signature Ed25519 que le worker vérifie. Pas de connexion permanente à la passerelle. Les
-  récaps et rappels sont envoyés par l'API REST avec le jeton du bot.
-- **Réponses aux commandes visibles du seul demandeur** (`/agenda`, `/dispo`) : le demandeur doit
-  avoir relié son compte Discord à Agora. On ne lui montre que ce que l'app lui montrerait.
-- **Récaps et rappels publics** : rdv personnels plafonnés à `busy` (voir §3).
-- **Liaison du compte Discord** : identité Supabase du fournisseur `discord`, obtenue en se
-  connectant avec Discord ou par `linkIdentity` (`enable_manual_linking = true`). L'identifiant
-  Discord se lit dans `auth.identities` : aucune table en double.
-- **Réglage dans l'app** : salon, fréquence et heure du récap, délai des rappels, par groupe.
+Détail complet : [`discord-architecture.md`](./discord-architecture.md). Invariants :
+
+- **Interactions en HTTP** : Discord appelle le worker (`/discord/interactions`), qui vérifie la
+  signature Ed25519 avant toute lecture en base. Il n'y a pas de connexion permanente à la
+  passerelle. Récaps et rappels partent par l'API REST, avec le jeton du bot.
+- **Commandes** : `/relier`, `/delier`, `/agenda`, `/dispo`. Chaque réponse est visible du seul
+  demandeur, qui doit avoir relié son compte Discord. On ne lui montre que ce que l'app lui
+  montrerait : lecteur = lui, plafond `details`.
+- **Récaps et rappels publics** : rdv personnels plafonnés à `busy` (voir §3). Les rappels ne
+  portent que sur les rdv du groupe.
+- **Liaison du compte Discord** : identité Supabase du fournisseur `discord`, obtenue par
+  `linkIdentity` depuis le profil (`enable_manual_linking = true`). L'identifiant Discord se lit
+  dans `auth.identities` : aucune table en double.
+- **Liaison d'un salon** : un code d'admin créé dans l'app, puis tapé dans le salon (`/relier`)
+  par quelqu'un qui peut gérer ce salon. Le compte Discord de cette personne doit être celui
+  d'un admin du groupe.
+- **Réglage dans l'app** (menu du groupe → Salon Discord) : fréquence, jour et heure du récap,
+  délai des rappels, pour chaque groupe.
 
 ## 7. Application Flutter et comptes
 
@@ -261,9 +271,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques |
 | App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé) ; branchement de `prodOverrides` |
-| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences et iCal, chaîne complète serveur → base) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
+| Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences, iCal, Discord) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role
   authenticated` + `set local request.jwt.claims = '{"sub": …}'` pour agir en tant qu'un membre, et
@@ -290,8 +300,8 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
 | App web | `agora.heianenterprise.com`, servie par Caddy ; sert aussi de lien web de suppression du compte pour le Play Store | [`deployment.md`](./deployment.md) |
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../brevo-email-guide.md` |
-| Discord | application + bot : clé publique (signature), jeton du bot | portail développeurs Discord |
-| Google / Discord OAuth | connexion (identité seule, sans accès à l'agenda) | console Google Cloud, portail Discord |
+| Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
+| Google OAuth | connexion (identité seule, sans accès à l'agenda) : câblée, désactivée | console Google Cloud |
 
 Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public. Carte du serveur :
 `../INFRASTRUCTURE.md`.

@@ -35,6 +35,12 @@ type Config struct {
 	// Discord, qui signe chaque interaction. Vide : le bot n'est pas branché
 	// et le point d'entrée des interactions n'est pas monté.
 	DiscordPublicKey string
+	// DiscordBotToken est le jeton du bot, qui publie récaps et rappels par
+	// l'API REST. Vide : rien n'est publié. Un secret : jamais journalisé.
+	DiscordBotToken string
+	// DiscordApplicationID identifie l'application Discord, pour inscrire
+	// les commandes (worker register-commands).
+	DiscordApplicationID string
 	// ICSAllowPrivateNetwork lève le contrôle SSRF des flux iCal
 	// (AGORA_ICS_ALLOW_PRIVATE_NETWORK=true) : développement et tests
 	// seulement, jamais en production.
@@ -73,12 +79,31 @@ func Load(getenv func(string) string) (Config, error) {
 			return Config{}, errors.New("AGORA_DISCORD_PUBLIC_KEY: 64 caractères hexadécimaux attendus")
 		}
 	}
+	appID := getenv("AGORA_DISCORD_APPLICATION_ID")
+	if appID != "" && !isSnowflake(appID) {
+		return Config{}, errors.New("AGORA_DISCORD_APPLICATION_ID: identifiant numérique attendu")
+	}
 	return Config{
 		HTTPAddr:               addr,
 		DatabaseURL:            databaseURL,
 		DiscordPublicKey:       discordKey,
+		DiscordBotToken:        getenv("AGORA_DISCORD_BOT_TOKEN"),
+		DiscordApplicationID:   appID,
 		ICSAllowPrivateNetwork: allowPrivate,
 	}, nil
+}
+
+// isSnowflake dit si s est un identifiant Discord (entier décimal).
+func isSnowflake(s string) bool {
+	if len(s) == 0 || len(s) > 20 {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // RedactedDatabaseURL renvoie DatabaseURL sans son mot de passe, pour les

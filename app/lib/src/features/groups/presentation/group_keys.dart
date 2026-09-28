@@ -9,6 +9,7 @@ abstract final class GroupKeys {
   // Liste des groupes.
   static const listScreen = ValueKey('groups.screen');
   static const newGroup = ValueKey('groups.new');
+  static const discord = ValueKey('groups.menu.discord');
   static const joinWithCode = ValueKey('groups.joinWithCode');
   static ValueKey<String> groupTile(String id) => ValueKey('groups.tile.$id');
 

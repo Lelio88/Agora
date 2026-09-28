@@ -1,5 +1,10 @@
 // Command worker est le service de fond d'Agora : dépliage des rdv
-// récurrents et relecture des agendas iCal, puis bot Discord.
+// récurrents, relecture des agendas iCal, bot Discord (commandes, récaps et
+// rappels).
+//
+// « worker register-commands » inscrit les commandes du bot auprès de
+// Discord, puis rend la main : à relancer après toute modification de
+// discord.Definitions.
 //
 // Choix non évident : un seul binaire pour toutes ces tâches, en Go, pour
 // tenir en ~15 Mo sur un serveur partagé où chaque service porte sa
@@ -46,6 +51,10 @@ const (
 	// Relève des flux dus : l'échéance de chacun est tenue par la base
 	// (30 min après une relecture réussie), la relève ne fait que la guetter.
 	icsPollInterval = time.Minute
+	// Relève des récaps et rappels Discord : leur échéance est tenue par la
+	// base, à la minute près.
+	discordPublishInterval = time.Minute
+	discordHTTPTimeout     = 10 * time.Second
 )
 
 func main() {
@@ -60,6 +69,9 @@ func run(logger *slog.Logger) error {
 	cfg, err := config.Load(os.Getenv)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
+	}
+	if len(os.Args) > 1 && os.Args[1] == "register-commands" {
+		return registerCommands(cfg, logger)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -88,12 +100,25 @@ func run(logger *slog.Logger) error {
 	// Le bot n'écoute que si l'application Discord a donné sa clé publique :
 	// sans elle, aucune signature n'est vérifiable, donc rien n'est monté.
 	var interactions http.Handler
+	discordStore := discord.NewPgStore(pool)
 	if cfg.DiscordPublicKey != "" {
-		interactions, err = discord.NewHandler(cfg.DiscordPublicKey, nil, time.Now)
+		bot := discord.NewBot(discordStore, time.Now, logger)
+		interactions, err = discord.NewHandler(cfg.DiscordPublicKey, bot.Commands(), time.Now)
 		if err != nil {
 			return fmt.Errorf("discord: %w", err)
 		}
 		logger.Info("discord interactions ready")
+	}
+	// Récaps et rappels : seulement avec le jeton du bot.
+	if cfg.DiscordBotToken != "" {
+		poster := discord.NewRESTPoster(&http.Client{Timeout: discordHTTPTimeout}, discord.APIBase, cfg.DiscordBotToken)
+		publisher := discord.NewPublisher(discordStore, poster, time.Now, logger)
+		background.Add(1)
+		go func() {
+			defer background.Done()
+			publisher.Run(ctx, discordPublishInterval)
+		}()
+		logger.Info("discord publishing ready")
 	}
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
@@ -168,6 +193,21 @@ func startICS(ctx context.Context, wg *sync.WaitGroup, store ics.Store, fetcher 
 		Deliver:     func(context.Context, string) { signal1(wake) },
 		OnConnected: func() { signal1(wake) },
 	}
+}
+
+// registerCommands inscrit les commandes du bot auprès de Discord.
+func registerCommands(cfg config.Config, logger *slog.Logger) error {
+	if cfg.DiscordApplicationID == "" || cfg.DiscordBotToken == "" {
+		return errors.New("register-commands: AGORA_DISCORD_APPLICATION_ID et AGORA_DISCORD_BOT_TOKEN sont requis")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), discordHTTPTimeout)
+	defer cancel()
+	client := &http.Client{Timeout: discordHTTPTimeout}
+	if err := discord.RegisterCommands(ctx, client, discord.APIBase, cfg.DiscordApplicationID, cfg.DiscordBotToken); err != nil {
+		return err
+	}
+	logger.Info("discord commands registered", "count", len(discord.Definitions()))
+	return nil
 }
 
 // signal1 dépose un signal s'il n'y en a pas déjà un en attente.

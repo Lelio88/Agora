@@ -11,14 +11,14 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md), [`ics`](./docs/ics-architecture.md) et [`deployment`](./docs/deployment.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md), [`ics`](./docs/ics-architecture.md), [`discord`](./docs/discord-architecture.md) et [`deployment`](./docs/deployment.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
 - `app/lib/src/` — `composition_root.dart`, `app.dart`, `routing/`, `supabase/`, `exceptions/`, `logging/`, `localization/` (ARB).
 - `supabase/migrations/` — schéma, RLS, RPC ; `supabase/tests/` — pgTAP ; `config.toml` — pile locale sur les ports 553xx.
 - `deploy/` — mise en ligne : compose de prod, rôles, `migrate.sh`, vhost Caddy, bootstrap, répétition locale (`rehearsal/`) ; `.github/workflows/deploy.yml` sur la branche `release`.
-- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/vendor/` — dépendances vendorisées.
+- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/discord/` — bot (interactions signées, commandes, créneaux, récaps et rappels, `PgStore`) ; `worker/vendor/` — dépendances vendorisées.
 
 ## III. Pile Technologique
 
@@ -84,7 +84,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |
-| Commande ou réglage du bot Discord | `docs/architecture.md` §6 |
+| Commande, publication ou réglage du bot Discord | `docs/discord-architecture.md` + `supabase/tests/discord_test.sql` + tests Go de `worker/discord/` ; puis `worker register-commands` si une commande change ; `/dispo` : `slots.go` suit `free_slots.dart` |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
 | Vérification humaine (CAPTCHA) : clé, page du widget, écrans concernés | `app/web/captcha.html` + `captcha_gate.dart` + `GOTRUE_SECURITY_CAPTCHA_*` de `deploy/docker-compose.prod.yml` + `docs/deployment.md` |
@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : en ligne, avec pages légales et vérification humaine (Turnstile) sur les écrans de compte.
-- **Focus immédiat** : fiche Play Store (dernier point avant l'ouverture au public) ; puis étape 8 — `/agenda` (groupe du salon ou perso), `/dispo` (créneaux communs, à porter en Go), liaison d'un salon choisie dans l'app.
+- **Dernier focus** : bot Discord (étape 8) codé et testé : commandes, récaps, rappels, liaison du compte et du salon depuis l'app.
+- **Focus immédiat** : mettre le bot en service (application Discord, `.env`, `register-commands`, URL d'interactions) ; fiche Play Store.
