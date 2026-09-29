@@ -17,15 +17,16 @@
 library;
 
 import 'package:agora/src/common_widgets/form_error_text.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/common_widgets/submit_button.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
-import 'package:agora/src/common_widgets/palette.dart';
-import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
+import 'package:agora/src/features/directions/presentation/go_there_button.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -365,6 +366,17 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                   prefixIcon: const Icon(Icons.place_outlined),
                 ),
               ),
+              // Sur un rdv déjà enregistré seulement : à la création, on
+              // saisit le rdv, on ne s'y rend pas encore.
+              if (widget.existing != null)
+                ValueListenableBuilder(
+                  valueListenable: _location,
+                  builder: (context, value, _) => GoThereButton(
+                    location: value.text,
+                    start: _start,
+                    isAllDay: _isAllDay,
+                  ),
+                ),
               const SizedBox(height: 8),
               TextFormField(
                 key: CalendarKeys.description,

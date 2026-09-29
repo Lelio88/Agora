@@ -319,5 +319,15 @@
   "discordReminder1440": "The day before",
   "discordPublicNotice": "Everyone in the channel sees recaps and reminders, including people outside the group: group events appear in full, personal events only as \"busy\".",
   "discordSaved": "Settings saved.",
-  "discordUnlinkChannel": "Unlink the channel"
+  "discordUnlinkChannel": "Unlink the channel",
+  "goThereButton": "Get there",
+  "goThereTitle": "Get there by public transport",
+  "goThereArriveBy": "To arrive on {when}",
+  "goThereOriginLabel": "Start from another address",
+  "goThereOriginHelper": "Otherwise, from where you are. Nothing is saved.",
+  "goThereCitymapper": "Citymapper",
+  "goThereGoogleMaps": "Google Maps",
+  "goThereGoogleNote": "In Google Maps, set the arrival time yourself: the link cannot carry it.",
+  "goThereOtherApp": "Another maps app",
+  "goThereFailed": "No app could open the route."
 }

@@ -247,6 +247,10 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   `SUPABASE_PUBLISHABLE_KEY`, et `AGORA_WEB_URL` facultative pour les liens d'invitation). Aucune
   valeur par défaut : une URL sans clé fait échouer le démarrage, au lieu des 401 muets d'une
   clé retombée sur celle du poste local.
+- **« Y aller »** (`features/directions/`) : sur la fiche d'un rdv enregistré qui a un lieu, un
+  lien vers l'app d'itinéraire en transports (Citymapper avec l'heure d'arrivée, Google Maps,
+  ou `geo:` sur Android). Aucun calcul, aucun appel réseau, rien d'enregistré ; sans adresse
+  saisie, l'app d'itinéraire part de la position du téléphone, qu'Agora ne demande pas.
 - **Accueil** : deux onglets (Agenda, Groupes). Groupes et invitations : voir
   [`groups-architecture.md`](./groups-architecture.md).
 - **Langues** : repli sur le français pour une langue d'appareil non prise en charge.

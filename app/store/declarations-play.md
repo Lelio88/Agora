@@ -271,7 +271,9 @@ sous-traitants, pas des destinataires.
 
 Les seuls hôtes contactés par l'app sont le serveur Supabase d'Agora et
 `challenges.cloudflare.com` pour le CAPTCHA. La liaison d'un compte Discord
-s'ouvre dans le navigateur, sur `discord.com`, et non dans l'app.
+s'ouvre dans le navigateur, sur `discord.com`, et non dans l'app. « Y aller »
+passe la main à l'app d'itinéraire choisie (Citymapper, Google Maps) : ni
+localisation demandée, ni donnée enregistrée, rien à déclarer.
 
 ### Le point non tranché
 

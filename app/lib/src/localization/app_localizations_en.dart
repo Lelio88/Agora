@@ -1061,4 +1061,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discordUnlinkChannel => 'Unlink the channel';
+
+  @override
+  String get goThereButton => 'Get there';
+
+  @override
+  String get goThereTitle => 'Get there by public transport';
+
+  @override
+  String goThereArriveBy(String when) {
+    return 'To arrive on $when';
+  }
+
+  @override
+  String get goThereOriginLabel => 'Start from another address';
+
+  @override
+  String get goThereOriginHelper =>
+      'Otherwise, from where you are. Nothing is saved.';
+
+  @override
+  String get goThereCitymapper => 'Citymapper';
+
+  @override
+  String get goThereGoogleMaps => 'Google Maps';
+
+  @override
+  String get goThereGoogleNote =>
+      'In Google Maps, set the arrival time yourself: the link cannot carry it.';
+
+  @override
+  String get goThereOtherApp => 'Another maps app';
+
+  @override
+  String get goThereFailed => 'No app could open the route.';
 }

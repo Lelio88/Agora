@@ -1945,6 +1945,66 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Délier le salon'**
   String get discordUnlinkChannel;
+
+  /// Bouton d'une fiche de rdv qui ouvre l'itinéraire vers son lieu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Y aller'**
+  String get goThereButton;
+
+  /// Titre de la feuille d'itinéraire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Y aller en transports'**
+  String get goThereTitle;
+
+  /// Heure d'arrivée visée : le début du rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour arriver le {when}'**
+  String goThereArriveBy(String when);
+
+  /// Champ facultatif : adresse de départ.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partir d\'une autre adresse'**
+  String get goThereOriginLabel;
+
+  /// Aide du champ de départ : position par défaut, rien de stocké.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinon, depuis ta position. Rien n\'est enregistré.'**
+  String get goThereOriginHelper;
+
+  /// Ouvre l'itinéraire dans Citymapper.
+  ///
+  /// In fr, this message translates to:
+  /// **'Citymapper'**
+  String get goThereCitymapper;
+
+  /// Ouvre l'itinéraire dans Google Maps.
+  ///
+  /// In fr, this message translates to:
+  /// **'Google Maps'**
+  String get goThereGoogleMaps;
+
+  /// Google Maps ne reçoit pas l'heure d'arrivée par lien.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans Google Maps, règle l\'heure d\'arrivée toi-même : le lien ne peut pas la transmettre.'**
+  String get goThereGoogleNote;
+
+  /// Ouvre le lieu dans une app de cartes au choix (Android).
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre app de cartes'**
+  String get goThereOtherApp;
+
+  /// Échec de l'ouverture de l'app d'itinéraire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune app n\'a pu ouvrir l\'itinéraire.'**
+  String get goThereFailed;
 }
 
 class _AppLocalizationsDelegate

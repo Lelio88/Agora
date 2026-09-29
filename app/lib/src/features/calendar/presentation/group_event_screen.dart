@@ -26,6 +26,7 @@ import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/event_actions.dart';
 import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
+import 'package:agora/src/features/directions/presentation/go_there_button.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -160,8 +161,14 @@ class _Details extends ConsumerWidget {
             Localizations.localeOf(context).toString(),
           ),
         ),
-        if (item.location case final location?)
+        if (item.location case final location?) ...[
           _Line(icon: Icons.place_outlined, text: location),
+          GoThereButton(
+            location: location,
+            start: item.start,
+            isAllDay: item.isAllDay,
+          ),
+        ],
         if (creator != null)
           _Line(
             icon: Icons.person_outline,

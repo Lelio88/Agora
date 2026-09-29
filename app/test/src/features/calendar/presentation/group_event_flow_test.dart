@@ -3,6 +3,7 @@ import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/directions/presentation/directions_keys.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
@@ -279,4 +280,30 @@ void main() {
 
     expect(robot.calendars.calendars.last.hidden, isTrue);
   });
+
+  testWidgets(
+    '« Y aller » opens the route to the place, from a typed address',
+    (tester) async {
+      final robot = await _pump(tester);
+      await robot.openGroup(_groupId);
+      await robot.tapEvent('Match');
+
+      await robot.tap(DirectionsKeys.goThere);
+      await robot.enter(DirectionsKeys.origin, 'Place Drouet');
+      await robot.tap(DirectionsKeys.citymapper);
+      await robot.tap(DirectionsKeys.googleMaps);
+
+      final citymapper = robot.links.opened.first;
+      expect(citymapper.host, 'citymapper.com');
+      expect(citymapper.queryParameters['endaddress'], 'Stade');
+      expect(citymapper.queryParameters['startaddress'], 'Place Drouet');
+      // L'heure visée n'est transmise que pour un rdv encore à venir.
+      final upcoming = _match().start.isAfter(DateTime.now());
+      expect(citymapper.queryParameters.containsKey('arrival_time'), upcoming);
+      final google = robot.links.opened.last;
+      expect(google.queryParameters['destination'], 'Stade');
+      expect(google.queryParameters['travelmode'], 'transit');
+      expect(robot.logger.errorCount, 0);
+    },
+  );
 }

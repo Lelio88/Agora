@@ -14,6 +14,7 @@ import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
+import 'package:agora/src/features/directions/presentation/go_there_button.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -70,8 +71,14 @@ class _ImportedEventSheetState extends State<_ImportedEventSheet> {
                 Localizations.localeOf(context).toString(),
               ),
             ),
-            if (item.location case final location?)
+            if (item.location case final location?) ...[
               _Line(icon: Icons.place_outlined, text: location),
+              GoThereButton(
+                location: location,
+                start: item.start,
+                isAllDay: item.isAllDay,
+              ),
+            ],
             _Line(
               icon: Icons.circle,
               iconColor: colorFromHex(
