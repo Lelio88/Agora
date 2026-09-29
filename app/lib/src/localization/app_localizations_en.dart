@@ -1095,4 +1095,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goThereFailed => 'No app could open the route.';
+
+  @override
+  String get orDivider => 'or';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithDiscord => 'Continue with Discord';
+
+  @override
+  String get socialSignInFailed => 'Could not open the sign-in page.';
 }

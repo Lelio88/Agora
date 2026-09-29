@@ -1,5 +1,6 @@
 /// Frontière d'authentification d'Agora : compte par e-mail et mot de passe,
-/// confirmé par un **code à 6 chiffres** envoyé par e-mail.
+/// confirmé par un **code à 6 chiffres** envoyé par e-mail, ou connexion par
+/// Google ou Discord (OAuth).
 ///
 /// Choix non évident : un code plutôt qu'un lien. Le lien imposerait des deep
 /// links Android, une liste blanche de redirections, et d'ouvrir le mail sur
@@ -13,6 +14,7 @@ library;
 
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/domain/social_provider.dart';
 
 abstract interface class AuthRepository {
   AppUser? get currentUser;
@@ -44,6 +46,11 @@ abstract interface class AuthRepository {
     required String password,
     String? captchaToken,
   });
+
+  /// Ouvre la page de connexion de [provider] (navigateur) ; `false` si
+  /// elle n'a pas pu s'ouvrir. La session arrive au retour, par
+  /// [watchCurrentUser].
+  Future<bool> signInWith(SocialProvider provider);
 
   /// Envoie un code de réinitialisation, si un compte utilise [email].
   Future<void> requestPasswordReset({

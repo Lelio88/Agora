@@ -8,8 +8,18 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 
 - **E-mail + mot de passe, confirmés par un code à 6 chiffres**, jamais par un lien : pas de deep
   link ni de liste de redirections, et le mail se lit sur n'importe quel appareil. Même principe
-  pour le mot de passe oublié (code, puis nouveau mot de passe). Google et Discord s'ajoutent
-  comme fournisseurs OAuth (identité seule).
+  pour le mot de passe oublié (code, puis nouveau mot de passe).
+- **« Continuer avec Google / Discord »** (`SocialSignInButtons`, sous les formulaires de
+  connexion et d'inscription) : `signInWithOAuth`, flux PKCE. Au retour, Android reçoit
+  `app.agora://login-callback` et le web revient sur sa page (`oauth_callback.dart`, adresses
+  dans `ADDITIONAL_REDIRECT_URLS`). Le même geste crée le compte ou y reconnecte. Une adresse
+  déjà connue, vérifiée par le fournisseur, retrouve son compte : GoTrue y **relie**
+  l'identité. Le profil naît du trigger d'inscription, qui prend le nom du fournisseur ; la
+  langue et le fuseau retombent sur `fr` et `Europe/Paris`, réglables dans le profil. Les
+  boutons proposés viennent du build (`AGORA_SIGN_IN_PROVIDERS=google,discord`) : un bouton
+  vers un fournisseur que GoTrue n'a pas activé mènerait à une page d'erreur, si bien que le
+  build et le `.env` du serveur se règlent ensemble. Pas de CAPTCHA sur ce chemin : le
+  fournisseur vérifie la personne, et aucun e-mail d'Agora n'est envoyé.
 - **Politique de mot de passe** : 8 caractères, lettres et chiffres (`minimum_password_length`,
   `password_requirements`). `credential_rules.dart` applique la même règle **avant** l'envoi. Un
   refus du serveur après coup aurait déjà consommé le code de réinitialisation.

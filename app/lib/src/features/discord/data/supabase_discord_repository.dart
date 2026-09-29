@@ -16,12 +16,9 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/exceptions/network_errors.dart';
 import 'package:agora/src/features/auth/data/auth_error_translator.dart';
 import 'package:agora/src/features/discord/domain/discord.dart';
+import 'package:agora/src/supabase/oauth_callback.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-/// Retour d'OAuth sur Android (déclaré dans AndroidManifest.xml).
-const androidAuthCallback = 'app.agora://login-callback';
 
 final class SupabaseDiscordRepository implements DiscordRepository {
   const SupabaseDiscordRepository(this._client);
@@ -53,9 +50,7 @@ final class SupabaseDiscordRepository implements DiscordRepository {
   Future<bool> linkAccount() => _guardAuth(
     () => _client.auth.linkIdentity(
       OAuthProvider.discord,
-      redirectTo: kIsWeb
-          ? Uri.base.removeFragment().toString()
-          : androidAuthCallback,
+      redirectTo: oauthRedirect(),
       // L'identité seule : ni serveurs, ni messages.
       scopes: 'identify',
     ),

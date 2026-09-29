@@ -2,6 +2,8 @@ import 'package:agora/src/app.dart';
 import 'package:agora/src/config/web_links.dart';
 import 'package:agora/src/config/captcha.dart';
 import 'package:agora/src/config/discord_bot.dart';
+import 'package:agora/src/config/sign_in_providers.dart';
+import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/features/auth/presentation/captcha_field.dart';
@@ -60,6 +62,7 @@ class AgoraRobot {
     FakeGroupsRepository? groups,
     FakeDiscordRepository? discord,
     Uri? discordBotInvite,
+    List<SocialProvider> signInProviders = const [],
     Uri? webBaseUrl,
     CaptchaConfig? captcha,
     FakeLinkOpener? links,
@@ -94,6 +97,7 @@ class AgoraRobot {
           groupsRepositoryProvider.overrideWithValue(this.groups),
           discordRepositoryProvider.overrideWithValue(this.discord),
           discordBotInviteProvider.overrideWithValue(discordBotInvite),
+          signInProvidersProvider.overrideWithValue(signInProviders),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),
           if (captcha != null) captchaConfigProvider.overrideWithValue(captcha),
           captchaFieldBuilderProvider.overrideWithValue(

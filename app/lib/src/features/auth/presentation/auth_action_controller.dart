@@ -41,3 +41,4 @@ final verifyCodeActionProvider = _action();
 final resendCodeActionProvider = _action();
 final requestResetActionProvider = _action();
 final resetPasswordActionProvider = _action();
+final socialSignInActionProvider = _action();

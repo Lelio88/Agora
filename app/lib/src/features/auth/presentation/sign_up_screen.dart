@@ -16,6 +16,7 @@ import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/auth/presentation/widgets/captcha_gate.dart';
 import 'package:agora/src/features/auth/presentation/password_validation.dart';
 import 'package:agora/src/features/auth/presentation/widgets/auth_scaffold.dart';
+import 'package:agora/src/features/auth/presentation/widgets/social_sign_in_buttons.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
@@ -134,6 +135,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> with CaptchaGate {
             isLoading: signUp.isLoading,
             onPressed: captchaSolved ? _submit : null,
           ),
+          const SocialSignInButtons(),
           const SizedBox(height: 16),
           AuthSwitchPrompt(
             actionKey: AuthKeys.signInLink,

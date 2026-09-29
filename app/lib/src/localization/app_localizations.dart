@@ -2005,6 +2005,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune app n\'a pu ouvrir l\'itinéraire.'**
   String get goThereFailed;
+
+  /// Séparateur entre le formulaire et les boutons de connexion par fournisseur.
+  ///
+  /// In fr, this message translates to:
+  /// **'ou'**
+  String get orDivider;
+
+  /// Connexion (ou création du compte) par Google.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer avec Google'**
+  String get continueWithGoogle;
+
+  /// Connexion (ou création du compte) par Discord.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer avec Discord'**
+  String get continueWithDiscord;
+
+  /// La page du fournisseur n'a pas pu s'ouvrir.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir la page de connexion.'**
+  String get socialSignInFailed;
 }
 
 class _AppLocalizationsDelegate

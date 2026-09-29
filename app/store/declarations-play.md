@@ -56,17 +56,10 @@ Facebook Audience, Adjust ni AppsFlyer.
 
 ## Création de compte
 
-**Nom d'utilisateur et mot de passe** — et rien d'autre.
-
-Google est câblé côté serveur (`GOTRUE_EXTERNAL_*` dans
-`deploy/docker-compose.prod.yml`) mais **désactivé**. Discord, lui, est
-activé, mais seulement pour **relier** un compte Discord à un compte déjà
-créé (Profil → Discord). Aucun écran de connexion ou d'inscription ne propose
-Google ou Discord : un relecteur le vérifie d'un coup d'œil sur l'écran de
-connexion.
-
-Le jour où un bouton « Se connecter avec… » apparaît : cocher **OAuth** en
-plus, et prévenir que le compte de revue ne l'utilise pas.
+**Nom d'utilisateur et mot de passe**, et **OAuth** : les écrans de connexion
+et d'inscription proposent « Continuer avec Google » et « Continuer avec
+Discord ». Préciser au relecteur que le compte de revue se connecte par
+e-mail et mot de passe, et n'a besoin d'aucun compte Google ou Discord.
 
 ---
 

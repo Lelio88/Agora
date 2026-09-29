@@ -668,5 +668,13 @@
   "goThereOtherApp": "Autre app de cartes",
   "@goThereOtherApp": {"description": "Ouvre le lieu dans une app de cartes au choix (Android)."},
   "goThereFailed": "Aucune app n'a pu ouvrir l'itinéraire.",
-  "@goThereFailed": {"description": "Échec de l'ouverture de l'app d'itinéraire."}
+  "@goThereFailed": {"description": "Échec de l'ouverture de l'app d'itinéraire."},
+  "orDivider": "ou",
+  "@orDivider": {"description": "Séparateur entre le formulaire et les boutons de connexion par fournisseur."},
+  "continueWithGoogle": "Continuer avec Google",
+  "@continueWithGoogle": {"description": "Connexion (ou création du compte) par Google."},
+  "continueWithDiscord": "Continuer avec Discord",
+  "@continueWithDiscord": {"description": "Connexion (ou création du compte) par Discord."},
+  "socialSignInFailed": "Impossible d'ouvrir la page de connexion.",
+  "@socialSignInFailed": {"description": "La page du fournisseur n'a pas pu s'ouvrir."}
 }

@@ -24,6 +24,8 @@ import 'package:agora/src/features/auth/data/auth_error_translator.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/domain/social_provider.dart';
+import 'package:agora/src/supabase/oauth_callback.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -64,6 +66,14 @@ final class SupabaseAuthRepository implements AuthRepository {
       throw const EmailAlreadyRegisteredException();
     }
   });
+
+  @override
+  Future<bool> signInWith(SocialProvider provider) => _guard(
+    () => _auth.signInWithOAuth(switch (provider) {
+      SocialProvider.google => OAuthProvider.google,
+      SocialProvider.discord => OAuthProvider.discord,
+    }, redirectTo: oauthRedirect()),
+  );
 
   @override
   Future<void> verifySignUpCode({
@@ -163,9 +173,9 @@ final class SupabaseAuthRepository implements AuthRepository {
   static AppUser? _toAppUser(User? user) =>
       user == null ? null : AppUser(id: user.id, email: user.email);
 
-  static Future<void> _guard(Future<void> Function() body) async {
+  static Future<T> _guard<T>(Future<T> Function() body) async {
     try {
-      await body();
+      return await body();
     } on AppException {
       rethrow;
     } on Exception catch (error) {

@@ -9,6 +9,7 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
+import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/domain/profile_repository.dart';
 
@@ -111,6 +112,23 @@ class FakeAuthRepository implements AuthRepository {
     await _record('signIn');
     _emit(AppUser(id: userId, email: email));
   }
+
+  /// Faux si la page du fournisseur ne s'ouvre pas.
+  bool socialOpens = true;
+
+  /// Fournisseurs demandés à [signInWith].
+  final socialSignIns = <SocialProvider>[];
+
+  @override
+  Future<bool> signInWith(SocialProvider provider) async {
+    await _record('signInWith');
+    socialSignIns.add(provider);
+    return socialOpens;
+  }
+
+  /// Le retour du fournisseur : la session s'ouvre, comme au retour d'OAuth.
+  void completeSocialSignIn(String email) =>
+      _emit(AppUser(id: userId, email: email));
 
   @override
   Future<void> requestPasswordReset({

@@ -24,4 +24,8 @@ abstract final class AuthKeys {
   static const signUpLink = ValueKey('auth.signUpLink');
   static const signInLink = ValueKey('auth.signInLink');
   static const forgotPasswordLink = ValueKey('auth.forgotPasswordLink');
+
+  /// Bouton « Continuer avec… » d'un fournisseur (`google`, `discord`).
+  static ValueKey<String> socialSignIn(String provider) =>
+      ValueKey('auth.social.$provider');
 }

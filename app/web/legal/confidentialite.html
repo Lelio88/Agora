@@ -48,6 +48,7 @@
     <tr><td>Vos agendas et vos rdv : titre, description, lieu, horaires, récurrence, niveau de visibilité</td><td>C'est le contenu de l'application</td></tr>
     <tr><td>Vos groupes : appartenance, rôle, niveau de partage choisi, invitations créées, réponses aux rdv proposés</td><td>Faire fonctionner les agendas partagés</td></tr>
     <tr><td>Les liens iCal que vous importez, et les rdv qu'ils contiennent</td><td>Relire l'agenda distant toutes les 30 minutes</td></tr>
+    <tr><td>Si vous vous connectez avec Google ou Discord : l'identifiant de votre compte chez ce fournisseur, et le nom et l'adresse e-mail qu'il transmet</td><td>Créer votre compte et vous reconnecter, sans mot de passe</td></tr>
     <tr><td>Si vous reliez Discord : l'identifiant et le nom de votre compte Discord</td><td>Reconnaître vos commandes au bot Agora</td></tr>
     <tr><td>Si un admin relie un salon Discord à un groupe : identifiants du serveur et du salon, nom du salon, réglages du récap et des rappels</td><td>Publier le récap et les rappels du groupe dans ce salon</td></tr>
   </table>
@@ -85,8 +86,9 @@
     <tr><td>Le fournisseur de votre agenda iCal (Google, Microsoft, Apple, autre)</td><td>Voit que le serveur d'Agora relit votre lien. Sa propre politique s'applique</td></tr>
     <tr><td>Cloudflare (Turnstile)</td><td>La vérification « je ne suis pas un robot » des formulaires de compte : votre adresse IP et des signaux de votre navigateur, le temps du contrôle. Elle empêche qu'un robot épuise l'envoi d'e-mails pour tout le monde</td></tr>
     <tr><td>Google Play</td><td>Distribue la version Android et connaît vos installations. Sa politique s'applique. La version web n'en dépend pas</td></tr>
+    <tr><td>Google (Google Ireland Ltd)</td><td>Seulement si vous touchez « Continuer avec Google » : Google sait que vous vous connectez à Agora et nous transmet votre identité (nom, adresse e-mail). Aucun accès à votre agenda Google. Sa politique s'applique</td></tr>
     <tr><td>L'app d'itinéraire que vous choisissez (Citymapper, Google Maps, autre)</td><td>Seulement si vous touchez « Y aller » sur un rdv : son lieu, l'heure d'arrivée visée et, si vous la saisissez, une adresse de départ. Agora les lui passe sans rien enregistrer, et ne connaît pas votre position. Sa politique s'applique</td></tr>
-    <tr><td>Discord Inc. (États-Unis)</td><td>Seulement si vous ou votre groupe utilisez le bot : ce qu'il publie dans le salon relié et ses réponses à vos commandes. Relier votre compte passe par une connexion Discord, qui ne donne accès qu'à votre identité. Le bot ne lit aucun message. Sa politique s'applique</td></tr>
+    <tr><td>Discord Inc. (États-Unis)</td><td>Seulement si vous vous connectez avec Discord, ou si vous ou votre groupe utilisez le bot : ce qu'il publie dans le salon relié et ses réponses à vos commandes. Se connecter ou relier son compte passe par une connexion Discord, qui ne donne accès qu'à votre identité. Le bot ne lit aucun message. Sa politique s'applique</td></tr>
   </table>
 
   <h2>Journaux et sauvegardes</h2>
@@ -141,6 +143,7 @@
     <tr><td>Your calendars and events: title, description, location, times, recurrence, visibility level</td><td>That is the content of the app</td></tr>
     <tr><td>Your groups: membership, role, chosen sharing level, invitations you create, answers to proposed events</td><td>Make shared calendars work</td></tr>
     <tr><td>The iCal links you import, and the events they contain</td><td>Re-read the remote calendar every 30 minutes</td></tr>
+    <tr><td>If you sign in with Google or Discord: your account ID with that provider, and the name and email address it passes on</td><td>Create your account and sign you back in, without a password</td></tr>
     <tr><td>If you link Discord: the ID and name of your Discord account</td><td>Recognise your commands to the Agora bot</td></tr>
     <tr><td>If an admin links a Discord channel to a group: server and channel IDs, channel name, recap and reminder settings</td><td>Post the group's recap and reminders in that channel</td></tr>
   </table>
@@ -178,8 +181,9 @@
     <tr><td>Your iCal calendar provider (Google, Microsoft, Apple, other)</td><td>Sees Agora's server re-reading your link. Their own policy applies</td></tr>
     <tr><td>Cloudflare (Turnstile)</td><td>The "I am not a robot" check on account forms: your IP address and signals from your browser, for the duration of the check. It prevents a bot from exhausting email sending for everyone</td></tr>
     <tr><td>Google Play</td><td>Distributes the Android version and knows about your installs. Their policy applies. The web version does not depend on it</td></tr>
+    <tr><td>Google (Google Ireland Ltd)</td><td>Only if you tap "Continue with Google": Google knows you are signing in to Agora and passes us your identity (name, email address). No access to your Google calendar. Their policy applies</td></tr>
     <tr><td>The route app you choose (Citymapper, Google Maps, other)</td><td>Only if you tap "Get there" on an event: its place, the wanted arrival time and, if you type one, a starting address. Agora hands them over without saving anything, and never knows your position. Their policy applies</td></tr>
-    <tr><td>Discord Inc. (United States)</td><td>Only if you or your group use the bot: what it posts in the linked channel and its answers to your commands. Linking your account goes through a Discord sign-in that only grants your identity. The bot reads no messages. Their policy applies</td></tr>
+    <tr><td>Discord Inc. (United States)</td><td>Only if you sign in with Discord, or if you or your group use the bot: what it posts in the linked channel and its answers to your commands. Signing in or linking your account goes through a Discord sign-in that only grants your identity. The bot reads no messages. Their policy applies</td></tr>
   </table>
 
   <h2>Logs and backups</h2>

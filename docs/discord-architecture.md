@@ -66,11 +66,8 @@ inscrites par `worker register-commands` (voir [Mise en service](#mise-en-servic
   unique ; un nouveau code remplace le précédent), puis tape `/relier CODE` dans le salon. Un
   salon sert un seul groupe (`channel_id` unique), et un groupe publie dans un seul salon (clé
   primaire `group_id`). Relier un autre salon au même groupe remplace l'ancien.
-- **Limite connue** : GoTrue n'a pas de mode « liaison seulement ». Une fois le fournisseur
-  activé, un appel forgé à `/auth/v1/authorize?provider=discord` peut créer un compte Agora par
-  Discord, sans passer par l'écran d'inscription ni par son CAPTCHA. Ce compte est ordinaire
-  (adresse e-mail vérifiée par Discord, profil créé par le trigger d'inscription). L'app n'en
-  propose le chemin nulle part.
+- **Se connecter avec Discord** (« Continuer avec Discord » sur les écrans de compte) passe par
+  le même fournisseur GoTrue : voir [`auth-architecture.md`](./auth-architecture.md).
 
 ## Données
 

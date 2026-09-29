@@ -329,5 +329,9 @@
   "goThereGoogleMaps": "Google Maps",
   "goThereGoogleNote": "In Google Maps, set the arrival time yourself: the link cannot carry it.",
   "goThereOtherApp": "Another maps app",
-  "goThereFailed": "No app could open the route."
+  "goThereFailed": "No app could open the route.",
+  "orDivider": "or",
+  "continueWithGoogle": "Continue with Google",
+  "continueWithDiscord": "Continue with Discord",
+  "socialSignInFailed": "Could not open the sign-in page."
 }
