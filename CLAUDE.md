@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : bot Discord (étape 8) codé et testé : commandes, récaps, rappels, liaison du compte et du salon depuis l'app.
-- **Focus immédiat** : mettre le bot en service (application Discord, `.env`, `register-commands`, URL d'interactions) ; fiche Play Store.
+- **Dernier focus** : bot Discord (étape 8) en service, vérifié de bout en bout ; 0.2.0+3 sur le test fermé.
+- **Focus immédiat** : test fermé (testeurs, puis promotion en production depuis la Play Console) ; ensuite étape 10 (transports en commun).
