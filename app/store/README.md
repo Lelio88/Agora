@@ -180,6 +180,18 @@ Reliez votre compte Discord (Profil → Discord), puis un salon à votre groupe 
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.3.0+4 (« Y aller »)
+
+Français (395), envoyées sur `alpha` :
+
+```
+Nouveau : « Y aller ».
+
+Sur la fiche d'un rdv qui a un lieu, « Y aller » ouvre l'itinéraire en transports en commun : Citymapper (qui reçoit l'heure à laquelle arriver), Google Maps, ou une autre app de cartes. Départ depuis votre position, ou depuis une adresse que vous tapez pour l'occasion. Agora n'enregistre rien et ne demande pas votre position.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
