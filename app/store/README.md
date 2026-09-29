@@ -192,6 +192,18 @@ Sur la fiche d'un rdv qui a un lieu, « Y aller » ouvre l'itinéraire en transp
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.4.0+5 (connexion Google et Discord)
+
+Français (419), envoyées sur `alpha` :
+
+```
+Nouveau : se connecter avec Google ou Discord.
+
+Sur les écrans de connexion et de création de compte, « Continuer avec Google » et « Continuer avec Discord » créent votre compte ou vous reconnectent, sans mot de passe. Si votre adresse est déjà inscrite sur Agora, vous retrouvez votre compte. Agora ne reçoit que votre nom et votre adresse e-mail, jamais votre agenda Google.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
