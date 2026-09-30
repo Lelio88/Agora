@@ -91,7 +91,9 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
 - **Les pages légales voyagent avec l'app** : `app/web/legal/` est recopié tel quel par
   `flutter build web`, donc publié sur `/legal/confidentialite.html`, `/legal/suppression.html`,
   `/legal/mentions-legales.html` et `/legal/conditions.html` sans rien ajouter à Caddy. Ce sont les adresses à donner à la fiche
-  Play Store ; elles ne doivent donc plus changer.
+  Play Store ; elles ne doivent donc plus changer. `/presentation.html` (même chemin de
+  publication) est la page publique qui explique l'app sans compte : page d'accueil déclarée à
+  Google (écran de consentement OAuth), la racine ouvrant directement l'app.
 
 ## Première installation
 
