@@ -204,6 +204,18 @@ Sur les écrans de connexion et de création de compte, « Continuer avec Google
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.4.1+6 (invitations ouvertes dans l'app)
+
+Français (321), envoyées sur `alpha` :
+
+```
+Les liens d'invitation ouvrent maintenant l'app.
+
+Quand quelqu'un vous envoie un lien pour rejoindre son groupe, il s'ouvre directement dans Agora au lieu du navigateur, sur l'écran « Rejoindre ». Si vous n'êtes pas connecté, l'invitation vous attend le temps de vous connecter.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
