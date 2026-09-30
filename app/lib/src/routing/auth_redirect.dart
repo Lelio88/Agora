@@ -44,3 +44,17 @@ final _joinPath = RegExp(r'^/join/([A-HJ-NP-Za-hj-np-z2-9]{8})$');
 /// si l'emplacement n'en est pas un ou si le code n'est pas plausible.
 String? inviteCodeInLocation(String location) =>
     _joinPath.firstMatch(location)?.group(1)?.toUpperCase();
+
+/// Route d'un lien d'invitation ouvert dans l'app Android (App Link), ou
+/// `null`.
+///
+/// Le web route « par dièse » : une invitation est
+/// `https://agora.heianenterprise.com/#/join/CODE`. Android ne filtre pas
+/// sur le fragment, l'App Link vise donc la racine, et le routeur reçoit
+/// `/` avec le fragment `/join/CODE` : c'est ce fragment qu'il faut suivre.
+/// Seule une invitation est suivie : un autre fragment reste sans effet.
+String? inviteRouteFromAppLink(Uri uri) {
+  if (uri.path != '/' && uri.path.isNotEmpty) return null;
+  final code = inviteCodeInLocation(uri.fragment);
+  return code == null ? null : '/join/$code';
+}

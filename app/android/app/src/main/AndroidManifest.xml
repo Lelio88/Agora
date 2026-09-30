@@ -27,8 +27,19 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Retour de la liaison OAuth (compte Discord) : GoTrue renvoie
-                 vers app.agora://login-callback, que supabase_flutter lit. -->
+            <!-- App Link : un lien d'invitation (https://agora.heianenterprise.com/#/join/CODE)
+                 ouvre l'app plutôt que le navigateur. Android ne filtre pas sur le
+                 fragment : le filtre vise la racine, et le routeur suit le fragment
+                 (inviteRouteFromAppLink). Vérifié par web/.well-known/assetlinks.json,
+                 qui porte l'empreinte de la clé de signature Play et de la clé d'envoi. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="agora.heianenterprise.com" android:path="/"/>
+            </intent-filter>
+            <!-- Retour d'OAuth (connexion Google ou Discord, liaison Discord) :
+                 GoTrue renvoie vers app.agora://login-callback, que supabase_flutter lit. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>

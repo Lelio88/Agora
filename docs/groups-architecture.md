@@ -64,7 +64,14 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
   (`AGORA_WEB_URL`, `lib/src/config/web_links.dart`). Sans elle, seul le code est proposé. La
   fenêtre d'invitation **réutilise** la dernière invitation valable de l'utilisateur plutôt que
   d'en créer une à chaque ouverture (chaque code actif ouvre le groupe) ; elle se désactive d'un
-  geste. L'ouverture directe de l'app Android par le lien viendra avec le domaine (App Links).
+  geste.
+- **Le lien ouvre l'app Android** (App Link) quand elle est installée. Android ne filtre pas sur
+  le fragment : le filtre `autoVerify` du manifeste vise la racine `/` du site, et le routeur
+  convertit `/#/join/CODE` en `/join/CODE` (`inviteRouteFromAppLink`, avant la règle de
+  session : une invitation ouverte déconnecté est retenue comme sur le web). Android vérifie le
+  domaine par `web/.well-known/assetlinks.json`, qui porte l'empreinte SHA-256 de la clé de
+  signature Play (lue par l'API Play, `generatedApks`) et celle de la clé d'envoi. Une clé qui
+  change impose de mettre ce fichier à jour, sinon le lien retombe dans le navigateur.
 - **Agenda superposé** : les créneaux de `group_agenda`, une couleur par membre (son rang
   d'arrivée dans la palette, stable d'un écran à l'autre), « occupé » plus pâle et sans titre,
   des pastilles pour masquer un membre (filtre local à l'écran). Tuiles en lecture seule : on

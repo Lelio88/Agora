@@ -42,6 +42,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: refresh,
     redirect: (context, state) {
+      // Invitation ouverte dans l'app par un App Link : suivre son fragment.
+      if (inviteRouteFromAppLink(state.uri) case final invite?) return invite;
       final isSignedIn = auth.currentUser != null;
       final location = state.matchedLocation;
       final invite = inviteCodeInLocation(location);

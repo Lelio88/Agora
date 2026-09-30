@@ -82,4 +82,31 @@ void main() {
     expect(inviteCodeInLocation('/join/ABCD2345/x'), isNull);
     expect(inviteCodeInLocation('/profile'), isNull);
   });
+
+  group('inviteRouteFromAppLink', () {
+    test('turns an invitation link opened in the app into its screen', () {
+      // Android transmet le lien avec son fragment : « #/join/CODE ».
+      expect(
+        inviteRouteFromAppLink(
+          Uri.parse('https://agora.heianenterprise.com/#/join/abcd2345'),
+        ),
+        '/join/ABCD2345',
+      );
+      expect(
+        inviteRouteFromAppLink(Uri.parse('/#/join/ABCD2345')),
+        '/join/ABCD2345',
+      );
+    });
+
+    test('leaves every other location alone', () {
+      expect(inviteRouteFromAppLink(Uri.parse('/join/ABCD2345')), isNull);
+      expect(inviteRouteFromAppLink(Uri.parse('/#/profile')), isNull);
+      expect(inviteRouteFromAppLink(Uri.parse('/#/join/ABCD')), isNull);
+      expect(
+        inviteRouteFromAppLink(Uri.parse('/groups/g#/join/ABCD2345')),
+        isNull,
+      );
+      expect(inviteRouteFromAppLink(Uri.parse('/')), isNull);
+    });
+  });
 }

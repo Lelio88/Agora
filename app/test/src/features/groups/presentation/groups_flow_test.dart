@@ -85,6 +85,20 @@ void main() {
     expect(robot.groups.joinedWith, ShareLevel.busy);
   });
 
+  testWidgets('an invitation link opened in the Android app joins too', (
+    tester,
+  ) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(groups: _colocToJoin());
+
+    // Tel qu'Android le transmet : la racine, et le fragment du web.
+    await robot.openLink('/#/join/ABCD2345');
+    await robot.signIn('zoe@test.local', 'motdepasse');
+
+    robot.expectScreen(GroupKeys.joinScreen);
+    robot.expectText('Rejoindre « Coloc » ?');
+  });
+
   testWidgets('an unknown code is refused without saying why', (tester) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), groups: _colocToJoin());

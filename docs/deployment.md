@@ -94,6 +94,8 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   Play Store ; elles ne doivent donc plus changer. `/presentation.html` (même chemin de
   publication) est la page publique qui explique l'app sans compte : page d'accueil déclarée à
   Google (écran de consentement OAuth), la racine ouvrant directement l'app.
+  `/.well-known/assetlinks.json` (vérification des App Links Android) voyage de même. C'est un
+  dossier caché : l'artefact de la CI le garde grâce à `include-hidden-files: true`.
 
 ## Première installation
 

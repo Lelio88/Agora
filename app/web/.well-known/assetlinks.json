@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.agora",
+      "sha256_cert_fingerprints": [
+        "5A:B5:8F:3F:95:41:DC:3A:5E:BE:B7:72:AE:8D:D8:C2:24:4E:02:47:B8:6B:0A:62:6C:D6:56:78:A5:ED:B0:EE",
+        "C8:72:BA:02:2B:B4:60:72:4D:C4:10:85:B4:01:D5:2D:F2:92:77:B4:44:CB:C4:66:AC:8E:EE:E7:0F:78:2A:0A"
+      ]
+    }
+  }
+]

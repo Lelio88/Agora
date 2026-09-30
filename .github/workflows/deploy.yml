@@ -158,6 +158,9 @@ jobs:
           name: web
           path: app/build/web
           retention-days: 1
+          # Sans ceci, .well-known/assetlinks.json resterait en route : les
+          # App Links Android (invitations ouvertes dans l'app) en dépendent.
+          include-hidden-files: true
 
   deploy:
     name: Déployer sur le serveur
