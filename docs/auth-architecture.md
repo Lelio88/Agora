@@ -20,6 +20,13 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   vers un fournisseur que GoTrue n'a pas activé mènerait à une page d'erreur, si bien que le
   build et le `.env` du serveur se règlent ensemble. Pas de CAPTCHA sur ce chemin : le
   fournisseur vérifie la personne, et aucun e-mail d'Agora n'est envoyé.
+- **Écran de consentement Google** (projet Google Cloud « Agora », branding validé et publié) :
+  il tient à trois choses à ne pas casser. D'abord, la page d'accueil déclarée,
+  `/presentation.html`, lisible sans compte et qui explique l'app. Ensuite, les liens vers les
+  pages légales. Enfin, la propriété de `heianenterprise.com`, prouvée dans Google Search
+  Console par un enregistrement TXT chez Cloudflare. Les accès demandés restent `openid`,
+  `email` et `profile`, qui ne demandent aucune vérification : en ajouter un (l'agenda, par
+  exemple) relancerait l'examen de Google.
 - **Politique de mot de passe** : 8 caractères, lettres et chiffres (`minimum_password_length`,
   `password_requirements`). `credential_rules.dart` applique la même règle **avant** l'envoi. Un
   refus du serveur après coup aurait déjà consommé le code de réinitialisation.
