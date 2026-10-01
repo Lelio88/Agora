@@ -216,6 +216,20 @@ Quand quelqu'un vous envoie un lien pour rejoindre son groupe, il s'ouvre direct
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.4.2+7 (semaine glissante, mise en conformité)
+
+Français, envoyées sur `alpha` :
+
+```
+Sur téléphone, la vue Semaine montre maintenant trois jours à partir d'aujourd'hui et avance de trois en trois : la fin de semaine n'est plus cachée.
+
+Le mois et le planning s'ouvrent sur le mois en cours, même le 1er.
+
+À l'inscription, l'écran du code indique quoi faire si votre adresse a déjà un compte.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
