@@ -16,15 +16,16 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
   ),
 );
 
-/// Mardi de la semaine affichée, à [hour] h locales.
-DateTime _tuesdayThisWeekAt(int hour) {
+/// Aujourd'hui à [hour] h locales : visible dans la vue par défaut quel que
+/// soit le jour du test, la semaine complète (écran large) comme les trois
+/// jours glissants qui commencent aujourd'hui (écran étroit).
+DateTime _todayAt(int hour) {
   final now = DateTime.now();
-  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  return DateTime(monday.year, monday.month, monday.day + 1, hour).toUtc();
+  return DateTime(now.year, now.month, now.day, hour).toUtc();
 }
 
 AgendaItem _event(String title, {String? location}) {
-  final start = _tuesdayThisWeekAt(10);
+  final start = _todayAt(10);
   return AgendaItem(
     eventId: 'evt-$title',
     calendarId: FakeCalendarRepository.calendarId,

@@ -16,14 +16,12 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
   ),
 );
 
-/// Mardi de la semaine affichée par défaut (elle commence le lundi), à
-/// [hour] h locales. Passé ou à venir : la vue semaine montre les deux, et
-/// un « prochain mardi » tomberait la semaine suivante un mardi après
-/// [hour] h.
-DateTime _tuesdayThisWeekAt(int hour) {
+/// Aujourd'hui à [hour] h locales : visible dans la vue par défaut quel que
+/// soit le jour du test, la semaine complète (écran large) comme les trois
+/// jours glissants qui commencent aujourd'hui (écran étroit).
+DateTime _todayAt(int hour) {
   final now = DateTime.now();
-  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  return DateTime(monday.year, monday.month, monday.day + 1, hour).toUtc();
+  return DateTime(now.year, now.month, now.day, hour).toUtc();
 }
 
 FakeMember _lea() =>
@@ -134,8 +132,8 @@ void main() {
       'Coloc',
       others: [_lea(), _max()],
     );
-    final yoga = _tuesdayThisWeekAt(18);
-    final busy = _tuesdayThisWeekAt(10);
+    final yoga = _todayAt(18);
+    final busy = _todayAt(10);
     coloc.agenda.addAll([
       GroupAgendaItem(
         eventId: 'e-yoga',

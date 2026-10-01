@@ -49,27 +49,81 @@ LoadedRange monthsAround(DateTime date) {
   );
 }
 
-/// Configuration kalender de [view] ; la semaine se réduit à trois jours
-/// sur un écran étroit.
+/// Configuration kalender de [view].
+///
+/// Sur un écran étroit, la semaine devient **trois jours glissants** à partir
+/// d'aujourd'hui, qui avancent de trois en trois : `MultiDayViewConfiguration
+/// .week(numberOfDays: 3)` raccourcit la page sans changer la pagination, si
+/// bien qu'il montrait toujours lundi–mercredi et jamais jeudi–dimanche. La
+/// variante `custom` pagine par trois jours depuis le début de sa plage, que
+/// [_rollingRange] aligne sur aujourd'hui.
+///
+/// Toutes les vues se calent sur aujourd'hui quand on y arrive depuis une
+/// plage qui le contient ([keepTodayInView]).
 ViewConfiguration agendaViewConfiguration(
   BuildContext context,
   AgendaView view,
 ) => switch (view) {
   AgendaView.day => MultiDayViewConfiguration.singleDay(
     initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
+    dateResolver: keepTodayInView,
   ),
+  AgendaView.week when MediaQuery.sizeOf(context).width < 600 =>
+    MultiDayViewConfiguration.custom(
+      numberOfDays: _narrowDays,
+      displayRange: _rollingRange(),
+      initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
+      dateResolver: keepTodayInView,
+    ),
   AgendaView.week => MultiDayViewConfiguration.week(
-    numberOfDays: MediaQuery.sizeOf(context).width < 600 ? 3 : 7,
     firstDayOfWeek: DateTime.monday,
     initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
+    dateResolver: keepTodayInView,
   ),
   AgendaView.month => MonthViewConfiguration.singleMonth(
     firstDayOfWeek: DateTime.monday,
+    dateResolver: keepTodayInView,
   ),
   // Paginée (un mois par page) : la variante continue publie sa plage
   // TOTALE comme plage visible, inexploitable pour savoir quoi charger.
-  AgendaView.schedule => ScheduleViewConfiguration.paginated(),
+  AgendaView.schedule => ScheduleViewConfiguration.paginated(
+    dateResolver: keepTodayInView,
+  ),
 };
+
+/// Jours de la semaine réduite d'un écran étroit.
+const _narrowDays = 3;
+
+/// Plage de la semaine réduite : deux ans de part et d'autre, comme la plage
+/// par défaut de kalender, mais commencée un multiple de [_narrowDays] jours
+/// avant aujourd'hui, pour qu'une page commence aujourd'hui. Recalculée à
+/// chaque construction, elle reste identique dans la journée : kalender, qui
+/// compare les plages, ne relance pas de transition. La première
+/// reconstruction après minuit en relance une, voulue : [keepTodayInView]
+/// recale alors la page sur le nouveau jour (ou garde la période consultée).
+KalenderDateTimeRange _rollingRange() {
+  final now = DateTime.now();
+  const span = _narrowDays * 245; // ≈ 2 ans
+  return KalenderDateTimeRange(
+    start: DateTime(now.year, now.month, now.day - span),
+    end: DateTime(now.year, now.month, now.day + span),
+  );
+}
+
+/// Date d'arrivée sur une vue.
+///
+/// kalender reprend le début de la plage quittée : depuis la semaine, c'est
+/// le lundi. Un jeudi 1er octobre, la semaine commence le 28 septembre, et le
+/// mois ou le planning ouvrait septembre, sans les rdv du jour. Si la plage
+/// quittée contient aujourd'hui, on s'y cale ; sinon (on regardait une autre
+/// période), le choix par défaut de kalender s'applique.
+FloatingDateTime keepTodayInView(ViewTransitionContext transition) {
+  final range = transition.oldViewController.floatingVisibleRange.value;
+  if (range != null && range.dates().any((date) => date.isToday())) {
+    return FloatingDateTime.fromDateTime(DateTime.now()).startOfDay;
+  }
+  return kCarryFocusDate(transition);
+}
 
 /// Suit la page visible d'un [KalenderController] et annonce, par
 /// [onRangeChanged], la plage à charger quand la page en sort.

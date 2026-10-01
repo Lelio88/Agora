@@ -1,11 +1,10 @@
 /// [AuthRepository] adossé à GoTrue (Supabase Auth).
 ///
 /// Choix non évidents :
-/// - une inscription avec une adresse déjà confirmée peut réussir en
-///   apparence : GoTrue renvoie alors un utilisateur sans identité, pour ne
-///   pas révéler l'adresse. On le détecte et on lève
-///   [EmailAlreadyRegisteredException], sinon l'écran attendrait un code qui
-///   ne viendra jamais ;
+/// - l'inscription répond pareil, que l'adresse ait déjà un compte ou non
+///   ([blindSignUp]) : sinon le formulaire dirait à qui veut quelles adresses
+///   sont inscrites. L'écran du code oriente le titulaire vers la connexion
+///   et « Mot de passe oublié » ;
 /// - [resetPassword] vérifie **toujours** le code, même si une session est
 ///   ouverte : sinon une session ordinaire (poste partagé, session volée)
 ///   changerait le mot de passe sans prouver l'accès à la boîte mail. Si
@@ -27,6 +26,7 @@ import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:agora/src/supabase/oauth_callback.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseAuthRepository implements AuthRepository {
@@ -51,21 +51,20 @@ final class SupabaseAuthRepository implements AuthRepository {
     required String locale,
     required String timezone,
     String? captchaToken,
-  }) => _guard(() async {
-    final response = await _auth.signUp(
-      email: email.trim(),
-      password: password,
-      captchaToken: captchaToken,
-      data: {
-        'display_name': displayName.trim(),
-        'locale': locale,
-        'timezone': timezone,
-      },
-    );
-    if (response.user?.identities?.isEmpty ?? false) {
-      throw const EmailAlreadyRegisteredException();
-    }
-  });
+  }) => _guard(
+    () => blindSignUp(
+      () => _auth.signUp(
+        email: email.trim(),
+        password: password,
+        captchaToken: captchaToken,
+        data: {
+          'display_name': displayName.trim(),
+          'locale': locale,
+          'timezone': timezone,
+        },
+      ),
+    ),
+  );
 
   @override
   Future<bool> signInWith(SocialProvider provider) => _guard(
@@ -181,5 +180,24 @@ final class SupabaseAuthRepository implements AuthRepository {
     } on Exception catch (error) {
       throw translateAuthError(error);
     }
+  }
+}
+
+/// Inscription qui répond pareil, que l'adresse ait déjà un compte ou non.
+///
+/// Confirmation active, GoTrue répond à un doublon confirmé par un utilisateur
+/// factice (sans identité, sans session) et n'envoie rien ; un doublon jamais
+/// confirmé reçoit de nouveau son code. Les deux se lisent ici comme un compte
+/// neuf, et l'écran du code dit au titulaire d'un compte où aller. Un serveur
+/// qui nomme le doublon (`user_already_exists`, quand la confirmation est
+/// coupée) reçoit la même réponse. **Ne jamais réintroduire un contrôle
+/// `identities.isEmpty`** qui ferait du doublon une erreur.
+@visibleForTesting
+Future<void> blindSignUp(Future<AuthResponse> Function() signUp) async {
+  try {
+    await signUp();
+  } on AuthException catch (e) {
+    if (e.code == 'user_already_exists') return;
+    rethrow;
   }
 }

@@ -59,9 +59,7 @@ void main() {
 
     expect(robot.auth.calls, contains('resendSignUpCode'));
     robot.expectScreen(AuthKeys.verifyEmailScreen);
-    robot.expectText(
-      'Nous avons envoyé un code à 6 chiffres à zoe@test.local.',
-    );
+    robot.expectText('Saisissez le code à 6 chiffres envoyé à zoe@test.local.');
   });
 
   testWidgets('sign-up sends name, language and device time zone', (
@@ -83,6 +81,28 @@ void main() {
       'timezone': 'America/Montreal',
     });
     robot.expectScreen(AuthKeys.verifyEmailScreen);
+  });
+
+  testWidgets('the code screen tells an existing account where to go', (
+    tester,
+  ) async {
+    // L'inscription répond pareil qu'une adresse ait un compte ou non : c'est
+    // l'écran du code qui oriente le titulaire, sans rien révéler.
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp();
+    await robot.tap(AuthKeys.signUpLink);
+    await robot.enter(AuthKeys.displayName, 'Zoé');
+    await robot.enter(AuthKeys.email, 'zoe@test.local');
+    await robot.enter(AuthKeys.password, 'motdepasse1');
+    await robot.tap(AuthKeys.submit);
+
+    robot.expectScreen(AuthKeys.verifyEmailScreen);
+    robot.expectText(
+      'Cette adresse a déjà un compte ? Aucun code n’arrivera : '
+      'connectez-vous, ou passez par « Mot de passe oublié ».',
+    );
+    await robot.tap(AuthKeys.forgotPasswordLink);
+    robot.expectScreen(AuthKeys.forgotPasswordScreen);
   });
 
   testWidgets('sign-up refuses a password without digits, offline', (

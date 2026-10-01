@@ -35,3 +35,16 @@ flutter:
   assets:
     # Produit par tools/sounds/gen_intro_jingle.py, jamais édité à la main.
     - assets/audio/agora_intro.mp3
+  # Roboto embarquée (copiée du SDK Flutter, licence Apache 2.0 à côté). Sur le
+  # web, Flutter télécharge sinon Roboto depuis fonts.gstatic.com à chaque
+  # visite, ce qui transmet l'adresse IP des visiteurs à Google. Déclarer la
+  # famille suffit : le moteur ne la télécharge plus. Graisses utilisées par
+  # Material (400, 500) et par l'app (600, servie par la plus proche).
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto/Roboto-Regular.ttf
+        - asset: assets/fonts/roboto/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/roboto/Roboto-Bold.ttf
+          weight: 700

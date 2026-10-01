@@ -151,7 +151,7 @@ jobs:
           printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s","AGORA_WEB_URL":"%s","AGORA_TURNSTILE_SITE_KEY":"%s","AGORA_DISCORD_APPLICATION_ID":"%s","AGORA_SIGN_IN_PROVIDERS":"%s"}' \
             "$API_URL" "$ANON_KEY" "$SITE_URL" "$TURNSTILE_SITE_KEY" "$DISCORD_APPLICATION_ID" "$SIGN_IN_PROVIDERS" > "$RUNNER_TEMP/prod.json"
           flutter pub get
-          flutter build web --release --dart-define-from-file="$RUNNER_TEMP/prod.json"
+          flutter build web --release --no-web-resources-cdn --dart-define-from-file="$RUNNER_TEMP/prod.json"
 
       - uses: actions/upload-artifact@v4
         with:

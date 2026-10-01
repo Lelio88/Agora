@@ -224,11 +224,17 @@ abstract class AppLocalizations {
   /// **'Vérifie ton adresse'**
   String get verifyEmailTitle;
 
-  /// Explication sous le titre de la confirmation d'adresse.
+  /// Explication sous le titre de la confirmation d'adresse. Ne pas affirmer qu'un code est parti : pour une adresse déjà inscrite, rien n'est envoyé, et l'écran ne doit pas le révéler.
   ///
   /// In fr, this message translates to:
-  /// **'Nous avons envoyé un code à 6 chiffres à {email}.'**
+  /// **'Saisissez le code à 6 chiffres envoyé à {email}.'**
   String verifyEmailInstructions(String email);
+
+  /// Indication affichée à tous sur l'écran du code d'inscription : l'inscription répond pareil qu'une adresse ait un compte ou non, c'est ce texte qui oriente le titulaire sans rien révéler.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette adresse a déjà un compte ? Aucun code n’arrivera : connectez-vous, ou passez par « Mot de passe oublié ».'**
+  String get verifyEmailExistingAccountHint;
 
   /// Bouton qui valide le code de confirmation.
   ///

@@ -124,9 +124,16 @@ Migration : `20260921220000_calendar_management.sql`.
 
 ## L'agenda dans l'app (`app/lib/src/features/calendar/`)
 
-- **kalender** (MIT, 0.31) dessine les vues jour, semaine (3 jours sur téléphone), mois et
-  planning (**paginé** : la variante continue publie sa plage totale comme plage visible, ce qui
-  rendait le chargement impossible à borner).
+- **kalender** (MIT, 0.31) dessine les vues jour, semaine, mois et planning (**paginé** : la
+  variante continue publie sa plage totale comme plage visible, ce qui rendait le chargement
+  impossible à borner). Sur téléphone (moins de 600 px), la semaine devient **trois jours
+  glissants** qui commencent aujourd'hui (`MultiDayViewConfiguration.custom`, plage alignée sur
+  le jour) : `week(numberOfDays: 3)` ne fait que raccourcir une semaine paginée au lundi, et ne
+  montrait jamais jeudi–dimanche. Toutes les vues se calent sur aujourd'hui quand on y arrive
+  depuis une plage qui le contient (`keepTodayInView`) : kalender reprenait le début de la plage
+  quittée, et un 1er du mois, le mois et le planning ouvraient le mois précédent.
+- **Tests d'écran** : le robot annonce un écran de taille nulle, donc la mise en page de
+  téléphone ; `pumpApp(screenSize: …)` pose un vrai écran (semaine complète au-delà de 600 px).
 - **Glisser-déposer et étirement** (`onEventChanged`) sur les rdv d'un agenda où l'on écrit :
   appui long sur téléphone, glisser direct à la souris. Pour une occurrence, la question
   « déplacer cette occurrence ou toute la série » ; annulation ou échec remettent la tuile en

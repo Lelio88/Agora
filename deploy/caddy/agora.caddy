@@ -57,6 +57,7 @@ agora.heianenterprise.com {
 	encode zstd gzip
 
 	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
 		# SAMEORIGIN et non DENY : l'app encadre sa PROPRE page de
@@ -65,6 +66,21 @@ agora.heianenterprise.com {
 		# constaté en production. Un site tiers reste incapable d'encadrer
 		# Agora, ce que cet en-tête protège réellement.
 		X-Frame-Options SAMEORIGIN
+		# CSP éprouvée sur un vrai build (connexion, agenda, temps réel,
+		# Turnstile, pages légales) : aucune violation. Ce que chaque source
+		# couvre :
+		#   - 'wasm-unsafe-eval' : CanvasKit, le moteur de rendu de Flutter, en
+		#     WebAssembly, servi d'ici (build --no-web-resources-cdn) ;
+		#   - challenges.cloudflare.com : script et cadre de Turnstile
+		#     (captcha.html, sans script en ligne : il est dans captcha.js) ;
+		#   - style 'unsafe-inline' : Flutter pose ses styles en ligne ;
+		#   - fonts.gstatic.com : polices de secours de Flutter, chargées
+		#     seulement pour un caractère que Roboto (embarquée) n'a pas
+		#     (emoji, autres alphabets). Déclaré dans la politique ;
+		#   - api.agora : Supabase, en https et en websocket (temps réel).
+		# Une nouvelle origine (script, police, API) s'ajoute ici ET dans la
+		# politique de confidentialité, puisqu'elle voit l'adresse des visiteurs.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.agora.heianenterprise.com wss://api.agora.heianenterprise.com https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
 		-Server
 	}
 
@@ -110,6 +126,7 @@ api.agora.heianenterprise.com {
 		Access-Control-Expose-Headers "Content-Range, Content-Profile, Range-Unit, X-Total-Count, X-Supabase-Api-Version, X-Sb-Error-Code"
 		-Access-Control-Allow-Credentials
 		Vary "Origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options nosniff
 		-Server
 	}

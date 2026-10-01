@@ -6,6 +6,7 @@ import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kalender/kalender.dart';
 
 import '../../../../helpers/agora_robot.dart';
 import '../../../../helpers/fake_calendar_repository.dart';
@@ -18,17 +19,19 @@ FakeAuthRepository _signedIn() => FakeAuthRepository(
   ),
 );
 
-/// Mardi de la semaine affichée par défaut (elle commence le lundi), à 18 h
-/// locales : visible quel que soit le jour du test. Un « prochain mardi »
-/// tombait la semaine suivante un mardi après 18 h.
-DateTime _tuesdayThisWeek18h() {
+/// Aujourd'hui à 18 h locales : visible dans la vue par défaut quel que soit
+/// le jour du test, la semaine complète (écran large) comme les trois jours
+/// glissants qui commencent aujourd'hui (écran étroit).
+DateTime _today18h() {
   final now = DateTime.now();
-  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  return DateTime(monday.year, monday.month, monday.day + 1, 18).toUtc();
+  return DateTime(now.year, now.month, now.day, 18).toUtc();
 }
 
+/// Écran assez large pour la semaine complète, commencée le lundi.
+const _wideScreen = Size(1280, 800);
+
 AgendaItem _dentist() {
-  final start = _tuesdayThisWeek18h();
+  final start = _today18h();
   return AgendaItem(
     eventId: 'evt-dentist',
     calendarId: FakeCalendarRepository.calendarId,
@@ -42,7 +45,7 @@ AgendaItem _dentist() {
 
 Future<FakeCalendarRepository> _withWeeklyYoga() async {
   final calendar = FakeCalendarRepository();
-  final start = _tuesdayThisWeek18h();
+  final start = _today18h();
   await calendar.createEvent(
     EventDraft(
       calendarId: FakeCalendarRepository.calendarId,
@@ -143,7 +146,7 @@ void main() {
   });
 
   testWidgets('saving an all-day event keeps its dates', (tester) async {
-    final day = _tuesdayThisWeek18h().toLocal();
+    final day = _today18h().toLocal();
     final start = DateTime.utc(day.year, day.month, day.day);
     final calendar = FakeCalendarRepository()
       ..seed(
@@ -246,9 +249,62 @@ void main() {
     expect(calendar.items, isEmpty);
   });
 
+  testWidgets('on a phone, the week view starts today, whatever the weekday', (
+    tester,
+  ) async {
+    // Sur un écran étroit, la semaine se réduit à trois jours. Réduite par
+    // kalender.week, elle montrait toujours lundi–mercredi : un rdv de jeudi
+    // à dimanche n'y apparaissait jamais. Elle doit partir d'aujourd'hui.
+    final now = DateTime.now();
+    final inTwoDays = DateTime(now.year, now.month, now.day + 2, 12).toUtc();
+    final calendar = FakeCalendarRepository()
+      ..seed(
+        AgendaItem(
+          eventId: 'evt-later',
+          calendarId: FakeCalendarRepository.calendarId,
+          title: 'Kiné',
+          start: inTwoDays,
+          end: inTwoDays.add(const Duration(hours: 1)),
+          isAllDay: false,
+          timezone: 'Europe/Paris',
+        ),
+      );
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      calendar: calendar,
+      screenSize: const Size(390, 844),
+    );
+
+    expect(find.text('Kiné'), findsWidgets);
+  });
+
+  testWidgets('the month view opens on the current month, even early in it', (
+    tester,
+  ) async {
+    // Depuis la semaine complète, kalender ouvrait le mois de son LUNDI : un
+    // 1er octobre, la semaine commence le 28 septembre, et le mois affiché
+    // était septembre. Le défaut n'apparaît qu'en début de mois ; le reste du
+    // temps, ce test passe de lui-même.
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), screenSize: _wideScreen);
+
+    await robot.tap(CalendarKeys.viewMonth);
+
+    final now = DateTime.now();
+    final visible = tester
+        .widget<KalenderView>(find.byType(KalenderView))
+        .kalenderController
+        .visibleDateTimeRange
+        .value!;
+    expect(visible.start.isAfter(DateTime(now.year, now.month)), isFalse);
+    expect(visible.end.isBefore(DateTime(now.year, now.month + 1)), isFalse);
+  });
+
   testWidgets('the schedule view lists upcoming events', (tester) async {
-    // Aujourd'hui plutôt que le mardi de la semaine : la vue planning va
-    // par mois, et ce mardi peut tomber le mois précédent.
+    // Écran large : la semaine complète commence le lundi, qui peut tomber
+    // le mois précédent ; le planning, paginé par mois, doit pourtant
+    // s'ouvrir sur celui d'aujourd'hui.
     final now = DateTime.now();
     final noon = DateTime(now.year, now.month, now.day, 12).toUtc();
     final calendar = FakeCalendarRepository()
@@ -264,7 +320,11 @@ void main() {
         ),
       );
     final robot = AgoraRobot(tester);
-    await robot.pumpApp(auth: _signedIn(), calendar: calendar);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      calendar: calendar,
+      screenSize: _wideScreen,
+    );
 
     await robot.tap(CalendarKeys.viewSchedule);
 

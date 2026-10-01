@@ -49,11 +49,13 @@
 
   "verifyEmailTitle": "Vérifie ton adresse",
   "@verifyEmailTitle": {"description": "Titre de l'écran de saisie du code de confirmation."},
-  "verifyEmailInstructions": "Nous avons envoyé un code à 6 chiffres à {email}.",
+  "verifyEmailInstructions": "Saisissez le code à 6 chiffres envoyé à {email}.",
   "@verifyEmailInstructions": {
-    "description": "Explication sous le titre de la confirmation d'adresse.",
+    "description": "Explication sous le titre de la confirmation d'adresse. Ne pas affirmer qu'un code est parti : pour une adresse déjà inscrite, rien n'est envoyé, et l'écran ne doit pas le révéler.",
     "placeholders": {"email": {"type": "String"}}
   },
+  "verifyEmailExistingAccountHint": "Cette adresse a déjà un compte ? Aucun code n’arrivera : connectez-vous, ou passez par « Mot de passe oublié ».",
+  "@verifyEmailExistingAccountHint": {"description": "Indication affichée à tous sur l'écran du code d'inscription : l'inscription répond pareil qu'une adresse ait un compte ou non, c'est ce texte qui oriente le titulaire sans rien révéler."},
   "verifyButton": "Valider",
   "@verifyButton": {"description": "Bouton qui valide le code de confirmation."},
   "resendCodeButton": "Renvoyer le code",

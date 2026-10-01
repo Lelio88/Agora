@@ -25,7 +25,8 @@
   "signInLink": "Sign in",
 
   "verifyEmailTitle": "Check your inbox",
-  "verifyEmailInstructions": "We sent a 6-digit code to {email}.",
+  "verifyEmailInstructions": "Enter the 6-digit code sent to {email}.",
+  "verifyEmailExistingAccountHint": "Does this address already have an account? No code will arrive: sign in, or use “Forgot password”.",
   "verifyButton": "Confirm",
   "resendCodeButton": "Resend the code",
   "codeResent": "New code sent.",

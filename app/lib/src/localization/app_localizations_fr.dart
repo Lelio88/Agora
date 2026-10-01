@@ -77,8 +77,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String verifyEmailInstructions(String email) {
-    return 'Nous avons envoyé un code à 6 chiffres à $email.';
+    return 'Saisissez le code à 6 chiffres envoyé à $email.';
   }
+
+  @override
+  String get verifyEmailExistingAccountHint =>
+      'Cette adresse a déjà un compte ? Aucun code n’arrivera : connectez-vous, ou passez par « Mot de passe oublié ».';
 
   @override
   String get verifyButton => 'Valider';

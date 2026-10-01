@@ -71,8 +71,17 @@ class AgoraRobot {
     bool intro = false,
     IntroSound? sound,
     bool disableAnimations = false,
+    Size? screenSize,
     bool settle = true,
   }) async {
+    // L'app lit la taille de l'écran dans ce MediaQuery, qui l'annonce nulle
+    // par défaut : les tests voient alors la mise en page étroite, celle d'un
+    // téléphone. [screenSize] pose un vrai écran, et la surface de test avec.
+    if (screenSize != null) {
+      tester.view.physicalSize = screenSize;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
     this.calendar = calendar ?? FakeCalendarRepository();
@@ -112,7 +121,10 @@ class AgoraRobot {
         child: MediaQuery(
           // Le réglage « réduire les animations » du téléphone : l'intro le
           // respecte, les tests doivent donc pouvoir le poser.
-          data: MediaQueryData(disableAnimations: disableAnimations),
+          data: MediaQueryData(
+            size: screenSize ?? Size.zero,
+            disableAnimations: disableAnimations,
+          ),
           child: AgoraApp(locale: locale, intro: intro),
         ),
       ),

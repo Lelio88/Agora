@@ -124,7 +124,7 @@ docker stats --no-stream --format '   {{.Name}} {{.MemUsage}}' | grep -E ' ?agor
 cd "$ROOT"   # Windows refuse d'effacer le dossier courant
 if [ "$MODE" = "--keep" ]; then
     echo "Pile laissée en marche : API http://localhost:8481, Mailpit http://localhost:8482."
-    echo "App web : (cd app && flutter build web --dart-define-from-file=$WORK/web-config.json --output=$WORK/web),"
+    echo "App web : (cd app && flutter build web --no-web-resources-cdn --dart-define-from-file=$WORK/web-config.json --output=$WORK/web),"
     echo "puis http://localhost:8480. Démonter : sh deploy/rehearsal/rehearse.sh --down"
 else
     teardown

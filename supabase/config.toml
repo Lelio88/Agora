@@ -226,7 +226,10 @@ double_confirm_changes = true
 # Agora : oui, par un CODE à 6 chiffres (gabarits ci-dessous), jamais par lien.
 enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
-secure_password_change = false
+# Agora : oui. Une session de moins de 24 h change le mot de passe librement (la
+# réinitialisation en ouvre une neuve) ; au-delà, GoTrue exige un code envoyé
+# par e-mail (gabarit reauthentication). Un jeton volé ne suffit plus.
+secure_password_change = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
 # Number of characters used in the email OTP.

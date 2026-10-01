@@ -168,7 +168,10 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   change pas en direct.
 - **Helpers RLS** dans `private` (`is_group_member`, `is_group_admin`, `is_group_owner`,
   `shares_group_with`, `can_read_calendar`, `can_add_event`, `can_edit_event`) : `SECURITY DEFINER`
-  pour éviter la récursion RLS sur `group_members`. Le schéma `private` n'est pas exposé par l'API.
+  pour éviter la récursion RLS sur `group_members`. Le schéma `private` n'est pas exposé par l'API,
+  mais `authenticated` y a USAGE : **toute table de `private` porte la RLS**, sans politique, pour
+  qu'un GRANT ajouté par mégarde n'ouvre rien (`private_schema_test.sql`). Les fonctions
+  `SECURITY DEFINER` qui les lisent, propriétaires des tables, n'y sont pas soumises.
 - **Anti-énumération** : un code d'invitation inconnu, expiré ou épuisé renvoie la même erreur
   (`invite_invalid`).
 - Le propriétaire d'un groupe ne peut pas le quitter sans l'avoir transmis. Un admin exclut les

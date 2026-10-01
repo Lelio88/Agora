@@ -36,16 +36,31 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   au texte (`network_errors.dart`), car le SDK les emballe parfois dans une `AuthException` sans
   code.
 - **Anti-énumération** : compte inconnu et mauvais mot de passe donnent le même message ;
-  « mot de passe oublié » réussit pour toute adresse. Seule l'inscription dit « un compte existe
-  déjà », choix assumé pour ne pas faire attendre un code qui ne viendra jamais. GoTrue le
-  signale soit par `user_already_exists`, soit par un utilisateur **sans identité** : les deux
-  sont traités. `email_not_confirmed` (et donc le bouton « Recevoir un code de confirmation »)
+  « mot de passe oublié » réussit pour toute adresse ; **l'inscription répond pareil** qu'une
+  adresse ait déjà un compte ou non (`blindSignUp`). GoTrue signale un doublon soit par un
+  utilisateur **sans identité** (confirmation active : aucun e-mail ne part), soit par
+  `user_already_exists` : les deux mènent à l'écran du code, comme une inscription neuve. Cet
+  écran ne dit pas qu'un code est parti, et indique à tous que pour une adresse déjà inscrite
+  aucun code n'arrivera, avec les liens vers la connexion et « Mot de passe oublié » : le
+  titulaire n'attend pas en vain, et personne n'apprend si l'adresse est inscrite. Ne jamais
+  réintroduire un contrôle `identities.isEmpty`. « Renvoyer le code » répond aussi pareil pour une
+  adresse inconnue et pour un compte confirmé (vérifié sur le serveur local). **Résidu connu, propre
+  à GoTrue** : deux demandes à moins d'une seconde pour une inscription **en attente** donnent
+  `over_email_send_rate_limit` (429) au lieu de 200, puisqu'un e-mail part vraiment. Cela révèle une
+  inscription non confirmée, au niveau de l'API, donc hors de portée de l'app ; chaque essai exige
+  un jeton Turnstile neuf. `email_not_confirmed` (et donc le bouton « Recevoir un code de confirmation »)
   ne révèle rien : GoTrue vérifie le mot de passe **avant** la confirmation, si bien qu'un mauvais
   mot de passe sur un compte non confirmé répond `invalid_credentials`, comme un compte inconnu
   (vérifié sur le serveur local).
 - **Codes valables 15 minutes** (`otp_expiry = 900`) : un code de réinitialisation deviné donne
   le compte, et la seule limite est `token_verifications` (30 essais / 5 min / IP). La
   réinitialisation vérifie **toujours** le code, même avec une session ouverte.
+- **Changer de mot de passe exige une session récente** (`secure_password_change`,
+  `GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_REAUTHENTICATION`) : au-delà de 24 h, GoTrue réclame un
+  code envoyé par e-mail (gabarit `reauthentication`). L'app n'en a pas besoin : son seul
+  changement de mot de passe suit la réinitialisation, dont le code ouvre une session neuve.
+  Mais un jeton de session volé ne suffit plus à prendre le compte par l'API (vérifié sur le
+  serveur local : session vieillie de 25 h → `reauthentication_needed`).
 - **Navigation** : après une connexion ou un code juste, l'écran ne navigue pas. C'est le routeur
   qui redirige, sur l'événement de session (`refreshListenable`). `/reset-password` reste ouvert
   aux deux états : le code ouvre une session **avant** l'enregistrement du mot de passe. Pendant

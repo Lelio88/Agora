@@ -38,16 +38,16 @@ const _groupCalendar = UserCalendar(
   groupId: _groupId,
 );
 
-/// Mardi de la semaine affichée par défaut (elle commence le lundi), à
-/// [hour] h locales : visible quel que soit le jour du test.
-DateTime _tuesdayThisWeekAt(int hour) {
+/// Aujourd'hui à [hour] h locales : visible dans la vue par défaut quel que
+/// soit le jour du test, la semaine complète (écran large) comme les trois
+/// jours glissants qui commencent aujourd'hui (écran étroit).
+DateTime _todayAt(int hour) {
   final now = DateTime.now();
-  final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  return DateTime(monday.year, monday.month, monday.day + 1, hour).toUtc();
+  return DateTime(now.year, now.month, now.day, hour).toUtc();
 }
 
 AgendaItem _match({ResponseStatus? myResponse}) {
-  final start = _tuesdayThisWeekAt(18);
+  final start = _todayAt(18);
   return AgendaItem(
     eventId: 'evt-match',
     calendarId: _groupCalendar.id,
@@ -237,7 +237,7 @@ void main() {
   });
 
   testWidgets('a series is answered occurrence by occurrence', (tester) async {
-    final first = _tuesdayThisWeekAt(10);
+    final first = _todayAt(10);
     final calendar = FakeCalendarRepository();
     for (final start in [first, first.add(const Duration(days: 7))]) {
       calendar.seed(
