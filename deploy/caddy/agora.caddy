@@ -74,13 +74,12 @@ agora.heianenterprise.com {
 		#   - challenges.cloudflare.com : script et cadre de Turnstile
 		#     (captcha.html, sans script en ligne : il est dans captcha.js) ;
 		#   - style 'unsafe-inline' : Flutter pose ses styles en ligne ;
-		#   - fonts.gstatic.com : polices de secours de Flutter, chargées
-		#     seulement pour un caractère que Roboto (embarquée) n'a pas
-		#     (emoji, autres alphabets). Déclaré dans la politique ;
 		#   - api.agora : Supabase, en https et en websocket (temps réel).
+		# Les polices de secours (emoji, autres alphabets) sont servies d'ici
+		# (/fonts/fallback/, tools/web/fallback_fonts.sh) : rien chez Google.
 		# Une nouvelle origine (script, police, API) s'ajoute ici ET dans la
 		# politique de confidentialité, puisqu'elle voit l'adresse des visiteurs.
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.agora.heianenterprise.com wss://api.agora.heianenterprise.com https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.agora.heianenterprise.com wss://api.agora.heianenterprise.com; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
 		-Server
 	}
 
@@ -91,6 +90,14 @@ agora.heianenterprise.com {
 
 	# Les fichiers d'une version Flutter ne sont pas hachés : revalidation à
 	# chaque chargement (ETag), sinon un navigateur garderait l'ancienne app.
+	# Polices de secours (tools/web/fallback_fonts.sh) : chaque chemin porte
+	# sa version, le fichier ne change jamais. Pas de repli sur index.html :
+	# un fichier absent doit répondre 404 au moteur Flutter.
+	handle /fonts/fallback/* {
+		root * /opt/agora/web
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
 	handle {
 		root * /opt/agora/web
 		header Cache-Control "no-cache"
@@ -131,6 +138,34 @@ api.agora.heianenterprise.com {
 		-Server
 	}
 
+	# Passerelle d'auth (worker/authgate) : inscription, mot de passe oublié,
+	# renvoi de code et /token passent par le worker, qui répond pareil, et au
+	# même délai, qu'une adresse ait un compte ou non ; la mise à jour du
+	# compte aussi, qui y refuse tout changement d'adresse. Les jokers
+	# couvrent les variantes d'écriture : rien qui ressemble à ces routes
+	# n'atteint GoTrue en direct.
+	@authGate {
+		method POST
+		path /auth/v1/signup* /auth/v1/recover* /auth/v1/resend* /auth/v1/token*
+	}
+	handle @authGate {
+		reverse_proxy 127.0.0.1:9404
+	}
+	@accountUpdate {
+		method PUT
+		path /auth/v1/user*
+	}
+	handle @accountUpdate {
+		reverse_proxy 127.0.0.1:9404
+	}
+	# Lien magique : coupé dans GoTrue, mais /otp cherche le compte AVANT de
+	# lire ce réglage et répond autrement pour une adresse inconnue. Caddy
+	# répond à sa place, comme GoTrue le fait pour un compte existant.
+	@magicLink path /auth/v1/otp* /auth/v1/magiclink*
+	handle @magicLink {
+		header Content-Type application/json
+		respond `{"code":422,"error_code":"email_provider_disabled","msg":"Login with magic link is disabled"}` 422
+	}
 	handle_path /auth/v1/* {
 		reverse_proxy 127.0.0.1:9401
 	}

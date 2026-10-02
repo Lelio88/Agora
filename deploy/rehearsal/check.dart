@@ -100,6 +100,93 @@ Future<void> _checkCors(String key) async {
           .contains('x-supabase-api-version'));
 }
 
+/// Appel brut d'un point d'entrée de GoTrue à travers Caddy :
+/// (statut, corps, durée).
+Future<(int, String, Duration)> _auth(
+    String key, String path, Map<String, Object?> body) async {
+  final watch = Stopwatch()..start();
+  final res = await http.post(Uri.parse('$_api/auth/v1/$path'),
+      headers: {'apikey': key, 'Content-Type': 'application/json', 'Origin': _web},
+      body: jsonEncode(body));
+  return (res.statusCode, res.body, watch.elapsed);
+}
+
+/// La passerelle d'auth (worker/authgate) : rien, ni la réponse ni sa durée,
+/// ne dit si une adresse a un compte. [existing] est le compte confirmé de
+/// [alice] ; [other], celui d'un autre.
+Future<void> _checkAuthGate(
+    String key, SupabaseClient alice, String existing, String other) async {
+  final stamp = DateTime.now().millisecondsSinceEpoch;
+  final unknown = 'personne.$stamp@rehearsal.local';
+  const emailDelay = Duration(milliseconds: 1400);
+  const signInFloor = Duration(milliseconds: 750);
+
+  // Deux demandes de suite : GoTrue seul répondrait 429 à la seconde pour
+  // un compte (un e-mail par minute et par adresse), 200 pour une inconnue.
+  final answers = <(int, String)>{};
+  var fastest = const Duration(days: 1);
+  Future<void> probe(String path, Map<String, Object?> body) async {
+    final (status, text, elapsed) = await _auth(key, path, body);
+    answers.add((status, text));
+    if (elapsed < fastest) fastest = elapsed;
+  }
+
+  for (final email in [existing, unknown, existing, unknown]) {
+    await probe('recover', {'email': email});
+    await probe('resend', {'type': 'signup', 'email': email});
+  }
+  await probe('signup', {'email': existing, 'password': _password});
+  await probe('signup', {'email': 'nouveau.$stamp@rehearsal.local', 'password': _password});
+  _check('inscription, mot de passe oublié, renvoi : une seule réponse',
+      answers.length == 1 && answers.single == (200, '{}'), answers);
+  _check('… toujours au même délai', fastest >= emailDelay, fastest);
+
+  final (variantStatus, _, _) = await _auth(key, 'recover/', {'email': existing});
+  _check('une variante d\'écriture n\'atteint pas GoTrue en direct', variantStatus == 404,
+      variantStatus);
+
+  final otpAnswers = <(int, String)>{};
+  for (final email in [existing, unknown]) {
+    final (status, text, _) =
+        await _auth(key, 'otp', {'email': email, 'create_user': false});
+    otpAnswers.add((status, text));
+  }
+  _check('lien magique coupé, même réponse pour tous',
+      otpAnswers.length == 1 && otpAnswers.single.$1 == 422, otpAnswers);
+
+  final signIns = <(int, String)>{};
+  var fastestSignIn = const Duration(days: 1);
+  for (final email in [existing, unknown]) {
+    final (status, text, elapsed) = await _auth(
+        key, 'token?grant_type=password', {'email': email, 'password': 'Mauvais42'});
+    signIns.add((status, text));
+    if (elapsed < fastestSignIn) fastestSignIn = elapsed;
+  }
+  _check('mauvais mot de passe ou adresse inconnue : même refus',
+      signIns.length == 1 && signIns.single.$1 == 400, signIns);
+  _check('… au même délai', fastestSignIn >= signInFloor, fastestSignIn);
+
+  // Un compte connecté ne sonde pas les adresses en essayant d'en changer.
+  final headers = {
+    'apikey': key,
+    'Authorization': 'Bearer ${alice.auth.currentSession!.accessToken}',
+    'Content-Type': 'application/json',
+    'Origin': _web,
+  };
+  final changes = <(int, String)>{};
+  for (final email in [other, unknown]) {
+    final res = await http.put(Uri.parse('$_api/auth/v1/user'),
+        headers: headers, body: jsonEncode({'email': email}));
+    changes.add((res.statusCode, res.body));
+  }
+  _check("changement d'adresse refusé, même réponse pour tous",
+      changes.length == 1 && changes.single.$1 == 422, changes);
+  final update = await http.put(Uri.parse('$_api/auth/v1/user'),
+      headers: headers, body: jsonEncode({'data': {'display_name': 'Alice'}}));
+  _check('le reste de la mise à jour du compte passe', update.statusCode == 200,
+      update.statusCode);
+}
+
 Future<void> _checkGroupFlow(SupabaseClient alice, SupabaseClient bob) async {
   final groupId = await alice.rpc<String>('create_group', params: {'p_name': 'Répétition'});
   final code = await alice.rpc<String>('create_invite', params: {'p_group_id': groupId});
@@ -170,6 +257,8 @@ Future<void> main(List<String> args) async {
   final alice = await _signUp(key, 'alice.$stamp@rehearsal.local', 'Alice');
   final bob = await _signUp(key, 'bob.$stamp@rehearsal.local', 'Bob');
   try {
+    await _checkAuthGate(
+        key, alice, 'alice.$stamp@rehearsal.local', 'bob.$stamp@rehearsal.local');
     await _checkGroupFlow(alice, bob);
   } finally {
     for (final client in [bob, alice]) {

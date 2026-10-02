@@ -18,7 +18,9 @@ func TestLoad(t *testing.T) {
 		// wantPrivate : contrôle SSRF levé (AGORA_ICS_ALLOW_PRIVATE_NETWORK).
 		wantPrivate bool
 		wantDiscord string
-		wantErr     bool
+		// wantAuth : adresse de GoTrue derrière la passerelle d'auth.
+		wantAuth string
+		wantErr  bool
 	}{
 		{
 			name:     "defaults to port 8080",
@@ -82,6 +84,22 @@ func TestLoad(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:     "reads the GoTrue address of the auth gate",
+			env:      map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_AUTH_UPSTREAM": "http://auth:9999"},
+			wantAddr: ":8080",
+			wantAuth: "http://auth:9999",
+		},
+		{
+			name:    "rejects a GoTrue address without scheme",
+			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_AUTH_UPSTREAM": "auth:9999"},
+			wantErr: true,
+		},
+		{
+			name:    "rejects a GoTrue address that is not http",
+			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_AUTH_UPSTREAM": "ftp://auth:9999"},
+			wantErr: true,
+		},
+		{
 			name: "rejects a Discord application id that is not a number",
 			env: map[string]string{
 				"AGORA_DATABASE_URL":           localURL,
@@ -111,6 +129,9 @@ func TestLoad(t *testing.T) {
 			}
 			if cfg.DiscordPublicKey != tt.wantDiscord {
 				t.Errorf("DiscordPublicKey = %q, want %q", cfg.DiscordPublicKey, tt.wantDiscord)
+			}
+			if cfg.AuthUpstream != tt.wantAuth {
+				t.Errorf("AuthUpstream = %q, want %q", cfg.AuthUpstream, tt.wantAuth)
 			}
 			if cfg.DatabaseURL != localURL {
 				t.Errorf("DatabaseURL = %q, want %q", cfg.DatabaseURL, localURL)

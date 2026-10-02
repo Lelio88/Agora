@@ -18,7 +18,7 @@ Topologie rapide :
 - `app/lib/src/` — `composition_root.dart`, `app.dart`, `routing/`, `supabase/`, `exceptions/`, `logging/`, `localization/` (ARB).
 - `supabase/migrations/` — schéma, RLS, RPC ; `supabase/tests/` — pgTAP ; `config.toml` — pile locale sur les ports 553xx.
 - `deploy/` — mise en ligne : compose de prod, rôles, `migrate.sh`, vhost Caddy, bootstrap, répétition locale (`rehearsal/`) ; `.github/workflows/deploy.yml` sur la branche `release`.
-- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/discord/` — bot (interactions signées, commandes, créneaux, récaps et rappels, `PgStore`) ; `worker/vendor/` — dépendances vendorisées.
+- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/discord/` — bot (interactions signées, commandes, créneaux, récaps et rappels, `PgStore`) ; `worker/authgate/` — passerelle devant GoTrue (mêmes réponses, même délai, compte ou pas) ; `worker/vendor/` — dépendances vendorisées.
 
 ## III. Pile Technologique
 
@@ -85,7 +85,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |
 | Commande, publication ou réglage du bot Discord | `docs/discord-architecture.md` + `supabase/tests/discord_test.sql` + tests Go de `worker/discord/` ; puis `worker register-commands` si une commande change ; `/dispo` : `slots.go` suit `free_slots.dart` |
-| Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` |
+| Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` ; une route d'auth qui envoie un e-mail ou lit un mot de passe passe par `worker/authgate/` + `agora.caddy` + `deploy/rehearsal/check.dart` |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
 | Vérification humaine (CAPTCHA) : clé, page du widget, écrans concernés | `app/web/captcha.html` + `captcha_gate.dart` + `GOTRUE_SECURITY_CAPTCHA_*` de `deploy/docker-compose.prod.yml` + `docs/deployment.md` |
 | Donnée collectée, sous-traitant, durée de conservation, ou effet de la suppression de compte | `app/web/legal/confidentialite.html` (les deux langues) — la page décrit le traitement réel, pas une intention |

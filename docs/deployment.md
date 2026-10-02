@@ -58,14 +58,21 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
 - **En-têtes de l'app web** (`agora.caddy`) : HSTS sur les deux origines, et une **CSP** éprouvée
   sur un vrai build (connexion, agenda, temps réel, Turnstile, pages légales). Elle n'autorise que
   l'origine elle-même, `api.agora` (https et websocket), Cloudflare (script et cadre de
-  Turnstile), `fonts.gstatic.com` (polices de secours, voir ci-dessous) et `'wasm-unsafe-eval'`
-  pour CanvasKit. Aucun script en ligne : celui de `captcha.html` vit dans `captcha.js`. Une
-  nouvelle origine s'ajoute à la CSP **et** à la politique de confidentialité.
-- **Rien n'est chargé chez Google au démarrage de la version web** : le build passe
-  `--no-web-resources-cdn` (CanvasKit servi d'ici, et non depuis `www.gstatic.com`) et l'app
-  embarque Roboto (`assets/fonts/roboto/`, sinon téléchargée depuis `fonts.gstatic.com` à chaque
-  visite). Seules les polices de secours d'un caractère absent de Roboto (certains emoji,
-  alphabets non latins) viennent encore de Google, ce que la politique de confidentialité dit.
+  Turnstile) et `'wasm-unsafe-eval'` pour CanvasKit. Aucun script en ligne : celui de
+  `captcha.html` vit dans `captcha.js`. Une nouvelle origine s'ajoute à la CSP **et** à la
+  politique de confidentialité.
+- **Rien n'est chargé chez Google par la version web** : le build passe `--no-web-resources-cdn`
+  (CanvasKit servi d'ici, et non depuis `www.gstatic.com`), l'app embarque Roboto
+  (`assets/fonts/roboto/`), et les **polices de secours** (Noto : emoji, alphabets non latins,
+  ~21 Mo) sont copiées au build par `tools/web/fallback_fonts.sh` dans `fonts/fallback/`, où
+  `web/flutter_bootstrap.js` (`fontFallbackBaseUrl`) pointe le moteur. La liste est relevée dans
+  `main.dart.js`, donc suit Flutter ; le script échoue s'il en manque un seul fichier. Caddy les
+  sert avec un cache d'un an (chemins versionnés) et sans repli sur `index.html`.
+- **Passerelle d'auth** (`agora.caddy`, `worker/authgate/`) : `POST /auth/v1/{signup,recover,
+  resend,token}*` et `PUT /auth/v1/user*` vont au worker (127.0.0.1:9404, `AGORA_AUTH_UPSTREAM`),
+  `/auth/v1/{otp,magiclink}*` reçoivent une réponse fixe de Caddy ; le reste de `/auth/v1/` va
+  droit à GoTrue. Les jokers couvrent les variantes d'écriture. Pourquoi : voir
+  [`auth-architecture.md`](./auth-architecture.md).
 - **Realtime lit son tenant dans le premier segment du `Host`** : Caddy envoie
   `realtime-dev.agora`. **`handle_path`**, jamais `handle` + `uri strip_prefix` (Caddy exécute
   `rewrite` avant `uri`).

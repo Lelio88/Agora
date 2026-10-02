@@ -43,15 +43,30 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   écran ne dit pas qu'un code est parti, et indique à tous que pour une adresse déjà inscrite
   aucun code n'arrivera, avec les liens vers la connexion et « Mot de passe oublié » : le
   titulaire n'attend pas en vain, et personne n'apprend si l'adresse est inscrite. Ne jamais
-  réintroduire un contrôle `identities.isEmpty`. « Renvoyer le code » répond aussi pareil pour une
-  adresse inconnue et pour un compte confirmé (vérifié sur le serveur local). **Résidu connu, propre
-  à GoTrue** : deux demandes à moins d'une seconde pour une inscription **en attente** donnent
-  `over_email_send_rate_limit` (429) au lieu de 200, puisqu'un e-mail part vraiment. Cela révèle une
-  inscription non confirmée, au niveau de l'API, donc hors de portée de l'app ; chaque essai exige
-  un jeton Turnstile neuf. `email_not_confirmed` (et donc le bouton « Recevoir un code de confirmation »)
+  réintroduire un contrôle `identities.isEmpty`. `email_not_confirmed` (et donc le bouton « Recevoir un code de confirmation »)
   ne révèle rien : GoTrue vérifie le mot de passe **avant** la confirmation, si bien qu'un mauvais
   mot de passe sur un compte non confirmé répond `invalid_credentials`, comme un compte inconnu
   (vérifié sur le serveur local).
+- **Passerelle d'auth (`worker/authgate/`)** : l'app ne suffit pas, l'API publique de GoTrue
+  trahit elle-même les comptes. L'inscription renvoie un utilisateur sans identité pour un compte
+  confirmé ; deux demandes en moins d'une minute (`GOTRUE_SMTP_MAX_FREQUENCY`) donnent 429 pour un
+  compte et 200 pour une adresse inconnue ; la durée trahit l'envoi SMTP et le bcrypt du mot de
+  passe ; `PUT /user` répond `email_exists` à qui vise l'adresse d'un autre. Caddy confie donc au
+  worker `POST /signup`, `/recover`, `/resend`, `/token` et `PUT /user`, qu'il relaie à GoTrue :
+  - **inscription, mot de passe oublié, renvoi** : toujours 200 `{}`, toujours après 1,5 s, que
+    GoTrue ait réussi, limité, échoué ou pas encore fini (sa requête continue, l'e-mail part ;
+    64 au plus en route, au-delà la même réponse sans relais, contre les rafales).
+    Seules passent tout de suite les erreurs de saisie, rendues avant toute recherche de compte :
+    mot de passe faible, adresse mal formée, captcha, limite **par IP** ; un 429 inconnu est masqué ;
+  - **`/token`** : réponse de GoTrue intacte, jamais avant 0,8 s. GoTrue lit `grant_type` dans
+    la requête **et** dans un corps de formulaire : seul un rafraîchissement en JSON y échappe ;
+  - **`PUT /user`** : tout changement d'adresse est refusé (`email_change_disabled`) sans
+    interroger GoTrue — clé `email` en toute casse, JSON illisible compris. L'app ne change que
+    le mot de passe ; un futur écran de changement d'adresse devra d'abord masquer `email_exists`.
+  Lien magique coupé (`GOTRUE_EXTERNAL_EMAIL_MAGIC_LINK_ENABLED=false`), et Caddy répond lui-même
+  à `/otp` : GoTrue y cherche le compte **avant** de lire ce réglage. Contrepartie : si le worker
+  tombe, ces routes échouent ; et qui dépasse une limite voit « code envoyé » sans rien recevoir.
+  Éprouvé par `check.dart` (répétition), à travers Caddy.
 - **Codes valables 15 minutes** (`otp_expiry = 900`) : un code de réinitialisation deviné donne
   le compte, et la seule limite est `token_verifications` (30 essais / 5 min / IP). La
   réinitialisation vérifie **toujours** le code, même avec une session ouverte.

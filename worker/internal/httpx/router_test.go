@@ -20,12 +20,46 @@ func TestRouter(t *testing.T) {
 			name:   "discord interactions are not mounted without a public key",
 			method: http.MethodPost, path: "/discord/interactions", wantCode: http.StatusNotFound,
 		},
+		{
+			name:   "the auth gate is not mounted without its upstream",
+			method: http.MethodPost, path: "/auth/v1/signup", wantCode: http.StatusNotFound,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
 
-			NewRouter(nil).ServeHTTP(rec, httptest.NewRequest(tt.method, tt.path, nil))
+			NewRouter(nil, nil).ServeHTTP(rec, httptest.NewRequest(tt.method, tt.path, nil))
+
+			if rec.Code != tt.wantCode {
+				t.Errorf("status = %d, want %d", rec.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
+func TestRouterMountsTheAuthGate(t *testing.T) {
+	gate := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusTeapot)
+	})
+	tests := []struct {
+		name, method, path string
+		wantCode           int
+	}{
+		{name: "sign-up", method: http.MethodPost, path: "/auth/v1/signup", wantCode: http.StatusTeapot},
+		{name: "forgotten password", method: http.MethodPost, path: "/auth/v1/recover", wantCode: http.StatusTeapot},
+		{name: "code resent", method: http.MethodPost, path: "/auth/v1/resend", wantCode: http.StatusTeapot},
+		{name: "token", method: http.MethodPost, path: "/auth/v1/token", wantCode: http.StatusTeapot},
+		{name: "account update", method: http.MethodPut, path: "/auth/v1/user", wantCode: http.StatusTeapot},
+		{name: "only POST", method: http.MethodGet, path: "/auth/v1/signup", wantCode: http.StatusMethodNotAllowed},
+		{name: "account read stays with GoTrue", method: http.MethodGet, path: "/auth/v1/user", wantCode: http.StatusMethodNotAllowed},
+		{name: "nothing else of GoTrue", method: http.MethodPost, path: "/auth/v1/factors", wantCode: http.StatusNotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+
+			NewRouter(nil, gate).ServeHTTP(rec, httptest.NewRequest(tt.method, tt.path, nil))
 
 			if rec.Code != tt.wantCode {
 				t.Errorf("status = %d, want %d", rec.Code, tt.wantCode)

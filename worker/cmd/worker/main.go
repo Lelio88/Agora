@@ -1,6 +1,6 @@
 // Command worker est le service de fond d'Agora : dépliage des rdv
 // récurrents, relecture des agendas iCal, bot Discord (commandes, récaps et
-// rappels).
+// rappels), et passerelle d'auth devant GoTrue (paquet authgate).
 //
 // « worker register-commands » inscrit les commandes du bot auprès de
 // Discord, puis rend la main : à relancer après toute modification de
@@ -34,6 +34,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/Lelio88/agora/worker/authgate"
 	"github.com/Lelio88/agora/worker/discord"
 	"github.com/Lelio88/agora/worker/ics"
 	"github.com/Lelio88/agora/worker/internal/config"
@@ -44,7 +45,14 @@ import (
 
 const (
 	readHeaderTimeout = 5 * time.Second
-	shutdownTimeout   = 10 * time.Second
+	// Corps lus en entier vite (64 Kio au plus) ; écriture assez longue pour
+	// une requête relayée à GoTrue (30 s) ; connexions inactives fermées.
+	// Le worker sert des routes publiques (passerelle d'auth) : un client
+	// lent ne doit pas garder une connexion indéfiniment.
+	readTimeout     = 10 * time.Second
+	writeTimeout    = 40 * time.Second
+	idleTimeout     = 60 * time.Second
+	shutdownTimeout = 10 * time.Second
 	// Dépliage complet périodique : fait glisser la fenêtre des occurrences.
 	fullRefreshInterval = 6 * time.Hour
 	notificationBuffer  = 256
@@ -120,10 +128,24 @@ func run(logger *slog.Logger) error {
 		}()
 		logger.Info("discord publishing ready")
 	}
+	// Passerelle d'auth : seulement si l'adresse de GoTrue est donnée.
+	var authGate *authgate.Gate
+	var authHandler http.Handler
+	if cfg.AuthUpstream != "" {
+		authGate, err = authgate.New(authgate.Options{Upstream: cfg.AuthUpstream, Logger: logger})
+		if err != nil {
+			return fmt.Errorf("auth gate: %w", err)
+		}
+		authHandler = authGate
+		logger.Info("auth gate ready")
+	}
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpx.NewRouter(interactions),
+		Handler:           httpx.NewRouter(interactions, authHandler),
 		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
 	}
 	serveErr := make(chan error, 1)
 	go func() {
@@ -146,6 +168,9 @@ func run(logger *slog.Logger) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 	err = srv.Shutdown(shutdownCtx)
+	if authGate != nil {
+		authGate.Wait()
+	}
 	background.Wait()
 	if err != nil {
 		return fmt.Errorf("shutdown http: %w", err)

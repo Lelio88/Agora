@@ -94,6 +94,10 @@ services:
       GOTRUE_PASSWORD_REQUIRED_CHARACTERS: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:0123456789"
       # E-mail : confirmation par CODE à 6 chiffres, valable 15 min.
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      # Lien magique (/otp, /magiclink) coupé : l'app ne s'en sert pas, et
+      # avec create_user=false il répond 422 pour une adresse inconnue et
+      # 200 pour un compte, en une seule requête.
+      GOTRUE_EXTERNAL_EMAIL_MAGIC_LINK_ENABLED: "false"
       GOTRUE_MAILER_AUTOCONFIRM: "false"
       GOTRUE_MAILER_SECURE_EMAIL_CHANGE_ENABLED: "true"
       GOTRUE_MAILER_OTP_LENGTH: 6
@@ -236,6 +240,9 @@ services:
       # Rôle restreint : son mot de passe est posé par deploy/migrate.sh.
       AGORA_DATABASE_URL: postgres://agora_worker:${AGORA_WORKER_PASSWORD:?AGORA_WORKER_PASSWORD manquant dans .env}@db:5432/postgres?sslmode=disable
       AGORA_HTTP_ADDR: ":8080"
+      # Passerelle d'auth (worker/authgate) : Caddy lui confie inscription,
+      # mot de passe oublié, renvoi de code et /token ; elle relaie ici.
+      AGORA_AUTH_UPSTREAM: http://auth:9999
       # Bot Discord, facultatif : sans clé publique, pas d'interactions ;
       # sans jeton, ni récaps ni rappels. Le jeton est un secret (coffre).
       AGORA_DISCORD_PUBLIC_KEY: ${DISCORD_PUBLIC_KEY:-}

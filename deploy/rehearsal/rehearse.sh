@@ -11,8 +11,9 @@
 #     services du réseau compose ; CORS, handle_path et Host de Realtime
 #     intacts).
 # Puis check.dart parcourt la pile À TRAVERS Caddy : CORS, inscription avec
-# le code reçu par e-mail (gabarit lu par URL), REST, Realtime, dépliage
-# d'une série par le worker, règle de vie privée, suppression de compte.
+# le code reçu par e-mail (gabarit lu par URL), passerelle d'auth (mêmes
+# réponses, mêmes délais, compte ou pas), REST, Realtime, dépliage d'une
+# série par le worker, règle de vie privée, suppression de compte.
 #
 # À relancer avant tout changement du compose, du vhost, des scripts de
 # déploiement ou d'une version d'image. Ne touche pas à la pile locale de
@@ -88,6 +89,7 @@ sh "$ROOT/deploy/gen-secrets.sh" "$ROOT/deploy/production.env.example" | sed \
         -e 's|127\.0\.0\.1:9401|auth:9999|' \
         -e 's|127\.0\.0\.1:9402|rest:3000|' \
         -e 's|127\.0\.0\.1:9403|realtime:4000|' \
+        -e 's|127\.0\.0\.1:9404|worker:8080|' \
         "$ROOT/deploy/caddy/agora.caddy"
 } > "$WORK/caddy/Caddyfile"
 
@@ -125,6 +127,7 @@ cd "$ROOT"   # Windows refuse d'effacer le dossier courant
 if [ "$MODE" = "--keep" ]; then
     echo "Pile laissée en marche : API http://localhost:8481, Mailpit http://localhost:8482."
     echo "App web : (cd app && flutter build web --no-web-resources-cdn --dart-define-from-file=$WORK/web-config.json --output=$WORK/web),"
+    echo "          sh tools/web/fallback_fonts.sh $WORK/web,"
     echo "puis http://localhost:8480. Démonter : sh deploy/rehearsal/rehearse.sh --down"
 else
     teardown

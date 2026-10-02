@@ -35,7 +35,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 |---|---|
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
-| `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord |
+| `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord, passerelle d'auth |
 | `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses), [`ics-architecture.md`](./ics-architecture.md) (import iCal) et [`discord-architecture.md`](./discord-architecture.md) (bot Discord), et la feuille de route |
 
 ### Infrastructure partagée
@@ -52,7 +52,8 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` ; `agenda_view.dart` (vues kalender, barre, suivi de la plage chargée) ; `palette.dart` (couleurs des agendas et des membres) |
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
-| `worker/internal/httpx/` | Routes HTTP du worker : `/healthz`, et `/discord/interactions` si la clé publique Discord est fournie |
+| `worker/internal/httpx/` | Routes HTTP du worker : `/healthz`, `/discord/interactions` si la clé publique Discord est fournie, et les routes de la passerelle d'auth si `AGORA_AUTH_UPSTREAM` l'est |
+| `worker/authgate/` | Passerelle devant GoTrue : inscription, mot de passe oublié, renvoi, `/token` et `PUT /user` répondent pareil, et au même délai, qu'une adresse ait un compte ou non — détail dans l'annexe auth |
 | `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage ; `Listen` : une connexion `LISTEN` dédiée, partagée par canaux (`agora_recurrence`, `agora_ics`), reconnexion avec repli |
 | `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore` — détail dans l'annexe agenda |
 | `worker/ics/` | Relecture des flux iCal : garde SSRF, téléchargement borné, lecture go-ical, `Service`, `PgStore` (fonctions `private.ics_*`) — détail dans l'annexe iCal |
@@ -304,7 +305,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Service | Usage | Référence |
 |---|---|---|
 | Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Realtime, Postgres ; `api.agora.heianenterprise.com`, sans Kong (Caddy route et répond au CORS) | [`deployment.md`](./deployment.md) |
-| Worker (conteneur) | iCal, récurrences, Discord ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
+| Worker (conteneur) | iCal, récurrences, Discord, passerelle d'auth ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
 | App web | `agora.heianenterprise.com`, servie par Caddy ; sert aussi de lien web de suppression du compte pour le Play Store | [`deployment.md`](./deployment.md) |
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
@@ -330,6 +331,9 @@ jeton. Pile, pièges, première installation et répétition locale :
 - ❌ Un index unique sur `source_uid` sans clause `WHERE source_uid IS NOT NULL` : un seul rdv
   natif possible par agenda.
 - ❌ Déplier une RRULE ailleurs que dans le worker (deux implémentations finissent par diverger).
+- ❌ Ouvrir à GoTrue en direct une route qui envoie un e-mail ou vérifie un mot de passe, ou
+  activer une fonction d'auth (lien magique, changement d'adresse) sans passer par
+  `worker/authgate/` : GoTrue y trahit par la réponse ou sa durée qu'une adresse a un compte.
 - ❌ Lire la ligne maîtresse d'une série pour l'afficher : l'agenda se lit par `my_agenda()`.
 - ❌ Un upsert sur `(series_id, recurrence_id)` : l'index est partiel, Postgres le refuse comme
   cible d'`ON CONFLICT` — passer par `replace_occurrence`.

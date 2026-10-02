@@ -45,6 +45,9 @@ type Config struct {
 	// (AGORA_ICS_ALLOW_PRIVATE_NETWORK=true) : développement et tests
 	// seulement, jamais en production.
 	ICSAllowPrivateNetwork bool
+	// AuthUpstream est l'adresse de GoTrue derrière la passerelle d'auth
+	// (paquet authgate). Vide : la passerelle n'est pas montée.
+	AuthUpstream string
 }
 
 const defaultHTTPAddr = ":8080"
@@ -79,6 +82,13 @@ func Load(getenv func(string) string) (Config, error) {
 			return Config{}, errors.New("AGORA_DISCORD_PUBLIC_KEY: 64 caractères hexadécimaux attendus")
 		}
 	}
+	authUpstream := getenv("AGORA_AUTH_UPSTREAM")
+	if authUpstream != "" {
+		parsed, err := url.Parse(authUpstream)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			return Config{}, fmt.Errorf("AGORA_AUTH_UPSTREAM %q: http(s) URL expected", authUpstream)
+		}
+	}
 	appID := getenv("AGORA_DISCORD_APPLICATION_ID")
 	if appID != "" && !isSnowflake(appID) {
 		return Config{}, errors.New("AGORA_DISCORD_APPLICATION_ID: identifiant numérique attendu")
@@ -90,6 +100,7 @@ func Load(getenv func(string) string) (Config, error) {
 		DiscordBotToken:        getenv("AGORA_DISCORD_BOT_TOKEN"),
 		DiscordApplicationID:   appID,
 		ICSAllowPrivateNetwork: allowPrivate,
+		AuthUpstream:           authUpstream,
 	}, nil
 }
 
