@@ -230,6 +230,16 @@ Le mois et le planning s'ouvrent sur le mois en cours, même le 1er.
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.4.3+8 (protection des comptes)
+
+Français, envoyées sur `alpha` :
+
+```
+Agora protège mieux vos comptes : il n'est plus possible de deviner si une adresse e-mail est inscrite, ni par l'inscription, ni par « Mot de passe oublié », ni par la connexion. Ces actions prennent maintenant un court instant, toujours le même.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
