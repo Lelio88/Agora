@@ -129,7 +129,7 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
    secrets aléatoires, ports 9401-9404 vérifiés libres, vhost importé, base déclarée à la
    sauvegarde nocturne.
 4. Dans `/opt/agora/.env` : `SMTP_USER`, `SMTP_PASS` (clé SMTP Brevo propre à Agora,
-   `../brevo-email-guide.md`). Copier ce `.env` dans le coffre (`.agora-secrets/supabase.env`).
+   `../docs/brevo-email-guide.md`). Copier ce `.env` dans le coffre (`.agora-secrets/supabase.env`).
 5. Secrets GitHub du dépôt : `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `AGORA_ANON_KEY`.
 6. `git push origin main:release`, puis s'inscrire sur l'app web : le code doit arriver.
 7. Consigner le service dans `../INFRASTRUCTURE.md` ; vérifier que le rapatriement des

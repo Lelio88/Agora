@@ -7,7 +7,7 @@ plugins {
 }
 
 // Signature de publication : le keystore et son mot de passe vivent hors du
-// dépôt, dans ../.agora-secrets/ (voir ../../android-signing-guide.md).
+// dépôt, dans ../.agora-secrets/ (voir ../../docs/android-signing-guide.md).
 // `rootProject` est android/, donc ce chemin désigne android/key.properties.
 val fichierSignature = rootProject.file("key.properties")
 val signatureDisponible = fichierSignature.exists()

@@ -307,7 +307,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Realtime, Postgres ; `api.agora.heianenterprise.com`, sans Kong (Caddy route et répond au CORS) | [`deployment.md`](./deployment.md) |
 | Worker (conteneur) | iCal, récurrences, Discord, passerelle d'auth ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
 | App web | `agora.heianenterprise.com`, servie par Caddy ; sert aussi de lien web de suppression du compte pour le Play Store | [`deployment.md`](./deployment.md) |
-| Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../brevo-email-guide.md` |
+| Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../docs/brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
 | Google OAuth | connexion (identité seule, sans accès à l'agenda) : câblée, désactivée | console Google Cloud |
 
