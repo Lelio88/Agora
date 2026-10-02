@@ -5,7 +5,7 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 ## I. Finalité
 
 **Application** : Agora — agendas partagés en groupe (Android + web), avec un bot Discord.
-**Objectif métier** : chacun garde son agenda (saisi dans l'app ou importé par lien iCal) et le partage dans des groupes au niveau de détail qu'il choisit ; le groupe voit qui est pris, trouve des créneaux communs, et un bot Discord réglé depuis l'app publie l'agenda. Public visé : tout public, via le Play Store.
+**Objectif métier** : chacun garde son agenda (saisi dans l'app ou importé par lien iCal) et le partage dans des groupes au niveau de détail qu'il choisit ; le groupe voit qui est pris, trouve des créneaux communs, et un bot Discord réglé depuis l'app publie l'agenda. Public visé : tout public, via le Play Store. Robots d'entraînement IA **refusés** (`app/web/robots.txt` + en-tête `tdm-reservation`) ; moteurs de recherche admis.
 
 ## II. Architecture
 

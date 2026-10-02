@@ -68,6 +68,10 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   `web/flutter_bootstrap.js` (`fontFallbackBaseUrl`) pointe le moteur. La liste est relevée dans
   `main.dart.js`, donc suit Flutter ; le script échoue s'il en manque un seul fichier. Caddy les
   sert avec un cache d'un an (chemins versionnés) et sans repli sur `index.html`.
+- **Robots** : `app/web/robots.txt` admet les moteurs de recherche et refuse les robots
+  d'entraînement IA ; `sitemap.xml` liste la présentation et les pages légales ; Caddy pose
+  `tdm-reservation: 1` (réserve de fouille, CPI art. L122-5-3). Sans fichier, `try_files`
+  renverrait `index.html` : un robot lirait du HTML à la place des consignes.
 - **Passerelle d'auth** (`agora.caddy`, `worker/authgate/`) : `POST /auth/v1/{signup,recover,
   resend,token}*` et `PUT /auth/v1/user*` vont au worker (127.0.0.1:9404, `AGORA_AUTH_UPSTREAM`),
   `/auth/v1/{otp,magiclink}*` reçoivent une réponse fixe de Caddy ; le reste de `/auth/v1/` va
