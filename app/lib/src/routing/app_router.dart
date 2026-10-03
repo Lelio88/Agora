@@ -10,9 +10,14 @@
 /// par un lien, le retour ramène à l'accueil. Un rdv de groupe (fiche,
 /// proposition) est une sous-route de son groupe ; ses écrans viennent de la
 /// feature agenda, que l'écran du groupe ouvre par leur seul nom de route. Un lien d'invitation ouvert
-/// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion.
+/// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion, comme une
+/// demande d'accès d'un assistant IA ([PendingConsent], lue aussi dans
+/// l'adresse de la page au démarrage : voir `assistant_providers.dart`).
 library;
 
+import 'package:agora/src/features/assistant/application/assistant_providers.dart';
+import 'package:agora/src/features/assistant/presentation/assistant_screen.dart';
+import 'package:agora/src/features/assistant/presentation/consent_screen.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/forgot_password_screen.dart';
 import 'package:agora/src/features/auth/presentation/reset_password_screen.dart';
@@ -37,6 +42,7 @@ import 'package:go_router/go_router.dart';
 final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authRepositoryProvider);
   final pendingInvite = ref.watch(pendingInviteProvider);
+  final pendingConsent = ref.watch(pendingConsentProvider);
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
@@ -48,10 +54,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final invite = inviteCodeInLocation(location);
       if (!isSignedIn && invite != null) pendingInvite.code = invite;
+      if (!isSignedIn && location == consentPath) {
+        if (consentRequestIn(state.uri) case final id?) {
+          pendingConsent.authorizationId = id;
+        }
+      }
       return authRedirect(
         isSignedIn: isSignedIn,
         location: location,
         pendingInvite: pendingInvite.code,
+        pendingConsent: pendingConsent.authorizationId,
       );
     },
     routes: [
@@ -114,6 +126,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile',
         name: AppRoute.profile.name,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/assistant',
+        name: AppRoute.assistant.name,
+        builder: (context, state) => const AssistantScreen(),
+      ),
+      // Écran de consentement d'un assistant IA (web) : GoTrue y renvoie le
+      // navigateur ; l'adresse est relue au démarrage par main.dart.
+      GoRoute(
+        path: consentPath,
+        name: AppRoute.consent.name,
+        builder: (context, state) =>
+            ConsentScreen(authorizationId: consentRequestIn(state.uri)),
       ),
       GoRoute(
         path: '/sign-in',

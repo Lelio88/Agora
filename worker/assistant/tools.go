@@ -24,13 +24,16 @@ const (
 	// maxWritesPerHour plafonne les écritures d'un membre par assistant : une
 	// injection de consignes ne doit pas pouvoir inonder un groupe.
 	maxWritesPerHour = 20
-	maxTitle         = 200
-	maxLocation      = 300
-	maxDescription   = 5000
-	minSlotMinutes   = 15
-	maxSlotMinutes   = 24 * 60
-	defaultDayStart  = 9 * time.Hour
-	defaultDayEnd    = 22 * time.Hour
+	// maxProposalsPerHour plafonne plus bas ce que tout le groupe voit (et que
+	// Discord rappelle) : c'est là qu'une injection publierait des données.
+	maxProposalsPerHour = 5
+	maxTitle            = 200
+	maxLocation         = 300
+	maxDescription      = 5000
+	minSlotMinutes      = 15
+	maxSlotMinutes      = 24 * 60
+	defaultDayStart     = 9 * time.Hour
+	defaultDayEnd       = 22 * time.Hour
 )
 
 // refusal est un refus rendu tel quel à l'assistant (l'outil échoue avec ce
@@ -67,11 +70,12 @@ func storeRefusal(err error) error {
 type writeLimiter struct {
 	mu   sync.Mutex
 	now  func() time.Time
+	max  int
 	hits map[string][]time.Time
 }
 
-func newWriteLimiter(now func() time.Time) *writeLimiter {
-	return &writeLimiter{now: now, hits: map[string][]time.Time{}}
+func newWriteLimiter(now func() time.Time, max int) *writeLimiter {
+	return &writeLimiter{now: now, max: max, hits: map[string][]time.Time{}}
 }
 
 func (l *writeLimiter) allow(userID string) bool {
@@ -84,7 +88,7 @@ func (l *writeLimiter) allow(userID string) bool {
 			recent = append(recent, t)
 		}
 	}
-	if len(recent) >= maxWritesPerHour {
+	if len(recent) >= l.max {
 		l.hits[userID] = recent
 		return false
 	}
@@ -94,13 +98,18 @@ func (l *writeLimiter) allow(userID string) bool {
 
 // toolbox porte les outils et leurs dépendances.
 type toolbox struct {
-	store   Store
-	now     func() time.Time
-	limiter *writeLimiter
+	store     Store
+	now       func() time.Time
+	limiter   *writeLimiter
+	proposals *writeLimiter
 }
 
 func newToolbox(store Store, now func() time.Time) *toolbox {
-	return &toolbox{store: store, now: now, limiter: newWriteLimiter(now)}
+	return &toolbox{
+		store: store, now: now,
+		limiter:   newWriteLimiter(now, maxWritesPerHour),
+		proposals: newWriteLimiter(now, maxProposalsPerHour),
+	}
 }
 
 // location lit le fuseau du profil ; un nom inconnu retombe sur Paris,
@@ -583,9 +592,13 @@ func (t *toolbox) proposeEvent(ctx context.Context, userID string, in ProposeInp
 		return CreatedOutput{}, err
 	}
 	for _, c := range calendars {
-		if c.GroupID == group.ID {
-			return t.write(ctx, userID, c, group.Name, text, start, end, in.JourneeEntiere, loc)
+		if c.GroupID != group.ID {
+			continue
 		}
+		if !t.proposals.allow(userID) {
+			return CreatedOutput{}, refuse("Plafond atteint : %d propositions au groupe par heure. Réessaie plus tard.", maxProposalsPerHour)
+		}
+		return t.write(ctx, userID, c, group.Name, text, start, end, in.JourneeEntiere, loc)
 	}
 	return CreatedOutput{}, refuse("Le groupe « %s » n'a pas d'agenda.", group.Name)
 }

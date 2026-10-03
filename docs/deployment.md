@@ -170,7 +170,8 @@ n'importe où), pages légales, fiche Play Store et liens d'application Android
   worker ; `/.well-known/oauth-authorization-server/auth/v1` et
   `/.well-known/openid-configuration/auth/v1` sont réécrits vers la découverte de GoTrue ; les routes
   de compte (`/auth/v1/user*`, `/logout*`, `/factors*`, `/reauthenticate*`,
-  `/oauth/authorizations*`) passent par la garde du worker.
+  `/oauth/authorizations*`) **et toute route de GoTrue qui reçoit un en-tête `Authorization`**
+  (sauf `/oauth/token` et `/oauth/clients/register`) passent par la garde du worker.
 - **Worker** : `AGORA_PUBLIC_API_URL` (= `API_URL`) allume le serveur MCP, avec
   `AGORA_AUTH_UPSTREAM` ; `AGORA_PUBLIC_WEB_URL` (= `SITE_URL`) donne l'adresse de la page publique.
   Aucun secret nouveau.

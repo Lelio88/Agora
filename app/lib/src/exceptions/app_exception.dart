@@ -149,6 +149,22 @@ final class DiscordAlreadyLinkedException extends AppException {
     : super('discord-already-linked', 'Discord account linked elsewhere');
 }
 
+// --- Assistants IA -----------------------------------------------------------
+
+/// Demande d'accès d'un assistant expirée (dix minutes) ou déjà tranchée :
+/// l'assistant doit la relancer.
+final class ConsentExpiredException extends AppException {
+  const ConsentExpiredException()
+    : super('consent-expired', 'Authorization request expired or handled');
+}
+
+/// Le branchement des assistants n'est pas ouvert sur ce serveur (serveur
+/// OAuth éteint).
+final class AssistantsUnavailableException extends AppException {
+  const AssistantsUnavailableException()
+    : super('assistants-unavailable', 'OAuth server disabled');
+}
+
 // --- Transverse ---------------------------------------------------------------
 
 final class NetworkException extends AppException {

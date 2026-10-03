@@ -73,10 +73,12 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   routes de compte, il pourrait lire l'adresse, changer le mot de passe, lier ou délier une
   identité, fermer toutes les sessions ou **accorder un autre accès** au nom du membre — aucun
   réglage de GoTrue ne l'empêche. Caddy confie donc au worker, toutes méthodes, `/user*`
-  (identités et accès accordés compris), `/logout*`, `/factors*`, `/reauthenticate*` et
-  `/oauth/authorizations*` : la garde y refuse tout jeton porteur de `client_id` (403
-  `assistant_forbidden`) et relaie le reste tel quel, `X-Forwarded-For` compris ; `PUT /user` passe
-  **ensuite** par la passerelle. Le jeton est lu sans vérifier sa signature : on ne fait que
+  (identités et accès accordés compris), `/logout*`, `/factors*`, `/reauthenticate*`,
+  `/oauth/authorizations*` **et toute autre route qui reçoit un en-tête `Authorization`** (liste
+  d'admission ; seuls l'échange de jetons OAuth et l'inscription des clients restent directs) : la
+  garde y refuse tout jeton porteur de `client_id` (403 `assistant_forbidden`) et relaie le reste
+  tel quel, `X-Forwarded-For` compris ; `PUT /user` passe **ensuite** par la passerelle, et une
+  variante d'écriture d'une route de la passerelle (`/Signup`, `/token/`) répond 404. Le jeton est lu sans vérifier sa signature : on ne fait que
   refuser davantage. Les autres portes (PostgREST, temps réel) et le serveur OAuth :
   [`mcp-architecture.md`](./mcp-architecture.md).
 - **Codes valables 15 minutes** (`otp_expiry = 900`) : un code de réinitialisation deviné donne

@@ -9,6 +9,7 @@ import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/features/auth/presentation/captcha_field.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
+import 'package:agora/src/features/assistant/application/assistant_providers.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'fake_assistant_repository.dart';
 import 'fake_calendar_repository.dart';
 import 'fake_calendars_repository.dart';
 import 'fake_discord_repository.dart';
@@ -46,6 +48,7 @@ class AgoraRobot {
   late final FakeCalendarsRepository calendars;
   late final FakeGroupsRepository groups;
   late final FakeDiscordRepository discord;
+  late final FakeAssistantRepository assistant;
   late final FakeLinkOpener links;
 
   /// Erreurs remontées par les providers, comme en production
@@ -61,6 +64,9 @@ class AgoraRobot {
     FakeCalendarsRepository? calendars,
     FakeGroupsRepository? groups,
     FakeDiscordRepository? discord,
+    FakeAssistantRepository? assistant,
+    Uri? mcpUrl,
+    String? pendingConsent,
     Uri? discordBotInvite,
     List<SocialProvider> signInProviders = const [],
     Uri? webBaseUrl,
@@ -89,6 +95,7 @@ class AgoraRobot {
     this.groups = groups ?? FakeGroupsRepository();
     this.discord = discord ?? FakeDiscordRepository();
     addTearDown(this.discord.dispose);
+    this.assistant = assistant ?? FakeAssistantRepository();
     this.links = links ?? FakeLinkOpener();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
@@ -105,6 +112,12 @@ class AgoraRobot {
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
           groupsRepositoryProvider.overrideWithValue(this.groups),
           discordRepositoryProvider.overrideWithValue(this.discord),
+          assistantRepositoryProvider.overrideWithValue(this.assistant),
+          mcpUrlProvider.overrideWithValue(mcpUrl),
+          // Comme main.dart sur le web : la demande lue dans l'adresse.
+          pendingConsentProvider.overrideWithValue(
+            PendingConsent(pendingConsent),
+          ),
           discordBotInviteProvider.overrideWithValue(discordBotInvite),
           signInProvidersProvider.overrideWithValue(signInProviders),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),

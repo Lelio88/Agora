@@ -12,6 +12,7 @@ abstract final class ProfileKeys {
   static const legalPrivacy = ValueKey('profile.legalPrivacy');
   static const legalNotice = ValueKey('profile.legalNotice');
   static const legalTerms = ValueKey('profile.legalTerms');
+  static const assistant = ValueKey('profile.assistant');
   static const signOut = ValueKey('profile.signOut');
   static const deleteAccount = ValueKey('profile.deleteAccount');
   static const alsoDeleteEvents = ValueKey('profile.alsoDeleteEvents');

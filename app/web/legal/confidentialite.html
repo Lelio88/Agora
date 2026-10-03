@@ -34,7 +34,7 @@
 
 <section data-langue="fr">
   <h1>Politique de confidentialité</h1>
-  <p class="date">Dernière mise à jour : 2 octobre 2026</p>
+  <p class="date">Dernière mise à jour : 3 octobre 2026</p>
   <p class="chapeau">Agora met en commun les agendas de plusieurs personnes. Chacun garde le sien et choisit ce que chaque groupe en voit. Cette page dit ce qui est enregistré, qui peut le lire, où c'est hébergé et comment tout effacer.</p>
 
   <h2>Qui est responsable</h2>
@@ -51,6 +51,7 @@
     <tr><td>Si vous vous connectez avec Google ou Discord : l'identifiant de votre compte chez ce fournisseur, et le nom et l'adresse e-mail qu'il transmet</td><td>Créer votre compte et vous reconnecter, sans mot de passe</td></tr>
     <tr><td>Si vous reliez Discord : l'identifiant et le nom de votre compte Discord</td><td>Reconnaître vos commandes au bot Agora</td></tr>
     <tr><td>Si un admin relie un salon Discord à un groupe : identifiants du serveur et du salon, nom du salon, réglages du récap et des rappels</td><td>Publier le récap et les rappels du groupe dans ce salon</td></tr>
+    <tr><td>Si vous autorisez un assistant IA : le nom qu'il se donne, son adresse de retour, la date de l'autorisation et ses sessions</td><td>Le laisser lire votre agenda et agir pour vous, et vous montrer qui y a accès (Profil → Assistant IA)</td></tr>
   </table>
 
   <div class="encart">
@@ -74,6 +75,7 @@
   </ul>
   <p>Les rdv proposés <em>à un groupe</em> sont visibles de tous ses membres, ainsi que les réponses (présent, peut-être, absent). Un rdv d'un autre groupe auquel vous avez répondu « présent » vous rend « occupé » ailleurs — jamais plus : ni titre, ni lieu, ni lien avec l'autre groupe.</p>
   <p>Cette règle est appliquée par le serveur, pas par l'application : ce qui vous est masqué ne quitte jamais la base de données.</p>
+  <p><strong>Assistants IA.</strong> Un assistant IA qu'un membre a branché sur Agora voit ce que l'application montre à ce membre, ni plus ni moins. Si vous partagez en « Détail » avec un groupe, vos titres et lieux peuvent donc parvenir à l'assistant d'un autre membre, et à l'entreprise qui le fournit. Pour l'éviter, choisissez « Occupé » pour ce groupe.</p>
 
   <h2>Où c'est hébergé</h2>
   <p>Sur un serveur loué chez <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Allemagne), situé à Nuremberg. Vos données ne quittent pas l'Union européenne, sauf vers les tiers décrits ci-dessous.</p>
@@ -89,6 +91,7 @@
     <tr><td>Google (Google Ireland Ltd)</td><td>Seulement si vous touchez « Continuer avec Google » : Google sait que vous vous connectez à Agora et nous transmet votre identité (nom, adresse e-mail). Aucun accès à votre agenda Google. Sa politique s'applique</td></tr>
     <tr><td>L'app d'itinéraire que vous choisissez (Citymapper, Google Maps, autre)</td><td>Seulement si vous touchez « Y aller » sur un rdv : son lieu, l'heure d'arrivée visée et, si vous la saisissez, une adresse de départ. Agora les lui passe sans rien enregistrer, et ne connaît pas votre position. Sa politique s'applique</td></tr>
     <tr><td>Discord Inc. (États-Unis)</td><td>Seulement si vous vous connectez avec Discord, ou si vous ou votre groupe utilisez le bot : ce qu'il publie dans le salon relié et ses réponses à vos commandes. Se connecter ou relier son compte passe par une connexion Discord, qui ne donne accès qu'à votre identité. Le bot ne lit aucun message. Sa politique s'applique</td></tr>
+    <tr><td>L'assistant IA que vous autorisez (Anthropic, OpenAI, autre)</td><td>Seulement si vous le branchez vous-même : ce que ses outils lui rendent à votre demande — votre agenda, ceux de vos groupes tels que l'application vous les montre, les noms des membres — et ce que vous lui faites écrire. C'est un destinataire que vous choisissez, pas un sous-traitant d'Agora : sa politique s'applique, et Agora ne voit pas vos conversations avec lui</td></tr>
   </table>
 
   <h2>Journaux et sauvegardes</h2>
@@ -99,11 +102,11 @@
   </ul>
 
   <h2>Combien de temps</h2>
-  <p>Vos données vivent tant que votre compte existe. Il n'y a pas de purge automatique d'un compte inactif : vous seul décidez.</p>
+  <p>Vos données vivent tant que votre compte existe. Il n'y a pas de purge automatique d'un compte inactif : vous seul décidez. L'autorisation donnée à un assistant IA dure jusqu'à ce que vous la retiriez (Profil → Assistant IA) ; la retirer coupe l'accès aussitôt.</p>
 
   <h2>Supprimer votre compte</h2>
   <p>Dans l'application : <strong>Profil → Supprimer mon compte</strong>. La même action est disponible depuis la version web, sans installer quoi que ce soit. La suppression est immédiate et définitive. Pas à pas, et sans l'application : <a href="./suppression.html">supprimer votre compte</a>.</p>
-  <p>Partent avec le compte : profil, agendas personnels, rdv et occurrences, liens iCal, appartenances aux groupes, invitations créées, réponses aux rdv, identités de connexion et sessions.</p>
+  <p>Partent avec le compte : profil, agendas personnels, rdv et occurrences, liens iCal, appartenances aux groupes, invitations créées, réponses aux rdv, identités de connexion, sessions et autorisations données à des assistants IA.</p>
   <div class="encart">
     <strong>Ce qui reste, et pourquoi.</strong> Les rdv que vous avez <em>proposés à un groupe</em> lui appartiennent : ils restent, sans auteur, <strong>avec leur texte libre</strong> — un titre ou une description peut donc encore vous nommer. L'application vous les montre au moment de la suppression et propose de les effacer d'abord : c'est le dernier moment où c'est possible. Les groupes dont vous étiez propriétaire sont transmis à un autre membre ; un groupe sans autre membre est supprimé avec son agenda. Les sauvegardes déjà faites expirent d'elles-mêmes sous 30 jours.
   </div>
@@ -111,7 +114,7 @@
   <h2>Sur quelle base</h2>
   <table>
     <tr><th>Traitement</th><th>Base légale</th></tr>
-    <tr><td>Compte, profil, agendas, rdv, groupes, invitations et réponses ; liens iCal relus ; connexion par Google ou Discord ; bot Discord ; e-mails d'authentification ; passage d'un rdv à l'app d'itinéraire (« Y aller »)</td><td>L'exécution du service que vous demandez (art. 6.1.b du RGPD) : sans eux, l'application ne peut pas fonctionner</td></tr>
+    <tr><td>Compte, profil, agendas, rdv, groupes, invitations et réponses ; liens iCal relus ; connexion par Google ou Discord ; bot Discord ; assistants IA que vous autorisez ; e-mails d'authentification ; passage d'un rdv à l'app d'itinéraire (« Y aller »)</td><td>L'exécution du service que vous demandez (art. 6.1.b du RGPD) : sans eux, l'application ne peut pas fonctionner</td></tr>
     <tr><td>Vérification « je ne suis pas un robot », journaux d'accès et d'authentification</td><td>L'intérêt légitime de l'éditeur (art. 6.1.f) : protéger les comptes et empêcher qu'un robot épuise l'envoi d'e-mails</td></tr>
     <tr><td>Sauvegardes</td><td>L'intérêt légitime de l'éditeur (art. 6.1.f) : pouvoir restaurer vos données après une panne</td></tr>
   </table>
@@ -131,13 +134,22 @@
     <li>Délier votre compte (Profil → Discord) ou le salon (menu du groupe) arrête tout aussitôt. Un message déjà publié reste dans Discord, qui le conserve selon ses propres règles.</li>
   </ul>
 
+  <h2>Les assistants IA</h2>
+  <p>Vous pouvez brancher un assistant IA (Claude, ChatGPT, Cursor…) sur votre agenda : <a href="../assistant.html">mode d'emploi</a>.</p>
+  <ul>
+    <li><strong>Vous l'autorisez vous-même</strong>, sur une page d'Agora, connecté à votre compte. Seuls les assistants reconnus peuvent l'être.</li>
+    <li><strong>Il voit</strong> ce que l'application vous montre : votre agenda, ceux de vos groupes selon le partage de chacun, les noms des membres. <strong>Il peut</strong> créer un rdv, en proposer un à un groupe et y répondre. Il ne modifie ni ne supprime rien, et ne touche ni à vos groupes, ni à votre partage, ni à votre compte.</li>
+    <li>Ce qu'il lit part chez l'entreprise qui le fournit, selon sa propre politique. Agora ne conserve pas vos conversations : seul ce que ses outils lisent ou écrivent passe par Agora.</li>
+    <li><strong>Retirer l'accès</strong> (Profil → Assistant IA) le coupe aussitôt.</li>
+  </ul>
+
   <h2>Modifications</h2>
   <p>Cette page change quand l'application change. La date en tête indique la dernière révision ; l'historique complet est public dans le dépôt de code.</p>
 </section>
 
 <section data-langue="en" hidden>
   <h1>Privacy policy</h1>
-  <p class="date">Last updated: 2 October 2026</p>
+  <p class="date">Last updated: 3 October 2026</p>
   <p class="chapeau">Agora brings several people's calendars together. Everyone keeps their own and decides what each group sees of it. This page states what is stored, who can read it, where it is hosted, and how to erase everything.</p>
 
   <h2>Who is responsible</h2>
@@ -154,6 +166,7 @@
     <tr><td>If you sign in with Google or Discord: your account ID with that provider, and the name and email address it passes on</td><td>Create your account and sign you back in, without a password</td></tr>
     <tr><td>If you link Discord: the ID and name of your Discord account</td><td>Recognise your commands to the Agora bot</td></tr>
     <tr><td>If an admin links a Discord channel to a group: server and channel IDs, channel name, recap and reminder settings</td><td>Post the group's recap and reminders in that channel</td></tr>
+    <tr><td>If you authorize an AI assistant: the name it gives itself, its return address, the date of the authorization and its sessions</td><td>Let it read your agenda and act for you, and show you who has access (Profile → AI assistant)</td></tr>
   </table>
 
   <div class="encart">
@@ -177,6 +190,7 @@
   </ul>
   <p>Events proposed <em>to a group</em> are visible to all its members, along with the answers (going, maybe, not going). An event in another group that you answered "going" makes you "busy" elsewhere — never more: no title, no location, no link to the other group.</p>
   <p>This rule is enforced by the server, not by the app: what is hidden from you never leaves the database.</p>
+  <p><strong>AI assistants.</strong> An AI assistant that a member connected to Agora sees what the app shows that member, no more, no less. If you share "Detail" with a group, your titles and places can therefore reach another member's assistant, and the company that provides it. To avoid this, choose "Busy" for that group.</p>
 
   <h2>Where it is hosted</h2>
   <p>On a server rented from <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Germany), located in Nuremberg. Your data does not leave the European Union, except towards the third parties listed below.</p>
@@ -192,6 +206,7 @@
     <tr><td>Google (Google Ireland Ltd)</td><td>Only if you tap "Continue with Google": Google knows you are signing in to Agora and passes us your identity (name, email address). No access to your Google calendar. Their policy applies</td></tr>
     <tr><td>The route app you choose (Citymapper, Google Maps, other)</td><td>Only if you tap "Get there" on an event: its place, the wanted arrival time and, if you type one, a starting address. Agora hands them over without saving anything, and never knows your position. Their policy applies</td></tr>
     <tr><td>Discord Inc. (United States)</td><td>Only if you sign in with Discord, or if you or your group use the bot: what it posts in the linked channel and its answers to your commands. Signing in or linking your account goes through a Discord sign-in that only grants your identity. The bot reads no messages. Their policy applies</td></tr>
+    <tr><td>The AI assistant you authorize (Anthropic, OpenAI, other)</td><td>Only if you connect it yourself: what its tools return at your request — your agenda, your groups' as the app shows them to you, the members' names — and what you have it write. It is a recipient you choose, not a processor of Agora: its policy applies, and Agora does not see your conversations with it</td></tr>
   </table>
 
   <h2>Logs and backups</h2>
@@ -202,11 +217,11 @@
   </ul>
 
   <h2>How long</h2>
-  <p>Your data lives as long as your account does. Inactive accounts are not purged automatically: you alone decide.</p>
+  <p>Your data lives as long as your account does. Inactive accounts are not purged automatically: you alone decide. The authorization given to an AI assistant lasts until you remove it (Profile → AI assistant); removing it cuts access at once.</p>
 
   <h2>Deleting your account</h2>
   <p>In the app: <strong>Profile → Delete my account</strong>. The same action is available from the web version, with nothing to install. Deletion is immediate and final. Step by step, and without the app: <a href="./suppression.html">delete your account</a>.</p>
-  <p>Deleted with the account: profile, personal calendars, events and occurrences, iCal links, group memberships, invitations you created, answers to events, sign-in identities and sessions.</p>
+  <p>Deleted with the account: profile, personal calendars, events and occurrences, iCal links, group memberships, invitations you created, answers to events, sign-in identities, sessions and authorizations given to AI assistants.</p>
   <div class="encart">
     <strong>What remains, and why.</strong> Events you <em>proposed to a group</em> belong to it: they stay, without an author, <strong>with their free text</strong> — a title or description may therefore still name you. The app shows them to you when you delete your account and offers to erase them first: that is the last moment it is possible. Groups you owned are handed to another member; a group with no other member is deleted along with its calendar. Backups already taken expire by themselves within 30 days.
   </div>
@@ -214,7 +229,7 @@
   <h2>Legal basis</h2>
   <table>
     <tr><th>Processing</th><th>Legal basis</th></tr>
-    <tr><td>Account, profile, calendars, events, groups, invitations and replies; re-read iCal links; sign-in with Google or Discord; Discord bot; authentication emails; handing an event to your route app ("Get there")</td><td>Performing the service you ask for (GDPR Art. 6(1)(b)): without them, the app cannot work</td></tr>
+    <tr><td>Account, profile, calendars, events, groups, invitations and replies; re-read iCal links; sign-in with Google or Discord; Discord bot; AI assistants you authorize; authentication emails; handing an event to your route app ("Get there")</td><td>Performing the service you ask for (GDPR Art. 6(1)(b)): without them, the app cannot work</td></tr>
     <tr><td>"I am not a robot" check, access and authentication logs</td><td>The publisher's legitimate interest (Art. 6(1)(f)): protecting accounts and preventing a bot from exhausting email sending</td></tr>
     <tr><td>Backups</td><td>The publisher's legitimate interest (Art. 6(1)(f)): being able to restore your data after an outage</td></tr>
   </table>
@@ -232,6 +247,15 @@
     <li><strong>Commands</strong> (<code>/agenda</code>, <code>/free</code>): the answer is visible only to the person who types the command, and shows only what the app would show them. They need to have linked their Discord account (Profile → Discord).</li>
     <li><strong>Recap and reminders</strong>: posted in the channel, hence visible to the whole channel, which may include people outside the group. Group events appear in full; personal events only as "busy", with no title or location. Reminders only concern group events.</li>
     <li>Unlinking your account (Profile → Discord) or the channel (group menu) stops everything at once. A message already posted stays on Discord, which keeps it under its own rules.</li>
+  </ul>
+
+  <h2>AI assistants</h2>
+  <p>You can connect an AI assistant (Claude, ChatGPT, Cursor…) to your agenda: <a href="../assistant.html">how to</a>.</p>
+  <ul>
+    <li><strong>You authorize it yourself</strong>, on an Agora page, signed in to your account. Only recognized assistants can be authorized.</li>
+    <li><strong>It sees</strong> what the app shows you: your agenda, your groups' according to each member's sharing, the members' names. <strong>It can</strong> create an event, propose one to a group and answer one. It never edits or deletes anything, and never touches your groups, your sharing or your account.</li>
+    <li>What it reads goes to the company that provides it, under its own policy. Agora does not keep your conversations: only what its tools read or write goes through Agora.</li>
+    <li><strong>Removing access</strong> (Profile → AI assistant) cuts it off at once.</li>
   </ul>
 
   <h2>Changes</h2>

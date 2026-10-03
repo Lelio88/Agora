@@ -8,7 +8,10 @@
 ///   parcours ;
 /// - une invitation ouverte déconnecté ([pendingInvite], retenue par le
 ///   routeur) ramène à `/join/CODE` dès la connexion — depuis l'accueil ou
-///   un écran de compte seulement, jamais depuis un autre écran.
+///   un écran de compte seulement, jamais depuis un autre écran ;
+/// - une demande d'accès d'un assistant IA ([pendingConsent]) ramène de même
+///   à l'écran de consentement, et passe avant une invitation : l'assistant
+///   attend, et sa demande expire en dix minutes.
 library;
 
 /// Écrans réservés aux visiteurs non connectés.
@@ -26,10 +29,19 @@ String? authRedirect({
   required bool isSignedIn,
   required String location,
   String? pendingInvite,
+  String? pendingConsent,
 }) {
   final isGuestOnly = guestOnlyLocations.contains(location);
   if (!isSignedIn && !isGuestOnly && !openLocations.contains(location)) {
     return '/sign-in';
+  }
+  if (isSignedIn &&
+      pendingConsent != null &&
+      (isGuestOnly || location == '/')) {
+    return Uri(
+      path: '/oauth/consent',
+      queryParameters: {'authorization_id': pendingConsent},
+    ).toString();
   }
   if (isSignedIn && pendingInvite != null && (isGuestOnly || location == '/')) {
     return '/join/$pendingInvite';

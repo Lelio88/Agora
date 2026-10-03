@@ -457,3 +457,20 @@ func TestRespond(t *testing.T) {
 		t.Fatalf("rdv introuvable : err = %v", err)
 	}
 }
+
+func TestGroupProposalsHaveTheirOwnLowerCap(t *testing.T) {
+	store := newFake()
+	tools := newTestToolbox(store)
+	in := ProposeInput{Groupe: "Potes", Titre: "Resto", Debut: "2026-10-09", JourneeEntiere: true}
+	for i := 0; i < maxProposalsPerHour; i++ {
+		if _, err := tools.proposeEvent(context.Background(), ada, in); err != nil {
+			t.Fatalf("proposition %d : %v", i, err)
+		}
+	}
+	if _, err := tools.proposeEvent(context.Background(), ada, in); !isRefusal(err) {
+		t.Fatalf("au-delà du plafond des propositions : err = %v", err)
+	}
+	if _, err := tools.createEvent(context.Background(), ada, CreateInput{Titre: "X", Debut: "2026-10-09", JourneeEntiere: true}); err != nil {
+		t.Fatalf("le rdv perso garde son propre plafond : %v", err)
+	}
+}

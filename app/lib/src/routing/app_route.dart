@@ -12,6 +12,8 @@ enum AppRoute {
   join,
   joinByCode,
   profile,
+  assistant,
+  consent,
   signIn,
   signUp,
   verifyEmail,

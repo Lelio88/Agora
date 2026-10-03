@@ -76,6 +76,57 @@ void main() {
     });
   });
 
+  group('pending assistant consent', () {
+    const consent = '/oauth/consent?authorization_id=abc12345xyz';
+
+    test('a signed-out visitor on the consent screen is sent to sign in', () {
+      expect(
+        authRedirect(isSignedIn: false, location: '/oauth/consent'),
+        '/sign-in',
+      );
+    });
+
+    test('once signed in, the visitor is brought back to the request', () {
+      for (final location in ['/', '/sign-in', '/verify-email']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingConsent: 'abc12345xyz',
+          ),
+          consent,
+          reason: location,
+        );
+      }
+    });
+
+    test('the assistant waiting comes before an invitation', () {
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingInvite: 'ABCD2345',
+          pendingConsent: 'abc12345xyz',
+        ),
+        consent,
+      );
+    });
+
+    test('a pending request does not hijack other screens', () {
+      for (final location in ['/profile', '/oauth/consent']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingConsent: 'abc12345xyz',
+          ),
+          isNull,
+          reason: location,
+        );
+      }
+    });
+  });
+
   test('inviteCodeInLocation reads only a plausible code', () {
     expect(inviteCodeInLocation('/join/abcd2345'), 'ABCD2345');
     expect(inviteCodeInLocation('/join/ABCD'), isNull);

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -64,7 +65,7 @@ func TestVerifier(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv, calls := fakeGoTrue(t, tt.status, tt.goTrueUser)
-			info, err := NewVerifier(srv.URL, srv.Client())(context.Background(), tt.token, nil)
+			info, err := NewVerifier(srv.URL, srv.Client(), slog.New(slog.DiscardHandler))(context.Background(), tt.token, nil)
 			if got := calls.Load() > 0; got != tt.askedGoTrue {
 				t.Fatalf("GoTrue interrogé : %v, attendu %v", got, tt.askedGoTrue)
 			}
@@ -83,16 +84,16 @@ func TestVerifier(t *testing.T) {
 
 func TestVerifierReportsAnOutageAsAnError(t *testing.T) {
 	srv, _ := fakeGoTrue(t, http.StatusInternalServerError, "")
-	_, err := NewVerifier(srv.URL, srv.Client())(context.Background(), assistantToken(ada), nil)
-	if err == nil || errors.Is(err, auth.ErrInvalidToken) {
-		t.Fatalf("une panne de GoTrue n'est pas un jeton invalide : %v", err)
+	_, err := NewVerifier(srv.URL, srv.Client(), slog.New(slog.DiscardHandler))(context.Background(), assistantToken(ada), nil)
+	if !errors.Is(err, errVerifyUnavailable) {
+		t.Fatalf("une panne de GoTrue se dit sans détail (ni hôte ni port) : %v", err)
 	}
 	slow := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		time.Sleep(200 * time.Millisecond)
 	}))
 	t.Cleanup(slow.Close)
 	client := &http.Client{Timeout: 20 * time.Millisecond}
-	if _, err := NewVerifier(slow.URL, client)(context.Background(), assistantToken(ada), nil); err == nil || errors.Is(err, auth.ErrInvalidToken) {
+	if _, err := NewVerifier(slow.URL, client, slog.New(slog.DiscardHandler))(context.Background(), assistantToken(ada), nil); !errors.Is(err, errVerifyUnavailable) {
 		t.Fatalf("GoTrue trop lent : err = %v", err)
 	}
 }

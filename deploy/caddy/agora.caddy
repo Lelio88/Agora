@@ -167,6 +167,18 @@ api.agora.heianenterprise.com {
 	handle @accountRoutes {
 		reverse_proxy 127.0.0.1:9404
 	}
+	# Et toute autre route de GoTrue qui reçoit un jeton : liste d'admission,
+	# pour qu'une route ajoutée par une version future de GoTrue soit gardée
+	# d'office. Restent directes l'échange de jetons OAuth et l'inscription
+	# des clients, qui ne portent pas de jeton d'utilisateur.
+	@bearerRoutes {
+		path /auth/v1/*
+		header Authorization *
+		not path /auth/v1/oauth/token* /auth/v1/oauth/clients/register*
+	}
+	handle @bearerRoutes {
+		reverse_proxy 127.0.0.1:9404
+	}
 	# Lien magique : coupé dans GoTrue, mais /otp cherche le compte AVANT de
 	# lire ce réglage et répond autrement pour une adresse inconnue. Caddy
 	# répond à sa place, comme GoTrue le fait pour un compte existant.

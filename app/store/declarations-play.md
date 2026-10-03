@@ -250,7 +250,12 @@ tiers et **exclut les transferts déclenchés par l'utilisateur**. Voir l'agenda
 d'un colocataire suppose d'avoir rejoint son groupe et choisi son niveau de
 partage. De même, le récap publié par le bot dans un salon Discord ne part
 que parce qu'un admin a relié ce salon. Hetzner et Brevo sont des
-sous-traitants, pas des destinataires.
+sous-traitants, pas des destinataires. Un **assistant IA** (serveur MCP) ne
+reçoit l'agenda que parce que l'utilisateur l'a branché et autorisé lui-même :
+transfert déclenché par l'utilisateur, donc pas un partage. L'autorisation
+(nom du client, date) est gardée par le serveur d'authentification jusqu'à
+son retrait : elle relève de **ID utilisateur** et **Autres actions**, déjà
+déclarés — rien à ajouter, et l'app elle-même ne contacte aucun hôte de plus.
 
 ### Les types que l'on ne déclare pas
 

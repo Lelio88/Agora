@@ -1121,4 +1121,160 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get socialSignInFailed => 'Impossible d\'ouvrir la page de connexion.';
+
+  @override
+  String get errorConsentExpired =>
+      'Cette demande d\'accès a expiré ou a déjà été traitée. Relance la connexion depuis ton assistant.';
+
+  @override
+  String get errorAssistantsUnavailable =>
+      'Le branchement des assistants IA n\'est pas encore ouvert.';
+
+  @override
+  String get assistantTitle => 'Assistant IA';
+
+  @override
+  String get assistantProfileSubtitle =>
+      'Brancher Claude, ChatGPT… sur ton agenda';
+
+  @override
+  String get assistantIntro =>
+      'Un assistant IA branché sur Agora lit ton agenda et ceux de tes groupes comme l\'app te les montre, cherche des créneaux communs, crée tes rdv, en propose à un groupe et y répond — toujours à ton nom. Il ne modifie ni ne supprime rien.';
+
+  @override
+  String get assistantAddressTitle => 'Adresse du connecteur';
+
+  @override
+  String get assistantCopy => 'Copier';
+
+  @override
+  String get assistantCopied => 'Copié.';
+
+  @override
+  String get assistantClaudeAi =>
+      'Dans claude.ai : Paramètres → Connecteurs → Ajouter un connecteur personnalisé, puis colle l\'adresse.';
+
+  @override
+  String get assistantClaudeCode =>
+      'Dans Claude Code, puis /mcp → Authenticate :';
+
+  @override
+  String get assistantOthers =>
+      'ChatGPT, Cursor, VS Code : la même adresse, dans leurs réglages de connecteurs MCP.';
+
+  @override
+  String get assistantGuide => 'Mode d\'emploi détaillé';
+
+  @override
+  String get assistantNoAddress =>
+      'Cette version de l\'app ne connaît pas l\'adresse du serveur.';
+
+  @override
+  String get assistantGrantsTitle => 'Assistants autorisés';
+
+  @override
+  String get assistantRevokeImmediate => 'Retirer un accès le coupe aussitôt.';
+
+  @override
+  String get assistantNoGrant => 'Aucun assistant n\'a accès à ton agenda.';
+
+  @override
+  String assistantGrantedOn(String date) {
+    return 'Autorisé le $date';
+  }
+
+  @override
+  String get assistantRevoke => 'Retirer';
+
+  @override
+  String get assistantRevokeTitle => 'Retirer l\'accès ?';
+
+  @override
+  String assistantRevokeBody(String name) {
+    return '$name ne pourra plus lire ton agenda ni agir pour toi. Tu pourras l\'autoriser de nouveau depuis l\'assistant.';
+  }
+
+  @override
+  String get assistantRevoked => 'Accès retiré.';
+
+  @override
+  String get assistantUnnamed => 'Assistant sans nom';
+
+  @override
+  String get assistantLocalTool =>
+      'un outil de cet ordinateur (Claude Code, Cursor, VS Code…)';
+
+  @override
+  String get consentTitle => 'Autoriser un assistant';
+
+  @override
+  String consentQuestion(String assistant) {
+    return 'Autoriser $assistant à accéder à ton agenda Agora ?';
+  }
+
+  @override
+  String consentPresentsAs(String name) {
+    return 'Il se présente comme « $name ».';
+  }
+
+  @override
+  String get consentCanTitle => 'Il pourra :';
+
+  @override
+  String get consentCanRead =>
+      'lire ton agenda et celui de tes groupes, comme l\'app te les montre ;';
+
+  @override
+  String get consentCanSlots => 'chercher des créneaux communs ;';
+
+  @override
+  String get consentCanWrite =>
+      'créer un rdv dans ton agenda, proposer un rdv à un de tes groupes, répondre à un rdv de groupe.';
+
+  @override
+  String get consentCannotTitle => 'Il ne pourra pas :';
+
+  @override
+  String get consentCannot =>
+      'modifier ni supprimer un rdv, ni toucher à tes groupes, à ton partage ou à ton compte.';
+
+  @override
+  String get consentWarning =>
+      'N\'autorise qu\'un assistant que tu utilises toi-même. Tu pourras retirer l\'accès à tout moment : Profil → Assistant IA.';
+
+  @override
+  String consentAccount(String email) {
+    return 'Compte : $email';
+  }
+
+  @override
+  String get consentNotMe => 'Ce n\'est pas moi';
+
+  @override
+  String get consentApprove => 'Autoriser';
+
+  @override
+  String get consentDeny => 'Refuser';
+
+  @override
+  String get consentHandedOver => 'Retour vers l\'assistant…';
+
+  @override
+  String get consentHandOverFailed =>
+      'Le retour vers l\'assistant n\'a pas pu s\'ouvrir. Relance la connexion depuis l\'assistant.';
+
+  @override
+  String get consentDenied => 'Accès refusé.';
+
+  @override
+  String consentUnknownAssistant(String host) {
+    return 'Accès refusé : cette demande ne vient pas d\'un assistant reconnu ($host).';
+  }
+
+  @override
+  String get consentHome => 'Retour à l\'accueil';
+
+  @override
+  String get shareDetailsAssistantHint =>
+      'Avec « Tout », les membres voient titres et lieux, y compris par l\'assistant IA qu\'ils ont branché sur Agora.';
 }

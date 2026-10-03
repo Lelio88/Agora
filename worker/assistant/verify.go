@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +15,9 @@ import (
 
 	"github.com/Lelio88/agora/worker/internal/bearer"
 )
+
+// errVerifyUnavailable est tout ce qu'un client apprend d'une panne.
+var errVerifyUnavailable = errors.New("vérification du jeton indisponible, réessaie plus tard")
 
 const (
 	// verifyTimeout borne l'appel à GoTrue : un assistant attend, pas plus.
@@ -28,7 +32,11 @@ const (
 //
 // Seul un jeton porteur de client_id (délivré à un assistant par le serveur
 // OAuth) est admis : une session de l'application n'a rien à faire ici.
-func NewVerifier(upstream string, client *http.Client) auth.TokenVerifier {
+//
+// Une panne (GoTrue injoignable, réponse inattendue) est journalisée en
+// détail et rendue sans détail : le SDK recopie le texte de l'erreur dans la
+// réponse 500, qui ne doit nommer ni hôte ni port internes.
+func NewVerifier(upstream string, client *http.Client, logger *slog.Logger) auth.TokenVerifier {
 	userURL := strings.TrimRight(upstream, "/") + "/user"
 	return func(ctx context.Context, token string, _ *http.Request) (*auth.TokenInfo, error) {
 		c, err := bearer.Read(token)
@@ -36,8 +44,12 @@ func NewVerifier(upstream string, client *http.Client) auth.TokenVerifier {
 			return nil, fmt.Errorf("%w: jeton d'assistant attendu", auth.ErrInvalidToken)
 		}
 		userID, err := askGoTrue(ctx, client, userURL, token)
-		if err != nil {
+		if errors.Is(err, auth.ErrInvalidToken) {
 			return nil, err
+		}
+		if err != nil {
+			logger.Warn("assistant: token check unavailable", "err", err)
+			return nil, errVerifyUnavailable
 		}
 		if userID != c.Sub {
 			return nil, fmt.Errorf("%w: jeton incohérent", auth.ErrInvalidToken)

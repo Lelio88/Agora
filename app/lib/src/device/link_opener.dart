@@ -1,4 +1,5 @@
-/// Ouverture d'un lien hors de l'app (pages légales), derrière une interface
+/// Ouverture d'un lien hors de l'app (pages légales, retour à un assistant IA),
+/// derrière une interface
 /// pour que les tests constatent ce qui aurait été ouvert, sans navigateur.
 ///
 /// Choix non évident : l'app n'affiche pas ces pages elle-même. Elles sont
@@ -18,6 +19,10 @@ abstract interface class LinkOpener {
   /// Ouvre [url] hors de l'app. Rend `false` si l'appareil n'a rien pour le
   /// faire.
   Future<bool> open(Uri url);
+
+  /// Quitte l'app pour [url], dans le même onglet (web) : rendre la main à
+  /// un assistant IA après son consentement, ou recharger l'app à sa racine.
+  Future<bool> openInPlace(Uri url);
 }
 
 final linkOpenerProvider = Provider<LinkOpener>(

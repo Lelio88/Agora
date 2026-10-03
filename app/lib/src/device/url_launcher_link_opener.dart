@@ -21,13 +21,28 @@ final class UrlLauncherLinkOpener implements LinkOpener {
   const UrlLauncherLinkOpener();
 
   @override
-  Future<bool> open(Uri url) async {
+  Future<bool> open(Uri url) => _launch(
+    () => launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    ),
+  );
+
+  /// Sur le web, `_self` : l'onglet quitte l'app pour l'assistant (son retour
+  /// OAuth attend dans cet onglet-là). Ailleurs, comme [open].
+  @override
+  Future<bool> openInPlace(Uri url) => _launch(
+    () => launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_self',
+    ),
+  );
+
+  Future<bool> _launch(Future<bool> Function() launch) async {
     try {
-      return await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-        webOnlyWindowName: '_blank',
-      );
+      return await launch();
     } on PlatformException {
       return false;
     } on MissingPluginException {

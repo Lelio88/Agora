@@ -33,7 +33,7 @@ Topologie rapide :
 ## IV. Garde-Fous non négociables
 
 1. **Vie privée : un seul chemin de sortie.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda`, appelée par `group_agenda()` ou par le worker. Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy` ; un rdv accepté dans un autre groupe n'est jamais plus que `busy`. Toute évolution de la règle ajoute son test pgTAP.
-2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`. Un jeton d'assistant IA (claim `client_id`) ne vaut que pour `/mcp` : PostgREST, le temps réel et les routes de compte de GoTrue le refusent ; le worker n'agit au nom d'un membre que par `SET LOCAL ROLE authenticated` + claims `{sub}` dans la même transaction.
+2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`. Un jeton d'assistant IA (claim `client_id`) ne vaut que pour `/mcp` : PostgREST, le temps réel et GoTrue (toute route qui reçoit un jeton) le refusent ; le worker n'agit au nom d'un membre que par `SET LOCAL ROLE authenticated` + claims `{sub}` dans la même transaction.
 3. **Migrations immuables** : une migration déjà appliquée en prod n'est **jamais** modifiée. Corriger = nouvelle migration.
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
 5. **Le worker est l'unique implémentation des RRULE** : l'app lit l'agenda par `my_agenda()`, jamais la ligne maîtresse d'une série. Il n'écrit les rdv importés que par `private.ics_apply`, jamais `events.visibility`, note un échec par un code connu (jamais le texte d'une erreur, qui contiendrait l'URL) et contrôle le SSRF sur l'adresse **résolue** à chaque connexion. `AGORA_ICS_ALLOW_PRIVATE_NETWORK` ne se pose qu'en local.
@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : « Y aller » (étape 10) : lien vers l'app d'itinéraire, rien de stocké ; bot Discord en service.
-- **Focus immédiat** : test fermé (testeurs, puis promotion en production depuis la Play Console) ; étape 10 livrée (« Y aller »).
+- **Dernier focus** : assistants IA — serveur MCP dans le worker (jeton borné à `/mcp`, trois portes fermées), consentement et écran « Assistant IA » dans l'app (0.5.0+9).
+- **Focus immédiat** : mise en ligne en deux temps (déploiement, puis `AGORA_OAUTH_SERVER=true`), essai réel par Claude Code, puis 0.5.0+9 en test fermé.

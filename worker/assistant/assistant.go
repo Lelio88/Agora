@@ -101,7 +101,7 @@ func New(opts Options) (*Service, error) {
 	server := newServer(newToolbox(opts.Store, opts.Now), opts.DocsURL, opts.Logger)
 	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return server },
 		&mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true, MaxRequestBodyBytes: maxRequestBody})
-	guard := auth.RequireBearerToken(NewVerifier(opts.AuthUpstream, opts.HTTPClient),
+	guard := auth.RequireBearerToken(NewVerifier(opts.AuthUpstream, opts.HTTPClient, opts.Logger),
 		&auth.RequireBearerTokenOptions{ResourceMetadataURL: public + MetadataPath})
 	return &Service{
 		MCP: guard(handler),

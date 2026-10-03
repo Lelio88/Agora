@@ -27,8 +27,10 @@ import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/presentation/profile_controller.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:agora/src/localization/app_localizations.dart';
+import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 const _maxContentWidth = 560.0;
 
@@ -209,6 +211,15 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                 const SizedBox(height: 32),
                 const Divider(),
                 const DiscordAccountSection(),
+                ListTile(
+                  key: ProfileKeys.assistant,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.smart_toy_outlined),
+                  title: Text(l10n.assistantTitle),
+                  subtitle: Text(l10n.assistantProfileSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.pushNamed(AppRoute.assistant.name),
+                ),
                 const Divider(),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(

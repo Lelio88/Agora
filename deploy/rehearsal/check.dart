@@ -399,6 +399,9 @@ Future<void> _checkAssistant(String key, SupabaseClient alice, String groupId) a
   final grant = await http.post(Uri.parse('$_api/auth/v1/oauth/authorizations/$authorizationId/consent'),
       headers: {...assistant, 'Content-Type': 'application/json'}, body: '{"action":"approve"}');
   _check('porte GoTrue (accorder un autre accès) : 403', grant.statusCode == 403, grant.statusCode);
+  final settings = await http.get(Uri.parse('$_api/auth/v1/settings'), headers: assistant);
+  _check("porte GoTrue (liste d'admission : une route non listée) : 403", settings.statusCode == 403,
+      settings.statusCode);
 
   final refreshed = await token({
     'grant_type': 'refresh_token',

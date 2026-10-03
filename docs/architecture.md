@@ -192,8 +192,8 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   les RPC de l'application ([`mcp-architecture.md`](./mcp-architecture.md)).
 - **Le jeton d'un assistant IA ne vaut que pour `/mcp`** : PostgREST le refuse (pré-requête
   `private.refuse_assistant_tokens`, 403 `assistant_forbidden`), le temps réel ne lui montre rien
-  (politiques `RESTRICTIVE … to authenticated` sur les tables publiées), et les routes de compte de
-  GoTrue le refusent (garde du worker). On le reconnaît à son claim `client_id`.
+  (politiques `RESTRICTIVE … to authenticated` sur les tables publiées), et GoTrue le refuse sur
+  toute route qui reçoit un jeton (garde du worker, liste d'admission). On le reconnaît à son claim `client_id`.
 
 ## 5. Agendas iCal
 
@@ -248,7 +248,8 @@ Détail complet : [`mcp-architecture.md`](./mcp-architecture.md). Invariants :
   RPC et règle de visibilité que l'app. GoTrue juge chaque jeton (`GET /user`) : une révocation
   coupe aussitôt.
 - **Sept outils**, dont trois écritures (créer un rdv, le proposer au groupe, y répondre), jamais
-  de modification ni de suppression, plafonnées à 20 par heure et par membre. Un outil ne devine
+  de modification ni de suppression, plafonnées à 20 par heure et par membre (dont 5 propositions
+  au groupe).
   pas : un groupe, un agenda ou un membre ambigu est refusé avec les choix possibles.
 
 ## 7. Application Flutter et comptes
@@ -282,6 +283,9 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   `SUPABASE_PUBLISHABLE_KEY`, et `AGORA_WEB_URL` facultative pour les liens d'invitation). Aucune
   valeur par défaut : une URL sans clé fait échouer le démarrage, au lieu des 401 muets d'une
   clé retombée sur celle du poste local.
+- **Assistants IA** (`features/assistant/`) : l'écran de consentement (`/oauth/consent`, web
+  seulement) et l'écran « Assistant IA » du profil (adresse du connecteur, accès accordés à
+  retirer) — détail dans [`mcp-architecture.md`](./mcp-architecture.md).
 - **« Y aller »** (`features/directions/`) : sur la fiche d'un rdv enregistré qui a un lieu, un
   lien vers l'app d'itinéraire en transports (Citymapper avec l'heure d'arrivée, Google Maps,
   ou `geo:` sur Android). Aucun calcul, aucun appel réseau, rien d'enregistré ; sans adresse
@@ -406,6 +410,10 @@ jeton. Pile, pièges, première installation et répétition locale :
   `agora_worker`, qui n'a pas l'USAGE sur `auth`, et arrêterait le dépliage des séries.
 - ❌ Ajouter une route de compte de GoTrue à un motif ServeMux avec méthode (`PUT /auth/v1/user`)
   à côté de la garde : plus précis, il la contournerait. La garde reçoit la route, puis délègue.
+- ❌ Ouvrir à GoTrue en direct une route qui reçoit un jeton : la garde fonctionne en liste
+  d'admission (`@bearerRoutes` de Caddy), un jeton d'assistant n'y passerait plus.
 - ❌ Annoncer ou demander le scope `openid` : GoTrue signe en HS256, brûle le code puis répond 500.
 - ❌ Faire agir le worker au nom d'un membre sans `sub` dans les claims : deux déclencheurs
   prendraient l'appel pour le serveur.
+- ❌ Lire l'adresse de la page dans `Uri.base` sur le web : `<base href="/">` la ramène à la racine
+  (chemin et requête perdus) — `pageLocation()` lit `window.location`.

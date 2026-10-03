@@ -74,6 +74,8 @@ func TestGuardRefusesAssistantTokens(t *testing.T) {
 		{name: "factor enrolment", method: http.MethodPost, path: "/auth/v1/factors"},
 		{name: "reauthentication", method: http.MethodGet, path: "/auth/v1/reauthenticate"},
 		{name: "granting another access", method: http.MethodPost, path: "/auth/v1/oauth/authorizations/a1/consent", body: `{"action":"approve"}`},
+		{name: "a route a future GoTrue would add", method: http.MethodPost, path: "/auth/v1/passkeys/register"},
+		{name: "settings", method: http.MethodGet, path: "/auth/v1/settings"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -149,5 +151,22 @@ func TestGuardAnswersWhenGoTrueIsDown(t *testing.T) {
 	guard.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/auth/v1/user", nil))
 	if rec.Code != http.StatusBadGateway {
 		t.Fatalf("statut %d", rec.Code)
+	}
+}
+
+func TestGuardNeverRelaysAVariantOfTheGateRoutes(t *testing.T) {
+	upstream, received := fakeUpstream(t)
+	guard := newTestGuard(t, upstream.URL)
+	for _, path := range []string{"/auth/v1/signup/", "/auth/v1/Signup", "/auth/v1/RECOVER", "/auth/v1/token/", "/auth/v1/resendx"} {
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader("{}"))
+		req.Header.Set("Authorization", "Bearer "+appToken)
+		rec := httptest.NewRecorder()
+		guard.ServeHTTP(rec, req)
+		if rec.Code != http.StatusNotFound {
+			t.Fatalf("%s : statut %d, attendu 404", path, rec.Code)
+		}
+	}
+	if got := received(); len(got) != 0 {
+		t.Fatalf("GoTrue a reçu une variante : %+v", got)
 	}
 }

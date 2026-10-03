@@ -12,6 +12,9 @@ qu'il choisit, et un bot Discord tient le groupe au courant.
 - **La vie privée au rdv près** : pour chaque groupe, on montre le détail ou seulement
   « occupé » ; chaque agenda et chaque rdv peut être restreint, jusqu'à devenir invisible.
 - **Un bot Discord** réglé depuis l'app : `/agenda`, `/dispo`, récap dans un salon, rappels.
+- **Un assistant IA** (Claude, ChatGPT, Cursor…) branché sur son agenda : il lit, trouve un
+  créneau commun, crée ou propose un rdv, toujours au nom du membre — adresse et règles dans
+  `app/web/assistant.html`, accès retirés depuis Profil → Assistant IA.
 
 Le projet en est à ses fondations. Les étapes suivantes sont dans
 [`docs/roadmap.md`](docs/roadmap.md).
@@ -37,6 +40,6 @@ cd worker && go run ./cmd/worker   # service de fond, santé sur http://localhos
 |---|---|
 | `app/` | App Flutter (Android + web), français et anglais |
 | `supabase/` | Schéma Postgres, règles d'accès, tests pgTAP |
-| `worker/` | Service Go : import iCal, récurrences, bot Discord |
+| `worker/` | Service Go : import iCal, récurrences, bot Discord, serveur MCP des assistants IA |
 | `deploy/` | Mise en ligne : Supabase auto-hébergé, Caddy, répétition locale ([détail](docs/deployment.md)) |
 | `docs/` | [Architecture](docs/architecture.md) et [feuille de route](docs/roadmap.md) |

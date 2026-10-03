@@ -24,6 +24,10 @@ import (
 // base (migration 20261003120000_assistant.sql).
 //
 // Choix non évidents :
+//   - liste d'admission : Caddy lui envoie toute requête à GoTrue qui porte un
+//     en-tête Authorization (sauf l'échange de jetons OAuth et l'inscription
+//     des clients) ; un jeton d'assistant n'atteint donc aucune route de
+//     GoTrue, connue ou à venir ;
 //   - la garde passe AUSSI devant PUT /user : elle ne confie la mise à jour du
 //     compte à la passerelle (refus du changement d'adresse) qu'après son
 //     propre contrôle. C'est pourquoi Routes ne contient plus PUT /user — un
@@ -39,18 +43,18 @@ type Guard struct {
 	userUpdate http.Handler
 }
 
-// GuardRoutes sont les motifs ServeMux (toutes méthodes) que Caddy envoie à
-// la garde : le compte (/user, ses identités, ses accès accordés), la
-// déconnexion, les facteurs, la réidentification, et le consentement OAuth.
-var GuardRoutes = []string{
-	prefix + "/user",
-	prefix + "/user/",
-	prefix + "/logout",
-	prefix + "/factors",
-	prefix + "/factors/",
-	prefix + "/reauthenticate",
-	prefix + "/oauth/authorizations/",
-}
+// GuardRoutes sont les motifs ServeMux (toutes méthodes) de la garde. Caddy
+// lui envoie les routes de compte (le compte, ses identités et accès
+// accordés, la déconnexion, les facteurs, la réidentification, le
+// consentement OAuth), et **toute autre route de GoTrue qui reçoit un en-tête
+// Authorization** : c'est une liste d'admission — une route qu'une version
+// future de GoTrue ajouterait est gardée d'office. Les routes de la
+// passerelle (Routes), plus précises, passent avant.
+var GuardRoutes = []string{prefix + "/"}
+
+// gateEndpoints sont les points d'entrée de la passerelle : une variante
+// d'écriture (casse, barre finale) n'atteint jamais GoTrue en direct.
+var gateEndpoints = []string{"/signup", "/recover", "/resend", "/token"}
 
 // assistantForbidden répond à un jeton d'assistant, au format de GoTrue.
 const assistantForbidden = `{"code":403,"error_code":"assistant_forbidden","msg":"Assistant tokens are only valid for /mcp"}`
@@ -87,6 +91,10 @@ func NewGuard(upstream string, userUpdate http.Handler, logger *slog.Logger) (*G
 
 // ServeHTTP refuse un jeton d'assistant, puis relaie.
 func (g *Guard) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if isGateVariant(r.URL.Path) {
+		http.NotFound(w, r)
+		return
+	}
 	if c, err := bearer.Read(bearer.FromHeader(r.Header.Get("Authorization"))); err == nil && c.ClientID != "" {
 		writeJSON(w, http.StatusForbidden, assistantForbidden)
 		return
@@ -96,4 +104,16 @@ func (g *Guard) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	g.proxy.ServeHTTP(w, r)
+}
+
+// isGateVariant dit si path ressemble à un point d'entrée de la passerelle
+// sans en être un : ces routes-là se jouent à la passerelle ou nulle part.
+func isGateVariant(path string) bool {
+	rest := strings.ToLower(strings.TrimPrefix(path, prefix))
+	for _, endpoint := range gateEndpoints {
+		if strings.HasPrefix(rest, endpoint) {
+			return true
+		}
+	}
+	return false
 }

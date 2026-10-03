@@ -2035,6 +2035,264 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Impossible d\'ouvrir la page de connexion.'**
   String get socialSignInFailed;
+
+  /// Erreur : demande d'accès d'un assistant IA expirée (dix minutes) ou déjà tranchée.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette demande d\'accès a expiré ou a déjà été traitée. Relance la connexion depuis ton assistant.'**
+  String get errorConsentExpired;
+
+  /// Erreur : le serveur OAuth n'est pas allumé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le branchement des assistants IA n\'est pas encore ouvert.'**
+  String get errorAssistantsUnavailable;
+
+  /// Titre de l'écran Assistant IA et de son entrée dans le profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant IA'**
+  String get assistantTitle;
+
+  /// Profil : sous-titre de l'entrée Assistant IA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brancher Claude, ChatGPT… sur ton agenda'**
+  String get assistantProfileSubtitle;
+
+  /// Écran Assistant IA : ce que fait un assistant branché.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un assistant IA branché sur Agora lit ton agenda et ceux de tes groupes comme l\'app te les montre, cherche des créneaux communs, crée tes rdv, en propose à un groupe et y répond — toujours à ton nom. Il ne modifie ni ne supprime rien.'**
+  String get assistantIntro;
+
+  /// Écran Assistant IA : titre de l'adresse du serveur MCP.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse du connecteur'**
+  String get assistantAddressTitle;
+
+  /// Bouton (infobulle) : copier un texte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier'**
+  String get assistantCopy;
+
+  /// Message : texte copié dans le presse-papiers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copié.'**
+  String get assistantCopied;
+
+  /// Écran Assistant IA : geste pour brancher claude.ai.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans claude.ai : Paramètres → Connecteurs → Ajouter un connecteur personnalisé, puis colle l\'adresse.'**
+  String get assistantClaudeAi;
+
+  /// Écran Assistant IA : précède la commande Claude Code.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans Claude Code, puis /mcp → Authenticate :'**
+  String get assistantClaudeCode;
+
+  /// Écran Assistant IA : les autres assistants.
+  ///
+  /// In fr, this message translates to:
+  /// **'ChatGPT, Cursor, VS Code : la même adresse, dans leurs réglages de connecteurs MCP.'**
+  String get assistantOthers;
+
+  /// Écran Assistant IA : lien vers la page publique.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode d\'emploi détaillé'**
+  String get assistantGuide;
+
+  /// Écran Assistant IA : build sans adresse d'API.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette version de l\'app ne connaît pas l\'adresse du serveur.'**
+  String get assistantNoAddress;
+
+  /// Écran Assistant IA : titre de la liste des accès accordés.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistants autorisés'**
+  String get assistantGrantsTitle;
+
+  /// Écran Assistant IA : la révocation est immédiate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer un accès le coupe aussitôt.'**
+  String get assistantRevokeImmediate;
+
+  /// Écran Assistant IA : aucun accès accordé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun assistant n\'a accès à ton agenda.'**
+  String get assistantNoGrant;
+
+  /// Accès accordé ; date est la date d'autorisation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autorisé le {date}'**
+  String assistantGrantedOn(String date);
+
+  /// Bouton : retirer l'accès d'un assistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer'**
+  String get assistantRevoke;
+
+  /// Dialogue : confirmer le retrait d'un accès.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer l\'accès ?'**
+  String get assistantRevokeTitle;
+
+  /// Dialogue de retrait ; name est le nom de l'assistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} ne pourra plus lire ton agenda ni agir pour toi. Tu pourras l\'autoriser de nouveau depuis l\'assistant.'**
+  String assistantRevokeBody(String name);
+
+  /// Message : accès d'un assistant retiré.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès retiré.'**
+  String get assistantRevoked;
+
+  /// Accès accordé à un client OAuth sans nom.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant sans nom'**
+  String get assistantUnnamed;
+
+  /// Assistant reconnu à une adresse de retour locale.
+  ///
+  /// In fr, this message translates to:
+  /// **'un outil de cet ordinateur (Claude Code, Cursor, VS Code…)'**
+  String get assistantLocalTool;
+
+  /// Titre de l'écran de consentement.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autoriser un assistant'**
+  String get consentTitle;
+
+  /// Consentement : la question ; assistant est le nom de l'assistant reconnu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autoriser {assistant} à accéder à ton agenda Agora ?'**
+  String consentQuestion(String assistant);
+
+  /// Consentement : le nom que le client se donne (jamais une preuve).
+  ///
+  /// In fr, this message translates to:
+  /// **'Il se présente comme « {name} ».'**
+  String consentPresentsAs(String name);
+
+  /// Consentement : titre de ce que l'assistant pourra faire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il pourra :'**
+  String get consentCanTitle;
+
+  /// Consentement : lecture.
+  ///
+  /// In fr, this message translates to:
+  /// **'lire ton agenda et celui de tes groupes, comme l\'app te les montre ;'**
+  String get consentCanRead;
+
+  /// Consentement : créneaux.
+  ///
+  /// In fr, this message translates to:
+  /// **'chercher des créneaux communs ;'**
+  String get consentCanSlots;
+
+  /// Consentement : écritures.
+  ///
+  /// In fr, this message translates to:
+  /// **'créer un rdv dans ton agenda, proposer un rdv à un de tes groupes, répondre à un rdv de groupe.'**
+  String get consentCanWrite;
+
+  /// Consentement : titre de ce que l'assistant ne pourra pas faire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il ne pourra pas :'**
+  String get consentCannotTitle;
+
+  /// Consentement : ce qui reste interdit.
+  ///
+  /// In fr, this message translates to:
+  /// **'modifier ni supprimer un rdv, ni toucher à tes groupes, à ton partage ou à ton compte.'**
+  String get consentCannot;
+
+  /// Consentement : mise en garde.
+  ///
+  /// In fr, this message translates to:
+  /// **'N\'autorise qu\'un assistant que tu utilises toi-même. Tu pourras retirer l\'accès à tout moment : Profil → Assistant IA.'**
+  String get consentWarning;
+
+  /// Consentement : le compte connecté ; email est son adresse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte : {email}'**
+  String consentAccount(String email);
+
+  /// Consentement : se déconnecter pour changer de compte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n\'est pas moi'**
+  String get consentNotMe;
+
+  /// Consentement : accorder l'accès.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autoriser'**
+  String get consentApprove;
+
+  /// Consentement : refuser l'accès.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser'**
+  String get consentDeny;
+
+  /// Consentement : l'onglet rend la main à l'assistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour vers l\'assistant…'**
+  String get consentHandedOver;
+
+  /// Consentement : l'adresse de retour n'a pas pu s'ouvrir.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le retour vers l\'assistant n\'a pas pu s\'ouvrir. Relance la connexion depuis l\'assistant.'**
+  String get consentHandOverFailed;
+
+  /// Consentement : l'utilisateur a refusé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès refusé.'**
+  String get consentDenied;
+
+  /// Consentement : demande d'un client dont l'adresse de retour n'est pas reconnue ; host est son hôte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès refusé : cette demande ne vient pas d\'un assistant reconnu ({host}).'**
+  String consentUnknownAssistant(String host);
+
+  /// Consentement : revenir à l'accueil d'Agora.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour à l\'accueil'**
+  String get consentHome;
+
+  /// Partage : le niveau « Tout » vaut aussi pour les assistants IA des membres.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avec « Tout », les membres voient titres et lieux, y compris par l\'assistant IA qu\'ils ont branché sur Agora.'**
+  String get shareDetailsAssistantHint;
 }
 
 class _AppLocalizationsDelegate

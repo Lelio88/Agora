@@ -239,9 +239,18 @@ class FakeLinkOpener implements LinkOpener {
   final bool succeeds;
   final opened = <Uri>[];
 
+  /// Adresses ouvertes dans le même onglet (retour à un assistant IA).
+  final openedInPlace = <Uri>[];
+
   @override
   Future<bool> open(Uri url) async {
     opened.add(url);
+    return succeeds;
+  }
+
+  @override
+  Future<bool> openInPlace(Uri url) async {
+    openedInPlace.add(url);
     return succeeds;
   }
 }

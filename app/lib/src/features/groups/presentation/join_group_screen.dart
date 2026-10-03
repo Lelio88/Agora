@@ -172,6 +172,11 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
                         value: level,
                         title: Text(shareLevelLabel(level, l10n)),
                         contentPadding: EdgeInsets.zero,
+                        // « Tout » vaut aussi pour l'assistant IA qu'un
+                        // membre a branché : il voit ce que l'app lui montre.
+                        subtitle: level == ShareLevel.details
+                            ? Text(l10n.shareDetailsAssistantHint)
+                            : null,
                       ),
                   ],
                 ),

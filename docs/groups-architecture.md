@@ -137,6 +137,11 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 
 ## Créneaux communs
 
+**Partage « Tout » et assistants IA** : sous ce niveau, à l'écran Rejoindre comme dans les
+membres du groupe, l'app précise que les membres voient titres et lieux **y compris par
+l'assistant IA qu'ils ont branché** (`shareDetailsAssistantHint`) : l'assistant voit ce que l'app
+montre au membre ([`mcp-architecture.md`](./mcp-architecture.md)).
+
 « Trouver un créneau » (barre de l'agenda du groupe, route `groups/:groupId/slots`,
 `FindSlotsScreen`) : les plages où tous les membres choisis sont libres.
 

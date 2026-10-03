@@ -20,6 +20,8 @@ import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/device/platform_device_timezone.dart';
 import 'package:agora/src/device/url_launcher_link_opener.dart';
+import 'package:agora/src/features/assistant/application/assistant_providers.dart';
+import 'package:agora/src/features/assistant/data/supabase_assistant_repository.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -51,6 +53,9 @@ List<Override> prodOverrides(SupabaseClient client) => [
   ),
   discordRepositoryProvider.overrideWith(
     (ref) => SupabaseDiscordRepository(client),
+  ),
+  assistantRepositoryProvider.overrideWith(
+    (ref) => SupabaseAssistantRepository(client),
   ),
   deviceTimezoneProvider.overrideWith((ref) => const PlatformDeviceTimezone()),
   linkOpenerProvider.overrideWith((ref) => const UrlLauncherLinkOpener()),

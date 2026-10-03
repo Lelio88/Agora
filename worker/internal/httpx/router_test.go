@@ -60,7 +60,7 @@ func TestRouterMountsTheAuthGateGuardAndAssistant(t *testing.T) {
 		{name: "forgotten password", method: http.MethodPost, path: "/auth/v1/recover", wantCode: gate},
 		{name: "code resent", method: http.MethodPost, path: "/auth/v1/resend", wantCode: gate},
 		{name: "token", method: http.MethodPost, path: "/auth/v1/token", wantCode: gate},
-		{name: "only POST", method: http.MethodGet, path: "/auth/v1/signup", wantCode: http.StatusMethodNotAllowed},
+		{name: "another method on a gate route goes to the guard, which answers 404", method: http.MethodGet, path: "/auth/v1/signup", wantCode: guard},
 		{name: "account update goes through the guard first", method: http.MethodPut, path: "/auth/v1/user", wantCode: guard},
 		{name: "account read", method: http.MethodGet, path: "/auth/v1/user", wantCode: guard},
 		{name: "identity linking", method: http.MethodGet, path: "/auth/v1/user/identities/authorize", wantCode: guard},
@@ -71,7 +71,7 @@ func TestRouterMountsTheAuthGateGuardAndAssistant(t *testing.T) {
 		{name: "a factor", method: http.MethodPost, path: "/auth/v1/factors/abc/verify", wantCode: guard},
 		{name: "reauthentication", method: http.MethodGet, path: "/auth/v1/reauthenticate", wantCode: guard},
 		{name: "oauth consent", method: http.MethodPost, path: "/auth/v1/oauth/authorizations/abc/consent", wantCode: guard},
-		{name: "nothing else of GoTrue", method: http.MethodGet, path: "/auth/v1/settings", wantCode: http.StatusNotFound},
+		{name: "any other GoTrue route (Caddy sends only those with a token)", method: http.MethodGet, path: "/auth/v1/settings", wantCode: guard},
 		{name: "mcp", method: http.MethodPost, path: "/mcp", wantCode: mcp},
 		{name: "resource metadata", method: http.MethodGet, path: "/.well-known/oauth-protected-resource/mcp", wantCode: meta},
 	}

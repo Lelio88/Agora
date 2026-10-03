@@ -1,0 +1,13 @@
+# Agora
+
+> Agendas partagés en groupe (Android et web) : chacun garde son agenda et choisit, groupe par groupe, ce que les autres en voient ; le groupe trouve ses créneaux communs. Shared group calendars: everyone keeps their own and chooses what each group sees.
+
+## Assistants IA · AI assistants
+
+- [Agora pour les assistants IA](https://agora.heianenterprise.com/assistant.html): serveur MCP (https://api.agora.heianenterprise.com/mcp), branchement, outils, règles, révocation — MCP server, setup, tools, rules, revocation.
+
+## Pages
+
+- [Présentation](https://agora.heianenterprise.com/presentation.html)
+- [Confidentialité · Privacy](https://agora.heianenterprise.com/legal/confidentialite.html)
+- [Conditions d'utilisation · Terms](https://agora.heianenterprise.com/legal/conditions.html)
