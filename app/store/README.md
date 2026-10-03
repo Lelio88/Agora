@@ -240,6 +240,16 @@ Agora protège mieux vos comptes : il n'est plus possible de deviner si une adre
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.5.0+9 (assistants IA)
+
+Français, envoyées sur `alpha` :
+
+```
+Branchez votre assistant IA sur Agora : Claude, ChatGPT ou Cursor peut lire votre agenda et ceux de vos groupes comme l'app vous les montre, trouver un créneau commun, créer un rdv ou en proposer un au groupe — jamais rien modifier ni supprimer. Profil → Assistant IA donne l'adresse à brancher et la liste des accès, à retirer d'un geste. Le niveau de partage « Tout » le précise : l'assistant d'un membre voit aussi titres et lieux.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
