@@ -8,6 +8,8 @@ import (
 	"math/big"
 	"strconv"
 	"time"
+
+	"github.com/Lelio88/agora/worker/slots"
 )
 
 // Bot porte les commandes : /relier, /delier, /agenda, /dispo. Chaque
@@ -241,7 +243,7 @@ func (b *Bot) free(ctx context.Context, in Interaction) Reply {
 	loc := location(account.Timezone)
 	now := b.now().In(loc)
 	days := intOption(in, "jours", defaultFreeDays, 1, maxFreeDays)
-	search := SlotSearch{
+	search := slots.Search{
 		Location: loc,
 		From:     now,
 		To:       time.Date(now.Year(), now.Month(), now.Day()+days, 0, 0, 0, 0, loc),
@@ -261,19 +263,19 @@ func (b *Bot) free(ctx context.Context, in Interaction) Reply {
 		return b.failed(in, err)
 	}
 
-	slots := FindFreeSlots(search, agenda)
+	free := slots.Find(search, slotItems(agenda))
 	header := Text(in.Locale,
 		fmt.Sprintf("Créneaux libres pour tout le groupe « %s » (%d min au moins) :", plain(group.Name), search.Duration/time.Minute),
 		fmt.Sprintf("Free slots for the whole group \"%s\" (at least %d min):", plain(group.Name), search.Duration/time.Minute))
-	if len(slots) == 0 {
+	if len(free) == 0 {
 		return Reply{Content: header + "\n" + Text(in.Locale, "Aucun sur cette période.", "None in this period.")}
 	}
 	body := make([]string, 0, maxFreeShown+1)
-	for i, s := range slots {
+	for i, s := range free {
 		if i == maxFreeShown {
 			body = append(body, Text(in.Locale,
-				fmt.Sprintf("… et %d autres, dans l'app.", len(slots)-i),
-				fmt.Sprintf("… and %d more, in the app.", len(slots)-i)))
+				fmt.Sprintf("… et %d autres, dans l'app.", len(free)-i),
+				fmt.Sprintf("… and %d more, in the app.", len(free)-i)))
 			break
 		}
 		body = append(body, "• "+dayLabel(s.Start, in.Locale)+" "+hours(s.Start, s.End, false, in.Locale))
@@ -282,6 +284,15 @@ func (b *Bot) free(ctx context.Context, in Interaction) Reply {
 		"_Un membre qui ne partage rien avec le groupe paraît libre._",
 		"_A member who shares nothing with the group looks free._"))
 	return Reply{Content: lines(header, body, in.Locale)}
+}
+
+// slotItems réduit l'agenda du groupe à ce que lit le calcul des créneaux.
+func slotItems(agenda []AgendaItem) []slots.Item {
+	items := make([]slots.Item, len(agenda))
+	for i, a := range agenda {
+		items[i] = slots.Item{UserID: a.UserID, IsGroupEvent: a.IsGroupEvent, Start: a.Start, End: a.End, AllDay: a.AllDay}
+	}
+	return items
 }
 
 func everyWeekday(weekends bool) map[time.Weekday]bool {

@@ -50,7 +50,7 @@ inscrites par `worker register-commands` (voir [Mise en service](#mise-en-servic
   modérateur du serveur étranger au groupe ne coupe pas ses publications, mais il peut toujours
   retirer le bot du serveur.
 - **`/dispo`** reprend `app/lib/src/features/groups/domain/free_slots.dart` dans
-  `worker/discord/slots.go`. Le code Dart fait foi, et les deux versions partagent leurs cas de
+  `worker/slots/` (partagé avec l'outil `creneaux_communs` du serveur MCP). Le code Dart fait foi, et les deux versions partagent leurs cas de
   test. Tous les membres sont requis. Un membre qui ne partage rien paraît libre, et la réponse
   le rappelle.
 

@@ -20,7 +20,10 @@ func TestLoad(t *testing.T) {
 		wantDiscord string
 		// wantAuth : adresse de GoTrue derrière la passerelle d'auth.
 		wantAuth string
-		wantErr  bool
+		// wantAPI, wantWeb : adresses publiques (serveur MCP des assistants).
+		wantAPI string
+		wantWeb string
+		wantErr bool
 	}{
 		{
 			name:     "defaults to port 8080",
@@ -100,6 +103,30 @@ func TestLoad(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "reads the public addresses, without trailing slash",
+			env: map[string]string{"AGORA_DATABASE_URL": localURL,
+				"AGORA_PUBLIC_API_URL": "https://api.agora.test/", "AGORA_PUBLIC_WEB_URL": "https://agora.test"},
+			wantAddr: ":8080",
+			wantAPI:  "https://api.agora.test",
+			wantWeb:  "https://agora.test",
+		},
+		{
+			name:     "allows a local public address over http",
+			env:      map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_PUBLIC_API_URL": "http://127.0.0.1:55380"},
+			wantAddr: ":8080",
+			wantAPI:  "http://127.0.0.1:55380",
+		},
+		{
+			name:    "rejects a public address over http elsewhere",
+			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_PUBLIC_API_URL": "http://api.agora.test"},
+			wantErr: true,
+		},
+		{
+			name:    "rejects a public address with a path",
+			env:     map[string]string{"AGORA_DATABASE_URL": localURL, "AGORA_PUBLIC_API_URL": "https://api.agora.test/mcp"},
+			wantErr: true,
+		},
+		{
 			name: "rejects a Discord application id that is not a number",
 			env: map[string]string{
 				"AGORA_DATABASE_URL":           localURL,
@@ -132,6 +159,9 @@ func TestLoad(t *testing.T) {
 			}
 			if cfg.AuthUpstream != tt.wantAuth {
 				t.Errorf("AuthUpstream = %q, want %q", cfg.AuthUpstream, tt.wantAuth)
+			}
+			if cfg.PublicAPIURL != tt.wantAPI || cfg.PublicWebURL != tt.wantWeb {
+				t.Errorf("adresses publiques = %q, %q ; want %q, %q", cfg.PublicAPIURL, cfg.PublicWebURL, tt.wantAPI, tt.wantWeb)
 			}
 			if cfg.DatabaseURL != localURL {
 				t.Errorf("DatabaseURL = %q, want %q", cfg.DatabaseURL, localURL)

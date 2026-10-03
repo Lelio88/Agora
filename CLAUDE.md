@@ -11,14 +11,14 @@ Résolvez les problèmes sans introduire de régression ni de dette technique ar
 
 **Modèle** : monorepo à trois briques. Une app Flutter feature-first (Clean Architecture), un backend Supabase où la **règle de vie privée vit en SQL** (RLS + une fonction de résolution unique), et un worker Go (iCal, récurrences, Discord) branché en direct sur Postgres.
 
-**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md), [`ics`](./docs/ics-architecture.md), [`discord`](./docs/discord-architecture.md) et [`deployment`](./docs/deployment.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
+**Détails complets** (modèle de données, règle de visibilité, flux d'une requête, droits, iCal, Discord, tests, anti-patterns) : voir [`docs/architecture.md`](./docs/architecture.md), et ses annexes [`auth`](./docs/auth-architecture.md), [`calendar`](./docs/calendar-architecture.md), [`groups`](./docs/groups-architecture.md), [`ics`](./docs/ics-architecture.md), [`discord`](./docs/discord-architecture.md), [`mcp`](./docs/mcp-architecture.md) (assistants IA) et [`deployment`](./docs/deployment.md). Périmètre et étapes : [`docs/roadmap.md`](./docs/roadmap.md).
 
 Topologie rapide :
 - `app/lib/src/features/<f>/{domain,data,application,presentation}/` — les features.
 - `app/lib/src/` — `composition_root.dart`, `app.dart`, `routing/`, `supabase/`, `exceptions/`, `logging/`, `localization/` (ARB).
 - `supabase/migrations/` — schéma, RLS, RPC ; `supabase/tests/` — pgTAP ; `config.toml` — pile locale sur les ports 553xx.
 - `deploy/` — mise en ligne : compose de prod, rôles, `migrate.sh`, vhost Caddy, bootstrap, répétition locale (`rehearsal/`) ; `.github/workflows/deploy.yml` sur la branche `release`.
-- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/discord/` — bot (interactions signées, commandes, créneaux, récaps et rappels, `PgStore`) ; `worker/authgate/` — passerelle devant GoTrue (mêmes réponses, même délai, compte ou pas) ; `worker/vendor/` — dépendances vendorisées.
+- `worker/cmd/worker/` — le binaire ; `worker/internal/{config,database,httpx}/` (`database.Listen` : écoute LISTEN partagée) ; `worker/recurrence/` — dépliage des séries (`Expand` pur, `Service`, `PgStore`) ; `worker/ics/` — relecture des flux iCal (garde SSRF, `Fetch`, `Parse`, `Service`, `PgStore`) ; `worker/discord/` — bot (interactions signées, commandes, créneaux, récaps et rappels, `PgStore`) ; `worker/authgate/` — passerelle devant GoTrue (mêmes réponses, même délai, compte ou pas) et garde des routes de compte (jetons d'assistant refusés) ; `worker/assistant/` — serveur MCP des assistants IA (jeton jugé par GoTrue, outils au nom du membre) ; `worker/slots/` — créneaux communs (`/dispo`, MCP) ; `worker/vendor/` — dépendances vendorisées.
 
 ## III. Pile Technologique
 
@@ -26,14 +26,14 @@ Topologie rapide :
 
 - **App** : Dart ^3.13 / Flutter stable ; `flutter_riverpod` ^3.4 **sans codegen**, `go_router` ^18, `supabase_flutter` ^2.17, `flutter_timezone` ^5.1, `kalender` ^0.31 (vues d'agenda ; 0.x : API mouvante, garder la version mineure), `url_launcher` ^6.3 (pages légales ouvertes hors de l'app ; `<queries>` déclaré dans le manifeste Android), `webview_flutter` ^4.14 (Android seul : le widget Turnstile, servi par `app/web/captcha.html`), `audioplayers` ^6.8 (le seul jingle de l'app, celui de l'intro), `flutter_localizations` + `intl`.
 - **Backend** : Supabase (Postgres 17, GoTrue, PostgREST), auto-hébergé sur Hetzner en prod ; CLI ≥ 2.114 en local.
-- **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
+- **Worker** : Go 1.26 ; `pgx/v5` (Postgres en direct, rôle `agora_worker`), `teambition/rrule-go` (RRULE), `emersion/go-ical` (lecture iCal), `modelcontextprotocol/go-sdk` (serveur MCP), `time/tzdata` embarqué. **Dépendances vendorisées** : après tout `go get`, `go mod tidy && go mod vendor`, et committer `worker/vendor/`.
 - **Auth** : e-mail + mot de passe (SMTP Brevo), et « Continuer avec Google / Discord » (OAuth, `GOTRUE_EXTERNAL_*`). Les boutons suivent `AGORA_SIGN_IN_PROVIDERS` du build : ne jamais y mettre un fournisseur que le `.env` du serveur n'active pas.
 - **Android** : `applicationId` **`app.agora`**, figé dès le premier envoi au Play Store. Signature d'envoi : `../.agora-secrets/upload-keystore.jks`, câblée par `app/android/key.properties` (gitignoré) — conventions dans `../docs/android-signing-guide.md`.
 
 ## IV. Garde-Fous non négociables
 
 1. **Vie privée : un seul chemin de sortie.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda`, appelée par `group_agenda()` ou par le worker. Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy` ; un rdv accepté dans un autre groupe n'est jamais plus que `busy`. Toute évolution de la règle ajoute son test pgTAP.
-2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`.
+2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`. Un jeton d'assistant IA (claim `client_id`) ne vaut que pour `/mcp` : PostgREST, le temps réel et les routes de compte de GoTrue le refusent ; le worker n'agit au nom d'un membre que par `SET LOCAL ROLE authenticated` + claims `{sub}` dans la même transaction.
 3. **Migrations immuables** : une migration déjà appliquée en prod n'est **jamais** modifiée. Corriger = nouvelle migration.
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
 5. **Le worker est l'unique implémentation des RRULE** : l'app lit l'agenda par `my_agenda()`, jamais la ligne maîtresse d'une série. Il n'écrit les rdv importés que par `private.ics_apply`, jamais `events.visibility`, note un échec par un code connu (jamais le texte d'une erreur, qui contiendrait l'URL) et contrôle le SSRF sur l'adresse **résolue** à chaque connexion. `AGORA_ICS_ALLOW_PRIVATE_NETWORK` ne se pose qu'en local.
@@ -63,10 +63,9 @@ cd app && flutter run -d chrome --web-port 58090 --dart-define-from-file=config/
 cd worker && go vet ./... && go test -race ./...
 AGORA_TEST_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
 AGORA_TEST_ADMIN_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres \
-  go test -race -tags integration ./...   # PgStore (récurrences, iCal) et LISTEN contre la pile locale
+  go test -race -tags integration ./...   # PgStore (récurrences, iCal, Discord, assistant) et LISTEN contre la pile locale
 AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
-  go run ./cmd/worker              # déplie les séries, relit les flux iCal ; AGORA_HTTP_ADDR (défaut :8080), /healthz
-# AGORA_ICS_ALLOW_PRIVATE_NETWORK=true : lève la garde SSRF (flux servi en local) — jamais en prod
+  go run ./cmd/worker              # séries, flux iCal ; AGORA_HTTP_ADDR (défaut :8080), /healthz ; AGORA_ICS_ALLOW_PRIVATE_NETWORK=true lève la garde SSRF (local seulement)
 cd worker && go mod tidy && go mod vendor   # après tout changement de dépendance Go
 sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep : garder la pile)
 # E-mails locaux (codes de confirmation, réinitialisation) : Mailpit sur http://127.0.0.1:55324
@@ -84,8 +83,9 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |
-| Commande, publication ou réglage du bot Discord | `docs/discord-architecture.md` + `supabase/tests/discord_test.sql` + tests Go de `worker/discord/` ; puis `worker register-commands` si une commande change ; `/dispo` : `slots.go` suit `free_slots.dart` |
+| Commande, publication ou réglage du bot Discord | `docs/discord-architecture.md` + `supabase/tests/discord_test.sql` + tests Go de `worker/discord/` ; puis `worker register-commands` si une commande change ; `/dispo` et MCP : `worker/slots/` suit `free_slots.dart` |
 | Flux d'e-mail GoTrue ou réglage d'auth | gabarit FR+EN dans `supabase/templates/` + `config.toml` + `GOTRUE_*` de `deploy/docker-compose.prod.yml` + `docs/auth-architecture.md` ; une route d'auth qui envoie un e-mail ou lit un mot de passe passe par `worker/authgate/` + `agora.caddy` + `deploy/rehearsal/check.dart` |
+| Outil MCP, porte d'un jeton d'assistant, consentement ou écran Assistant IA | `docs/mcp-architecture.md` + `supabase/tests/assistant_test.sql` + tests Go de `worker/assistant/` et `worker/authgate/` + `deploy/rehearsal/check.dart` + `app/web/assistant.html` (la page suit `assistant.Tools`) |
 | Nouvelle chaîne d'interface | `app_fr.arb` + `app_en.arb` |
 | Vérification humaine (CAPTCHA) : clé, page du widget, écrans concernés | `app/web/captcha.html` + `captcha_gate.dart` + `GOTRUE_SECURITY_CAPTCHA_*` de `deploy/docker-compose.prod.yml` + `docs/deployment.md` |
 | Donnée collectée, sous-traitant, durée de conservation, ou effet de la suppression de compte | `app/web/legal/confidentialite.html` (les deux langues) — la page décrit le traitement réel, pas une intention |

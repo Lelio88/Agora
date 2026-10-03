@@ -52,7 +52,8 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   confirmé ; deux demandes en moins d'une minute (`GOTRUE_SMTP_MAX_FREQUENCY`) donnent 429 pour un
   compte et 200 pour une adresse inconnue ; la durée trahit l'envoi SMTP et le bcrypt du mot de
   passe ; `PUT /user` répond `email_exists` à qui vise l'adresse d'un autre. Caddy confie donc au
-  worker `POST /signup`, `/recover`, `/resend`, `/token` et `PUT /user`, qu'il relaie à GoTrue :
+  worker `POST /signup`, `/recover`, `/resend`, `/token` et `PUT /user` (ce dernier après la
+  garde ci-dessous), qu'il relaie à GoTrue :
   - **inscription, mot de passe oublié, renvoi** : toujours 200 `{}`, toujours après 1,5 s, que
     GoTrue ait réussi, limité, échoué ou pas encore fini (sa requête continue, l'e-mail part ;
     64 au plus en route, au-delà la même réponse sans relais, contre les rafales).
@@ -67,6 +68,17 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   à `/otp` : GoTrue y cherche le compte **avant** de lire ce réglage. Contrepartie : si le worker
   tombe, ces routes échouent ; et qui dépasse une limite voit « code envoyé » sans rien recevoir.
   Éprouvé par `check.dart` (répétition), à travers Caddy.
+- **Garde des jetons d'assistant IA (`worker/authgate/guard.go`)** : le jeton qu'un assistant
+  obtient du serveur OAuth de GoTrue est un jeton d'utilisateur, plus un claim `client_id`. Sur les
+  routes de compte, il pourrait lire l'adresse, changer le mot de passe, lier ou délier une
+  identité, fermer toutes les sessions ou **accorder un autre accès** au nom du membre — aucun
+  réglage de GoTrue ne l'empêche. Caddy confie donc au worker, toutes méthodes, `/user*`
+  (identités et accès accordés compris), `/logout*`, `/factors*`, `/reauthenticate*` et
+  `/oauth/authorizations*` : la garde y refuse tout jeton porteur de `client_id` (403
+  `assistant_forbidden`) et relaie le reste tel quel, `X-Forwarded-For` compris ; `PUT /user` passe
+  **ensuite** par la passerelle. Le jeton est lu sans vérifier sa signature : on ne fait que
+  refuser davantage. Les autres portes (PostgREST, temps réel) et le serveur OAuth :
+  [`mcp-architecture.md`](./mcp-architecture.md).
 - **Codes valables 15 minutes** (`otp_expiry = 900`) : un code de réinitialisation deviné donne
   le compte, et la seule limite est `token_verifications` (30 essais / 5 min / IP). La
   réinitialisation vérifie **toujours** le code, même avec une session ouverte.
@@ -152,3 +164,4 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 | `supabase/migrations/20260921175536_account_deletion.sql` | `delete_my_account()` : transmission des groupes, puis effacement en cascade |
 | `supabase/migrations/20260923000000_left_behind_events.sql` · `tests/left_behind_events_test.sql` | ce que la suppression laisse au groupe : le lister, l'effacer |
 | `supabase/templates/*.html` | Gabarits bilingues |
+| `worker/authgate/gate.go` · `guard.go` | Passerelle (réponses et délais identiques, compte ou pas) ; garde des jetons d'assistant sur les routes de compte |

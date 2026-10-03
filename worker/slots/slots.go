@@ -1,27 +1,42 @@
-package discord
+// Package slots cherche les créneaux libres communs d'un groupe : /dispo du
+// bot Discord et l'outil creneaux_communs du serveur MCP.
+//
+// Portage de app/lib/src/features/groups/domain/free_slots.dart, qui fait
+// foi. Les deux implémentations passent les mêmes cas de test ; toute
+// évolution de l'une se reporte dans l'autre.
+//
+// Rappel des règles : un rdv du groupe prend le créneau pour tout le monde ;
+// une journée entière ne prend rien sauf AllDayBlocks ; tout se calcule en
+// heure murale du fuseau (18 h reste 18 h un jour de changement d'heure) ;
+// un créneau ne commence jamais avant le quart d'heure qui suit From.
+//
+// Le calcul est pur : il ne lit que ce que l'appelant a déjà obtenu par la
+// règle de visibilité (group_agenda) — un rdv « invisible » n'y est pas, donc
+// son propriétaire paraît libre.
+package slots
 
 import (
 	"sort"
 	"time"
 )
 
-// Créneaux communs pour /dispo : portage de
-// app/lib/src/features/groups/domain/free_slots.dart, qui fait foi. Les deux
-// implémentations passent les mêmes cas de test ; toute évolution de l'une
-// se reporte dans l'autre.
-//
-// Rappel des règles : un rdv du groupe prend le créneau pour tout le monde ;
-// une journée entière ne prend rien sauf AllDayBlocks ; tout se calcule en
-// heure murale du fuseau (18 h reste 18 h un jour de changement d'heure) ;
-// un créneau ne commence jamais avant le quart d'heure qui suit From.
+// Item est une ligne de l'agenda du groupe, réduite à ce que le calcul lit.
+type Item struct {
+	// UserID est vide pour un rdv du groupe.
+	UserID       string
+	IsGroupEvent bool
+	Start        time.Time
+	End          time.Time
+	AllDay       bool
+}
 
-// MaxFreeSlots borne le nombre de créneaux rendus.
-const MaxFreeSlots = 50
+// Max borne le nombre de créneaux rendus.
+const Max = 50
 
 const quarter = 15 * time.Minute
 
-// SlotSearch décrit ce que l'on cherche.
-type SlotSearch struct {
+// Search décrit ce que l'on cherche.
+type Search struct {
 	// Location est le fuseau du demandeur : jours et fenêtre s'y lisent.
 	Location *time.Location
 	// From et To bornent la période [From, To[.
@@ -42,8 +57,8 @@ type Slot struct {
 	Start, End time.Time
 }
 
-// FindFreeSlots rend les plages libres, dans l'ordre, au plus MaxFreeSlots.
-func FindFreeSlots(search SlotSearch, agenda []AgendaItem) []Slot {
+// Find rend les plages libres, dans l'ordre, au plus Max.
+func Find(search Search, agenda []Item) []Slot {
 	if search.DayEnd <= search.DayStart {
 		return nil
 	}
@@ -53,7 +68,7 @@ func FindFreeSlots(search SlotSearch, agenda []AgendaItem) []Slot {
 	to := search.To.In(loc)
 	from := search.From.In(loc)
 	var slots []Slot
-	for d := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, loc); d.Before(to) && len(slots) < MaxFreeSlots; d = time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, 0, loc) {
+	for d := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, loc); d.Before(to) && len(slots) < Max; d = time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, 0, loc) {
 		if !search.Weekdays[d.Weekday()] {
 			continue
 		}
@@ -68,7 +83,7 @@ func FindFreeSlots(search SlotSearch, agenda []AgendaItem) []Slot {
 			if free.End.Sub(free.Start) >= search.Duration {
 				slots = append(slots, free)
 			}
-			if len(slots) == MaxFreeSlots {
+			if len(slots) == Max {
 				break
 			}
 		}
@@ -93,20 +108,22 @@ func nextQuarter(t time.Time) time.Time {
 
 // localBounds rend début et fin dans le fuseau. Une journée entière se lit
 // sur ses composants UTC (une date de calendrier), jamais par conversion.
-func localBounds(item AgendaItem, loc *time.Location) (time.Time, time.Time) {
+func localBounds(item Item, loc *time.Location) (time.Time, time.Time) {
 	if item.AllDay {
-		return calendarDate(item.Start, loc), calendarDate(item.End, loc)
+		return CalendarDate(item.Start, loc), CalendarDate(item.End, loc)
 	}
 	return item.Start.In(loc), item.End.In(loc)
 }
 
-func calendarDate(t time.Time, loc *time.Location) time.Time {
+// CalendarDate rend, dans loc, la date de calendrier d'une journée entière :
+// elle se lit sur ses composants UTC, jamais par conversion de fuseau.
+func CalendarDate(t time.Time, loc *time.Location) time.Time {
 	u := t.UTC()
 	return time.Date(u.Year(), u.Month(), u.Day(), 0, 0, 0, 0, loc)
 }
 
 // busyIntervals rend les intervalles pris, triés et fusionnés.
-func busyIntervals(search SlotSearch, agenda []AgendaItem) []Slot {
+func busyIntervals(search Search, agenda []Item) []Slot {
 	intervals := make([]Slot, 0, len(agenda))
 	for _, item := range agenda {
 		if !item.IsGroupEvent && !search.Members[item.UserID] {

@@ -18,9 +18,10 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
              │ HTTPS : Auth (JWT), RPC,      │ REST          │ interactions
              │ PostgREST                     │ (messages)    │ HTTP signées
 ┌────────────▼─────────────┐        ┌───────┴──────────────▼───────┐
-│ Supabase auto-hébergé    │        │ Worker Go                    │
-│ GoTrue · PostgREST       │        │ iCal · RRULE · bot Discord   │
-└────────────┬─────────────┘        └───────┬──────────────┬───────┘
+│ Supabase auto-hébergé    │        │ Worker Go                    │◄── assistant IA
+│ GoTrue · PostgREST       │◄───────┤ iCal · RRULE · bot Discord   │    (MCP /mcp,
+│ (serveur OAuth 2.1)      │ jeton  │ serveur MCP · garde d'auth   │     jeton OAuth)
+└────────────┬─────────────┘ jugé   └───────┬──────────────┬───────┘
              │ SQL (rôle authenticated,     │ pgx direct    │ HTTPS sortant
              │ RLS appliquée)               │               ▼
 ┌────────────▼──────────────────────────────▼───┐   flux iCal des utilisateurs
@@ -35,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 |---|---|
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
-| `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord, passerelle d'auth |
+| `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord, passerelle et garde d'auth, serveur MCP des assistants IA |
 | `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses), [`ics-architecture.md`](./ics-architecture.md) (import iCal), [`discord-architecture.md`](./discord-architecture.md) (bot Discord) et [`mcp-architecture.md`](./mcp-architecture.md) (assistants IA : OAuth, serveur MCP, portes fermées), et la feuille de route |
 
 ### Infrastructure partagée
@@ -52,9 +53,12 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/lib/src/common_widgets/` | `SubmitButton` (désactivé pendant l'envoi), `FormErrorText`, `AsyncValueWidget` ; `agenda_view.dart` (vues kalender, barre, suivi de la plage chargée) ; `palette.dart` (couleurs des agendas et des membres) |
 | `app/lib/src/localization/` | ARB : `app_fr.arb` de référence (avec descriptions), `app_en.arb` en traduction |
 | `worker/internal/config/` | Configuration par variables d'environnement ; invalide = arrêt au démarrage |
-| `worker/internal/httpx/` | Routes HTTP du worker : `/healthz`, `/discord/interactions` si la clé publique Discord est fournie, et les routes de la passerelle d'auth si `AGORA_AUTH_UPSTREAM` l'est |
-| `worker/authgate/` | Passerelle devant GoTrue : inscription, mot de passe oublié, renvoi, `/token` et `PUT /user` répondent pareil, et au même délai, qu'une adresse ait un compte ou non — détail dans l'annexe auth |
-| `worker/internal/database/` | Pool pgx (4 connexions), ping au démarrage ; `Listen` : une connexion `LISTEN` dédiée, partagée par canaux (`agora_recurrence`, `agora_ics`), reconnexion avec repli |
+| `worker/internal/httpx/` | Routes HTTP du worker : `/healthz`, `/discord/interactions` si la clé publique Discord est fournie, les routes de la passerelle et de la garde d'auth si `AGORA_AUTH_UPSTREAM` l'est, et `/mcp` (avec sa ressource protégée) si `AGORA_PUBLIC_API_URL` l'est aussi |
+| `worker/authgate/` | Passerelle devant GoTrue : inscription, mot de passe oublié, renvoi, `/token` et `PUT /user` répondent pareil, et au même délai, qu'une adresse ait un compte ou non ; garde des routes de compte, qui refuse les jetons d'assistant IA — détail dans l'annexe auth |
+| `worker/internal/bearer/` | Lecture, sans vérification, de la charge d'un jeton GoTrue (`client_id`) : ne sert qu'à refuser davantage |
+| `worker/assistant/` | Serveur MCP des assistants IA : vérification du jeton par GoTrue, outils, stockage au nom du membre (bascule de rôle) — détail dans l'annexe MCP |
+| `worker/slots/` | Créneaux communs, portage de `free_slots.dart` : `/dispo` et l'outil `creneaux_communs` |
+| `worker/internal/database/` | Pools pgx : 4 connexions pour les tâches de fond, 2 à part pour les assistants IA (une rafale d'appels MCP n'affame pas le reste), ping au démarrage ; `Listen` : une connexion `LISTEN` dédiée, partagée par canaux (`agora_recurrence`, `agora_ics`), reconnexion avec repli |
 | `worker/recurrence/` | Dépliage des séries : `Expand` (pur), `Service`, `PgStore` — détail dans l'annexe agenda |
 | `worker/ics/` | Relecture des flux iCal : garde SSRF, téléchargement borné, lecture go-ical, `Service`, `PgStore` (fonctions `private.ics_*`) — détail dans l'annexe iCal |
 | `worker/discord/` | Bot Discord : interactions signées, commandes, créneaux (`/dispo`), récaps et rappels, inscription des commandes, `PgStore` (fonctions `private.discord_*`) — détail dans l'annexe Discord |
@@ -138,7 +142,12 @@ trois réglages, avec l'ordre `details` < `busy` < `invisible` (d'où `greatest(
 propriétaire que par `private.resolve_group_agenda(groupe, lecteur, de, à, plafond)` :
 - l'app l'appelle via `public.group_agenda()` (membre obligatoire, plage ≤ 93 jours, plafond
   `details`) ;
-- le worker l'appelle en direct (lecteur `null`, plafond `busy` pour un salon Discord).
+- le worker l'appelle en direct (lecteur `null`, plafond `busy` pour un salon Discord) ;
+- le serveur MCP l'appelle par `group_agenda()`, **au nom du membre** (bascule de rôle) :
+  l'assistant voit ce que l'app montrerait au membre, détails compris de qui partage « Tout ».
+  Pas de plafond `busy` comme pour Discord : l'audience d'un salon déborde du groupe, celle de
+  l'assistant est le membre lui-même. Choix assumé, signalé sous le niveau « Tout » et dans la
+  politique de confidentialité.
 
 Les tables `events` et `event_occurrences` ne sont lisibles en direct que par le propriétaire,
 ou par les membres pour un agenda de groupe. **Toute nouvelle façon de lire des rdv doit passer
@@ -228,6 +237,20 @@ Détail complet : [`discord-architecture.md`](./discord-architecture.md). Invari
 - **Réglage dans l'app** (menu du groupe → Salon Discord) : fréquence, jour et heure du récap,
   délai des rappels, pour chaque groupe.
 
+## 6 bis. Assistants IA (serveur MCP)
+
+Détail complet : [`mcp-architecture.md`](./mcp-architecture.md). Invariants :
+
+- **Le jeton d'un assistant ne vaut que pour `/mcp`** : PostgREST, le temps réel et les routes de
+  compte de GoTrue le refusent (§4). Le serveur OAuth est celui de GoTrue ; jamais le scope
+  `openid` (HS256).
+- **Le serveur agit au nom du membre** (bascule de rôle, claims sans `client_id`) : mêmes RLS,
+  RPC et règle de visibilité que l'app. GoTrue juge chaque jeton (`GET /user`) : une révocation
+  coupe aussitôt.
+- **Sept outils**, dont trois écritures (créer un rdv, le proposer au groupe, y répondre), jamais
+  de modification ni de suppression, plafonnées à 20 par heure et par membre. Un outil ne devine
+  pas : un groupe, un agenda ou un membre ambigu est refusé avec les choix possibles.
+
 ## 7. Application Flutter et comptes
 
 Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
@@ -313,7 +336,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Service | Usage | Référence |
 |---|---|---|
 | Supabase auto-hébergé (Hetzner, serveur partagé) | Auth, API, Realtime, Postgres ; `api.agora.heianenterprise.com`, sans Kong (Caddy route et répond au CORS) | [`deployment.md`](./deployment.md) |
-| Worker (conteneur) | iCal, récurrences, Discord, passerelle d'auth ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
+| Worker (conteneur) | iCal, récurrences, Discord, passerelle et garde d'auth, serveur MCP (`/mcp`) ; **`mem_limit` obligatoire** (pic nocturne d'Ollama sur ce serveur) ; se connecte en `agora_worker`, dont le mot de passe est posé par `deploy/migrate.sh` | [`deployment.md`](./deployment.md) |
 | App web | `agora.heianenterprise.com`, servie par Caddy ; sert aussi de lien web de suppression du compte pour le Play Store | [`deployment.md`](./deployment.md) |
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../docs/brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
@@ -379,3 +402,10 @@ jeton. Pile, pièges, première installation et répétition locale :
 - ❌ Naviguer soi-même après une connexion réussie : c'est au routeur de le faire, sur
   l'événement de session.
 - ❌ Écrire l'état d'un contrôleur après un `await` sans vérifier `ref.mounted`.
+- ❌ Une politique qui teste le claim `client_id` sans `to authenticated` : elle viserait aussi
+  `agora_worker`, qui n'a pas l'USAGE sur `auth`, et arrêterait le dépliage des séries.
+- ❌ Ajouter une route de compte de GoTrue à un motif ServeMux avec méthode (`PUT /auth/v1/user`)
+  à côté de la garde : plus précis, il la contournerait. La garde reçoit la route, puis délègue.
+- ❌ Annoncer ou demander le scope `openid` : GoTrue signe en HS256, brûle le code puis répond 500.
+- ❌ Faire agir le worker au nom d'un membre sans `sub` dans les claims : deux déclencheurs
+  prendraient l'appel pour le serveur.

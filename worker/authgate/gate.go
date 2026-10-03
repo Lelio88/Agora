@@ -101,13 +101,13 @@ var methods = map[string]string{
 }
 
 // Routes sont les routes que Caddy envoie à la passerelle, au format des
-// motifs de http.ServeMux.
+// motifs de http.ServeMux. PUT /user n'y est pas : la garde des jetons
+// d'assistant (Guard) le reçoit d'abord, puis le confie à la passerelle.
 var Routes = []string{
 	"POST " + prefix + "/signup",
 	"POST " + prefix + "/recover",
 	"POST " + prefix + "/resend",
 	"POST " + prefix + "/token",
-	"PUT " + prefix + "/user",
 }
 
 // emailChangeRefused répond à toute demande de changement d'adresse.

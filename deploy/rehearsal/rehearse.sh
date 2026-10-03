@@ -13,7 +13,8 @@
 # Puis check.dart parcourt la pile À TRAVERS Caddy : CORS, inscription avec
 # le code reçu par e-mail (gabarit lu par URL), passerelle d'auth (mêmes
 # réponses, mêmes délais, compte ou pas), REST, Realtime, dépliage d'une
-# série par le worker, règle de vie privée, suppression de compte.
+# série par le worker, règle de vie privée, parcours d'un assistant IA
+# (OAuth, serveur MCP, portes fermées, révocation), suppression de compte.
 #
 # À relancer avant tout changement du compose, du vhost, des scripts de
 # déploiement ou d'une version d'image. Ne touche pas à la pile locale de
@@ -78,6 +79,7 @@ sh "$ROOT/deploy/gen-secrets.sh" "$ROOT/deploy/production.env.example" | sed \
     -e 's|^# SMTP_HOST=.*|SMTP_HOST=mailpit|' \
     -e 's|^# SMTP_PORT=.*|SMTP_PORT=1025|' \
     -e 's|^AGORA_TAG=.*|AGORA_TAG=rehearsal|' \
+    -e 's|^# AGORA_OAUTH_SERVER=.*|AGORA_OAUTH_SERVER=true|' \
     > "$WORK/.env"
 
 {

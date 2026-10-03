@@ -163,3 +163,21 @@ CAPTCHA dans l'app (il conditionne l'ouverture : sans lui, le quota d'e-mails s'
 n'importe où), pages légales, fiche Play Store et liens d'application Android
 (`assetlinks.json`) pour les invitations, identifiants OAuth Google et Discord, bot Discord
 (étape 8) : voir [`roadmap.md`](./roadmap.md).
+
+## Assistants IA (serveur MCP)
+
+- **Routes** (vhost `api.agora`) : `/mcp` et `/.well-known/oauth-protected-resource*` vont au
+  worker ; `/.well-known/oauth-authorization-server/auth/v1` et
+  `/.well-known/openid-configuration/auth/v1` sont réécrits vers la découverte de GoTrue ; les routes
+  de compte (`/auth/v1/user*`, `/logout*`, `/factors*`, `/reauthenticate*`,
+  `/oauth/authorizations*`) passent par la garde du worker.
+- **Worker** : `AGORA_PUBLIC_API_URL` (= `API_URL`) allume le serveur MCP, avec
+  `AGORA_AUTH_UPSTREAM` ; `AGORA_PUBLIC_WEB_URL` (= `SITE_URL`) donne l'adresse de la page publique.
+  Aucun secret nouveau.
+- **GoTrue** : `GOTRUE_OAUTH_SERVER_ENABLED` suit `AGORA_OAUTH_SERVER` du `.env` (éteint par
+  défaut), inscription dynamique ouverte, consentement sur `/oauth/consent` de l'app web.
+- **Mise en ligne en deux temps** : d'abord le déploiement (portes, `/mcp`, écran), serveur OAuth
+  éteint ; **puis**, sur le serveur, `AGORA_OAUTH_SERVER=true` dans `/opt/agora/.env` et
+  `docker compose up -d auth` — aucun jeton d'assistant n'existe avant que les portes soient en
+  place. La copie du `.env` au coffre suit. La répétition l'allume d'emblée et déroule le parcours
+  complet d'un assistant (`check.dart`).

@@ -1,6 +1,7 @@
 // Command worker est le service de fond d'Agora : dépliage des rdv
 // récurrents, relecture des agendas iCal, bot Discord (commandes, récaps et
-// rappels), et passerelle d'auth devant GoTrue (paquet authgate).
+// rappels), passerelle et garde d'auth devant GoTrue (paquet authgate), et
+// serveur MCP des assistants IA (paquet assistant).
 //
 // « worker register-commands » inscrit les commandes du bot auprès de
 // Discord, puis rend la main : à relancer après toute modification de
@@ -34,6 +35,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/Lelio88/agora/worker/assistant"
 	"github.com/Lelio88/agora/worker/authgate"
 	"github.com/Lelio88/agora/worker/discord"
 	"github.com/Lelio88/agora/worker/ics"
@@ -85,7 +87,7 @@ func run(logger *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	pool, err := database.NewPool(ctx, cfg.DatabaseURL)
+	pool, err := database.NewPool(ctx, cfg.DatabaseURL, database.BackgroundConnections)
 	if err != nil {
 		return fmt.Errorf("database %s: %w", cfg.RedactedDatabaseURL(), err)
 	}
@@ -128,20 +130,46 @@ func run(logger *slog.Logger) error {
 		}()
 		logger.Info("discord publishing ready")
 	}
-	// Passerelle d'auth : seulement si l'adresse de GoTrue est donnée.
+	// Passerelle et garde d'auth : seulement si l'adresse de GoTrue est donnée.
+	handlers := httpx.Handlers{Discord: interactions}
 	var authGate *authgate.Gate
-	var authHandler http.Handler
 	if cfg.AuthUpstream != "" {
 		authGate, err = authgate.New(authgate.Options{Upstream: cfg.AuthUpstream, Logger: logger})
 		if err != nil {
 			return fmt.Errorf("auth gate: %w", err)
 		}
-		authHandler = authGate
+		guard, err := authgate.NewGuard(cfg.AuthUpstream, authGate, logger)
+		if err != nil {
+			return fmt.Errorf("auth guard: %w", err)
+		}
+		handlers.AuthGate, handlers.AuthGuard = authGate, guard
 		logger.Info("auth gate ready")
+	}
+	// Serveur MCP des assistants IA : il faut GoTrue (qui juge les jetons)
+	// et l'adresse publique de l'API (que les assistants découvrent).
+	if cfg.AuthUpstream != "" && cfg.PublicAPIURL != "" {
+		assistantPool, err := database.NewPool(ctx, cfg.DatabaseURL, database.AssistantConnections)
+		if err != nil {
+			return fmt.Errorf("assistant database: %w", err)
+		}
+		defer assistantPool.Close()
+		docs := ""
+		if cfg.PublicWebURL != "" {
+			docs = cfg.PublicWebURL + "/assistant.html"
+		}
+		svc, err := assistant.New(assistant.Options{
+			PublicURL: cfg.PublicAPIURL, AuthUpstream: cfg.AuthUpstream, DocsURL: docs,
+			Store: assistant.NewPgStore(assistantPool), Logger: logger,
+		})
+		if err != nil {
+			return fmt.Errorf("assistant: %w", err)
+		}
+		handlers.MCP, handlers.ResourceMetadata = svc.MCP, svc.ResourceMetadata
+		logger.Info("assistant server ready")
 	}
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpx.NewRouter(interactions, authHandler),
+		Handler:           httpx.NewRouter(handlers),
 		ReadHeaderTimeout: readHeaderTimeout,
 		ReadTimeout:       readTimeout,
 		WriteTimeout:      writeTimeout,

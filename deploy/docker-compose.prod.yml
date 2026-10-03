@@ -89,6 +89,15 @@ services:
       GOTRUE_SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 10
       GOTRUE_SECURITY_MANUAL_LINKING_ENABLED: "true"
       GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_REAUTHENTICATION: "true"
+      # Serveur OAuth 2.1 des assistants IA (serveur MCP du worker,
+      # docs/mcp-architecture.md). Allumé par le .env, EN DERNIER : les
+      # portes (pré-requête PostgREST, politiques du temps réel, garde du
+      # worker) doivent être en place avant qu'un jeton d'assistant existe.
+      # Un assistant s'inscrit lui-même ; l'écran de consentement de l'app
+      # web (/oauth/consent) n'accorde l'accès qu'aux assistants reconnus.
+      GOTRUE_OAUTH_SERVER_ENABLED: ${AGORA_OAUTH_SERVER:-false}
+      GOTRUE_OAUTH_SERVER_ALLOW_DYNAMIC_REGISTRATION: "true"
+      GOTRUE_OAUTH_SERVER_AUTHORIZATION_PATH: /oauth/consent
       # Mots de passe : 8 caractères, lettres et chiffres (letters_digits).
       GOTRUE_PASSWORD_MIN_LENGTH: 8
       GOTRUE_PASSWORD_REQUIRED_CHARACTERS: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:0123456789"
@@ -243,6 +252,10 @@ services:
       # Passerelle d'auth (worker/authgate) : Caddy lui confie inscription,
       # mot de passe oublié, renvoi de code et /token ; elle relaie ici.
       AGORA_AUTH_UPSTREAM: http://auth:9999
+      # Serveur MCP des assistants IA : l'adresse publique de l'API (que les
+      # assistants découvrent) et celle de l'app web (page de documentation).
+      AGORA_PUBLIC_API_URL: ${API_URL}
+      AGORA_PUBLIC_WEB_URL: ${SITE_URL}
       # Bot Discord, facultatif : sans clé publique, pas d'interactions ;
       # sans jeton, ni récaps ni rappels. Le jeton est un secret (coffre).
       AGORA_DISCORD_PUBLIC_KEY: ${DISCORD_PUBLIC_KEY:-}

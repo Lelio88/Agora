@@ -23,6 +23,7 @@ import (
 	"net"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // Config regroupe les réglages du worker.
@@ -48,6 +49,13 @@ type Config struct {
 	// AuthUpstream est l'adresse de GoTrue derrière la passerelle d'auth
 	// (paquet authgate). Vide : la passerelle n'est pas montée.
 	AuthUpstream string
+	// PublicAPIURL est l'adresse publique de l'API (https://api.agora…) :
+	// celle que voient les assistants IA. Vide, ou sans AuthUpstream : le
+	// serveur MCP n'est pas monté.
+	PublicAPIURL string
+	// PublicWebURL, facultative, est l'adresse de l'app web : la page qui
+	// décrit le serveur MCP y vit (/assistant.html).
+	PublicWebURL string
 }
 
 const defaultHTTPAddr = ":8080"
@@ -89,6 +97,14 @@ func Load(getenv func(string) string) (Config, error) {
 			return Config{}, fmt.Errorf("AGORA_AUTH_UPSTREAM %q: http(s) URL expected", authUpstream)
 		}
 	}
+	publicAPI, err := publicURL("AGORA_PUBLIC_API_URL", getenv("AGORA_PUBLIC_API_URL"))
+	if err != nil {
+		return Config{}, err
+	}
+	publicWeb, err := publicURL("AGORA_PUBLIC_WEB_URL", getenv("AGORA_PUBLIC_WEB_URL"))
+	if err != nil {
+		return Config{}, err
+	}
 	appID := getenv("AGORA_DISCORD_APPLICATION_ID")
 	if appID != "" && !isSnowflake(appID) {
 		return Config{}, errors.New("AGORA_DISCORD_APPLICATION_ID: identifiant numérique attendu")
@@ -101,7 +117,26 @@ func Load(getenv func(string) string) (Config, error) {
 		DiscordApplicationID:   appID,
 		ICSAllowPrivateNetwork: allowPrivate,
 		AuthUpstream:           authUpstream,
+		PublicAPIURL:           publicAPI,
+		PublicWebURL:           publicWeb,
 	}, nil
+}
+
+// publicURL valide une adresse publique : une origine (schéma et hôte, sans
+// chemin), en https hors du poste local. Vide reste vide.
+func publicURL(name, raw string) (string, error) {
+	if raw == "" {
+		return "", nil
+	}
+	parsed, err := url.Parse(raw)
+	if err != nil || parsed.Host == "" || (parsed.Path != "" && parsed.Path != "/") || parsed.RawQuery != "" {
+		return "", fmt.Errorf("%s %q: origine http(s) attendue, sans chemin", name, raw)
+	}
+	local := parsed.Hostname() == "localhost" || parsed.Hostname() == "127.0.0.1"
+	if parsed.Scheme != "https" && !(local && parsed.Scheme == "http") {
+		return "", fmt.Errorf("%s %q: https attendu hors du poste local", name, raw)
+	}
+	return strings.TrimRight(raw, "/"), nil
 }
 
 // isSnowflake dit si s est un identifiant Discord (entier décimal).

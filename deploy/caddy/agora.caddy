@@ -154,11 +154,17 @@ api.agora.heianenterprise.com {
 	handle @authGate {
 		reverse_proxy 127.0.0.1:9404
 	}
-	@accountUpdate {
-		method PUT
-		path /auth/v1/user*
+	# Garde des jetons d'assistant IA (worker/authgate/guard.go) : les
+	# routes de compte — lecture et mise à jour du compte, identités, accès
+	# accordés, déconnexion, facteurs, réidentification, consentement OAuth —
+	# passent par le worker, qui refuse tout jeton porteur de client_id et
+	# relaie le reste (PUT /user ensuite par la passerelle, qui refuse le
+	# changement d'adresse). Toutes méthodes : un motif plus étroit laisserait
+	# un assistant changer le mot de passe ou accorder un autre accès.
+	@accountRoutes {
+		path /auth/v1/user* /auth/v1/logout* /auth/v1/factors* /auth/v1/reauthenticate* /auth/v1/oauth/authorizations*
 	}
-	handle @accountUpdate {
+	handle @accountRoutes {
 		reverse_proxy 127.0.0.1:9404
 	}
 	# Lien magique : coupé dans GoTrue, mais /otp cherche le compte AVANT de
@@ -175,6 +181,27 @@ api.agora.heianenterprise.com {
 
 	handle_path /rest/v1/* {
 		reverse_proxy 127.0.0.1:9402
+	}
+
+	# Serveur MCP des assistants IA (worker/assistant) : le worker fait juger
+	# chaque jeton par GoTrue. Sa ressource protégée (RFC 9728) désigne le
+	# serveur d'autorisation …/auth/v1, dont la découverte (RFC 8414 : suffixe
+	# après /.well-known/…) est réécrite vers les chemins racine de GoTrue.
+	# Le CORS reste celui de l'app : un client MCP qui tourne dans un
+	# navigateur n'est pas pris en charge.
+	handle /mcp {
+		reverse_proxy 127.0.0.1:9404
+	}
+	handle /.well-known/oauth-protected-resource* {
+		reverse_proxy 127.0.0.1:9404
+	}
+	handle /.well-known/oauth-authorization-server/auth/v1 {
+		rewrite * /.well-known/oauth-authorization-server
+		reverse_proxy 127.0.0.1:9401
+	}
+	handle /.well-known/openid-configuration/auth/v1 {
+		rewrite * /.well-known/openid-configuration
+		reverse_proxy 127.0.0.1:9401
 	}
 
 	# Interactions du bot Discord : le worker vérifie la signature Ed25519 de

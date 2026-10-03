@@ -140,7 +140,8 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
 « Trouver un créneau » (barre de l'agenda du groupe, route `groups/:groupId/slots`,
 `FindSlotsScreen`) : les plages où tous les membres choisis sont libres.
 
-- **Calcul dans l'app** (`domain/free_slots.dart`, fonction pure `findFreeSlots`), à partir de
+- **Calcul dans l'app** (`domain/free_slots.dart`, fonction pure `findFreeSlots`) ; le worker
+  en porte la traduction (`worker/slots/`) pour `/dispo` et l'outil MCP `creneaux_communs`. À partir de
   `group_agenda` : il ne voit rien de plus que l'agenda superposé. « Occupé » et détail = pris ;
   « invisible » = aucun créneau, donc **paraît libre** — l'écran nomme les membres qui ne
   partagent rien. Mes propres rdv comptent (le serveur me les rend en détail), comme les rdv

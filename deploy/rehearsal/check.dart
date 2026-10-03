@@ -10,7 +10,10 @@
 ///     stockage pour le PKCE, et le serveur vérifie le même code OTP ;
 ///   - trois secondes entre l'abonnement Realtime et l'insertion : Realtime
 ///     branche l'abonnement aux changements juste après avoir répondu au
-///     « join », une insertion immédiate le précéderait.
+///     « join », une insertion immédiate le précéderait ;
+///   - l'assistant IA est un client OAuth « de la machine » (retour en boucle
+///     locale) : le consentement passe par l'API avec la session d'Alice,
+///     comme le ferait l'écran /oauth/consent de l'app.
 ///
 ///   dart run --packages=app/.dart_tool/package_config.json \
 ///     deploy/rehearsal/check.dart deploy/rehearsal/.work/.env
@@ -20,6 +23,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase/supabase.dart';
 
@@ -187,7 +193,7 @@ Future<void> _checkAuthGate(
       update.statusCode);
 }
 
-Future<void> _checkGroupFlow(SupabaseClient alice, SupabaseClient bob) async {
+Future<String> _checkGroupFlow(SupabaseClient alice, SupabaseClient bob) async {
   final groupId = await alice.rpc<String>('create_group', params: {'p_name': 'Répétition'});
   final code = await alice.rpc<String>('create_invite', params: {'p_group_id': groupId});
   await bob.rpc<String>('join_group', params: {'p_code': code, 'p_share_level': 'details'});
@@ -246,6 +252,177 @@ Future<void> _checkGroupFlow(SupabaseClient alice, SupabaseClient bob) async {
       await alice.rpc<List<dynamic>>('group_agenda', params: {'p_group_id': groupId, ...range});
   _check('agenda du groupe résolu par la règle de vie privée',
       groupAgenda.where((r) => r['title'] == 'Escalade').length >= 3);
+  return groupId;
+}
+
+/// La charge d'un JWT, sans vérifier la signature.
+Map<String, dynamic> _claims(String jwt) =>
+    jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(jwt.split('.')[1]))))
+        as Map<String, dynamic>;
+
+/// Un appel MCP (JSON-RPC) : (statut, corps décodé ou null).
+Future<(int, Map<String, dynamic>?)> _mcp(String? token, String method,
+    [Map<String, Object?> params = const {}]) async {
+  final res = await http.post(Uri.parse('$_api/mcp'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}));
+  Map<String, dynamic>? body;
+  try {
+    body = jsonDecode(res.body) as Map<String, dynamic>;
+  } on FormatException {
+    body = null;
+  }
+  return (res.statusCode, body);
+}
+
+/// Le parcours d'un assistant IA : découverte, inscription, consentement,
+/// jetons, outils, portes fermées, rafraîchissement, révocation.
+Future<void> _checkAssistant(String key, SupabaseClient alice, String groupId) async {
+  const redirect = 'http://127.0.0.1:53682/callback';
+  final (status, _) = await _mcp(null, 'tools/list');
+  final probe = await http.post(Uri.parse('$_api/mcp'),
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'},
+      body: '{}');
+  _check('MCP sans jeton : 401', status == 401, status);
+  _check('… qui désigne la ressource protégée',
+      (probe.headers['www-authenticate'] ?? '')
+          .contains('resource_metadata="$_api/.well-known/oauth-protected-resource/mcp"'));
+
+  final resource = jsonDecode((await http.get(
+          Uri.parse('$_api/.well-known/oauth-protected-resource/mcp')))
+      .body) as Map<String, dynamic>;
+  _check('ressource : serveur d\'autorisation …/auth/v1, scope email seul',
+      (resource['authorization_servers'] as List).single == '$_api/auth/v1' &&
+          (resource['scopes_supported'] as List).single == 'email',
+      resource);
+  final server = jsonDecode((await http.get(
+          Uri.parse('$_api/.well-known/oauth-authorization-server/auth/v1')))
+      .body) as Map<String, dynamic>;
+  _check('découverte du serveur d\'autorisation (RFC 8414)',
+      server['issuer'] == '$_api/auth/v1' && server['registration_endpoint'] != null, server['issuer']);
+
+  final registered = await http.post(Uri.parse('$_api/auth/v1/oauth/clients/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'client_name': 'Répétition',
+        'redirect_uris': [redirect],
+        'token_endpoint_auth_method': 'none',
+        'grant_types': ['authorization_code', 'refresh_token'],
+        'response_types': ['code'],
+      }));
+  _check('inscription dynamique d\'un assistant', registered.statusCode == 201, registered.statusCode);
+  final clientId = (jsonDecode(registered.body) as Map<String, dynamic>)['client_id'] as String;
+
+  final random = Random.secure();
+  final verifier = base64Url.encode(List<int>.generate(48, (_) => random.nextInt(256))).replaceAll('=', '');
+  final challenge = base64Url.encode(sha256.convert(ascii.encode(verifier)).bytes).replaceAll('=', '');
+  final authorize = http.Request(
+      'GET',
+      Uri.parse('$_api/auth/v1/oauth/authorize').replace(queryParameters: {
+        'response_type': 'code',
+        'client_id': clientId,
+        'redirect_uri': redirect,
+        'code_challenge': challenge,
+        'code_challenge_method': 'S256',
+        'state': 'repetition',
+        'scope': 'email',
+        'resource': '$_api/mcp',
+      }))
+    ..followRedirects = false;
+  final consentAt = (await http.Client().send(authorize)).headers['location'] ?? '';
+  _check('/authorize renvoie vers l\'écran de consentement de l\'app',
+      consentAt.startsWith('$_web/oauth/consent?authorization_id='), consentAt);
+  final authorizationId = Uri.parse(consentAt).queryParameters['authorization_id'];
+
+  final session = {
+    'apikey': key,
+    'Authorization': 'Bearer ${alice.auth.currentSession!.accessToken}',
+    'Origin': _web,
+    'Content-Type': 'application/json',
+  };
+  final details = await http.get(Uri.parse('$_api/auth/v1/oauth/authorizations/$authorizationId'),
+      headers: session);
+  _check('la demande se lit avec la session d\'Alice (garde : jeton de l\'app)',
+      details.statusCode == 200 && details.body.contains(redirect), details.statusCode);
+  final consent = await http.post(
+      Uri.parse('$_api/auth/v1/oauth/authorizations/$authorizationId/consent'),
+      headers: session,
+      body: jsonEncode({'action': 'approve'}));
+  final back = Uri.parse((jsonDecode(consent.body) as Map<String, dynamic>)['redirect_url'] as String);
+  _check('consentement : retour à l\'assistant avec un code',
+      back.toString().startsWith(redirect) && back.queryParameters['code'] != null, consent.statusCode);
+
+  Future<Map<String, dynamic>> token(Map<String, String> form) async => jsonDecode(
+      (await http.post(Uri.parse('$_api/auth/v1/oauth/token'), body: form)).body) as Map<String, dynamic>;
+  final tokens = await token({
+    'grant_type': 'authorization_code',
+    'code': back.queryParameters['code']!,
+    'redirect_uri': redirect,
+    'client_id': clientId,
+    'code_verifier': verifier,
+  });
+  final access = tokens['access_token'] as String?;
+  _check('échange PKCE : jeton d\'assistant (claim client_id)',
+      access != null && _claims(access)['client_id'] == clientId, tokens.keys);
+  if (access == null) return;
+
+  final (listed, tools) = await _mcp(access, 'tools/list');
+  _check('outils listés', listed == 200 && (tools?['result']['tools'] as List).length == 7, listed);
+  final (_, agenda) = await _mcp(access, 'tools/call', {
+    'name': 'agenda_du_groupe',
+    'arguments': {'groupe': groupId},
+  });
+  final creneaux = agenda?['result']['structuredContent']?['creneaux'] as List? ?? const [];
+  _check('agenda du groupe par l\'assistant, comme l\'app le montre à Alice',
+      creneaux.any((c) => c['titre'] == 'Escalade' && c['membre'] == 'Bob'), agenda?['result']?['isError']);
+  final day = DateTime.now().toUtc().add(const Duration(days: 3));
+  final date = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+  final (_, created) = await _mcp(access, 'tools/call', {
+    'name': 'creer_rdv',
+    'arguments': {'titre': 'Dentiste', 'debut': '${date}T09:00', 'fin': '${date}T09:30'},
+  });
+  _check('creer_rdv écrit dans l\'agenda d\'Alice', created?['result'] != null && created?['result']['isError'] != true, created);
+
+  final assistant = {'apikey': key, 'Authorization': 'Bearer $access', 'Origin': _web};
+  final rest = await http.get(Uri.parse('$_api/rest/v1/events?select=id'), headers: assistant);
+  _check('porte PostgREST : 403 assistant_forbidden',
+      rest.statusCode == 403 && rest.body.contains('assistant_forbidden'), rest.statusCode);
+  final user = await http.get(Uri.parse('$_api/auth/v1/user'), headers: assistant);
+  _check('porte GoTrue (compte) : 403', user.statusCode == 403, user.statusCode);
+  final password = await http.put(Uri.parse('$_api/auth/v1/user'),
+      headers: {...assistant, 'Content-Type': 'application/json'}, body: '{"password":"Pirate4242"}');
+  _check('porte GoTrue (mot de passe) : 403', password.statusCode == 403, password.statusCode);
+  final grant = await http.post(Uri.parse('$_api/auth/v1/oauth/authorizations/$authorizationId/consent'),
+      headers: {...assistant, 'Content-Type': 'application/json'}, body: '{"action":"approve"}');
+  _check('porte GoTrue (accorder un autre accès) : 403', grant.statusCode == 403, grant.statusCode);
+
+  final refreshed = await token({
+    'grant_type': 'refresh_token',
+    'refresh_token': tokens['refresh_token'] as String,
+    'client_id': clientId,
+  });
+  final again = refreshed['access_token'] as String?;
+  _check('un jeton rafraîchi garde client_id (sinon les portes tomberaient)',
+      again != null && _claims(again)['client_id'] == clientId);
+  final viaApp = await http.post(Uri.parse('$_api/auth/v1/token?grant_type=refresh_token'),
+      headers: {'apikey': key, 'Content-Type': 'application/json'},
+      body: jsonEncode({'refresh_token': refreshed['refresh_token']}));
+  final viaAppToken = viaApp.statusCode == 200
+      ? (jsonDecode(viaApp.body) as Map<String, dynamic>)['access_token'] as String?
+      : null;
+  _check('… aussi par le rafraîchissement de l\'app',
+      viaAppToken == null || _claims(viaAppToken)['client_id'] == clientId, viaApp.statusCode);
+
+  final revoked = await http.delete(
+      Uri.parse('$_api/auth/v1/user/oauth/grants').replace(queryParameters: {'client_id': clientId}),
+      headers: session);
+  _check('Alice révoque l\'accès (garde : jeton de l\'app)', revoked.statusCode == 204, revoked.statusCode);
+  final (afterRevoke, _) = await _mcp(viaAppToken ?? again, 'tools/list');
+  _check('après révocation, /mcp répond 401 aussitôt', afterRevoke == 401, afterRevoke);
 }
 
 Future<void> main(List<String> args) async {
@@ -259,7 +436,8 @@ Future<void> main(List<String> args) async {
   try {
     await _checkAuthGate(
         key, alice, 'alice.$stamp@rehearsal.local', 'bob.$stamp@rehearsal.local');
-    await _checkGroupFlow(alice, bob);
+    final groupId = await _checkGroupFlow(alice, bob);
+    await _checkAssistant(key, alice, groupId);
   } finally {
     for (final client in [bob, alice]) {
       try {

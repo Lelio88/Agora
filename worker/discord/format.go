@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Lelio88/agora/worker/slots"
 )
 
 // Mise en forme des messages du bot : dates dans la langue et le fuseau du
@@ -84,7 +86,7 @@ func lines(header string, body []string, locale string) string {
 // entière se lit sur sa date UTC).
 func localDay(start time.Time, allDay bool, loc *time.Location) time.Time {
 	if allDay {
-		return calendarDate(start, loc)
+		return slots.CalendarDate(start, loc)
 	}
 	s := start.In(loc)
 	return time.Date(s.Year(), s.Month(), s.Day(), 0, 0, 0, 0, loc)
