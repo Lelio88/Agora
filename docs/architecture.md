@@ -36,7 +36,7 @@ le périmètre et l'ordre de construction sont dans [`roadmap.md`](./roadmap.md)
 | `app/` | App Flutter, feature-first sous `lib/src/features/<f>/{domain,data,application,presentation}` |
 | `supabase/` | `config.toml` (pile locale, ports 553xx), `migrations/`, `tests/` (pgTAP) |
 | `worker/` | Service Go : synchro iCal, dépliage des récurrences, bot Discord, passerelle d'auth |
-| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses), [`ics-architecture.md`](./ics-architecture.md) (import iCal) et [`discord-architecture.md`](./discord-architecture.md) (bot Discord), et la feuille de route |
+| `docs/` | Cette architecture, ses annexes [`auth-architecture.md`](./auth-architecture.md) (comptes), [`calendar-architecture.md`](./calendar-architecture.md) (agenda, séries, worker), [`groups-architecture.md`](./groups-architecture.md) (groupes, invitations, agenda superposé, rdv de groupe et réponses), [`ics-architecture.md`](./ics-architecture.md) (import iCal), [`discord-architecture.md`](./discord-architecture.md) (bot Discord) et [`mcp-architecture.md`](./mcp-architecture.md) (assistants IA : OAuth, serveur MCP, portes fermées), et la feuille de route |
 
 ### Infrastructure partagée
 
@@ -177,6 +177,14 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   (`invite_invalid`).
 - Le propriétaire d'un groupe ne peut pas le quitter sans l'avoir transmis. Un admin exclut les
   simples membres.
+- **Bascule de rôle du worker** : `agora_worker` peut endosser `authenticated` (`SET LOCAL ROLE`
+  + claims `{sub}` dans la même transaction) **sans en hériter les droits** — hors bascule, il ne
+  lit toujours pas un titre. C'est ainsi que le serveur MCP agit au nom d'un membre, par la RLS et
+  les RPC de l'application ([`mcp-architecture.md`](./mcp-architecture.md)).
+- **Le jeton d'un assistant IA ne vaut que pour `/mcp`** : PostgREST le refuse (pré-requête
+  `private.refuse_assistant_tokens`, 403 `assistant_forbidden`), le temps réel ne lui montre rien
+  (politiques `RESTRICTIVE … to authenticated` sur les tables publiées), et les routes de compte de
+  GoTrue le refusent (garde du worker). On le reconnaît à son claim `client_id`.
 
 ## 5. Agendas iCal
 
@@ -279,7 +287,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques ; `assistant_test.sql` : bascule de rôle du worker sans héritage, jeton d'assistant refusé par PostgREST et le temps réel |
 | App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé) ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences, iCal, Discord) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
