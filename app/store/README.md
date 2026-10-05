@@ -250,6 +250,18 @@ Branchez votre assistant IA sur Agora : Claude, ChatGPT ou Cursor peut lire votr
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.6.0+10 (jumelage avec Arpente, barre d'agenda)
+
+Français, envoyées sur `alpha` :
+
+```
+Jumelez un groupe Agora avec un groupe de visite Arpente, depuis le menu du groupe → Jumelage ou depuis Arpente. Chaque groupe propose alors « Rejoindre aussi » dans l'autre app ; chacun rejoint lui-même et choisit ce qu'il partage.
+
+Barre d'agenda revue : navigation centrée, nom de la période affichée, et sur téléphone les vues passent sous la navigation.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
