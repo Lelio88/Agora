@@ -1266,4 +1266,103 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shareDetailsAssistantHint =>
       'With \"Everything\", members see titles and places, including through the AI assistant they connected to Agora.';
+
+  @override
+  String get errorInvalidTwinLink => 'This twin link is not valid.';
+
+  @override
+  String get twinMenu => 'Twin groups';
+
+  @override
+  String get twinTitle => 'Twin groups';
+
+  @override
+  String twinAlsoIn(String app) {
+    return 'This group also exists in $app.';
+  }
+
+  @override
+  String get twinJoinButton => 'Join';
+
+  @override
+  String twinExplain(String app) {
+    return 'A twin is a group in another app. Its members see “Join in Agora too”, and members here see “Join in $app too”. Everyone joins on their own: nobody is added for them.';
+  }
+
+  @override
+  String twinStartButton(String app) {
+    return 'Twin with $app';
+  }
+
+  @override
+  String twinPending(String app) {
+    return 'Waiting for $app to answer. If it doesn\'t come, start again.';
+  }
+
+  @override
+  String get twinRestartButton => 'Start again';
+
+  @override
+  String twinLinked(String app) {
+    return 'Twinned with a group in $app.';
+  }
+
+  @override
+  String get twinUnlinkButton => 'Unlink';
+
+  @override
+  String twinUnlinkTitle(String app) {
+    return 'Unlink from $app?';
+  }
+
+  @override
+  String twinUnlinkBody(String app) {
+    return 'The code given to $app will no longer open this group. In $app, the button stays until someone removes it there.';
+  }
+
+  @override
+  String get twinUnlinked => 'Twin removed.';
+
+  @override
+  String twinRequestTitle(String app, String name) {
+    return 'The $app group “$name” suggests twinning.';
+  }
+
+  @override
+  String twinRequestTitleUnnamed(String app) {
+    return 'A group in $app suggests twinning.';
+  }
+
+  @override
+  String get twinChooseGroup => 'With which Agora group?';
+
+  @override
+  String get twinNewGroup => 'A new group';
+
+  @override
+  String get twinConfirmButton => 'Twin';
+
+  @override
+  String twinResponseQuestion(String group, String app) {
+    return 'Link “$group” to the chosen $app group?';
+  }
+
+  @override
+  String get twinLinkButton => 'Link';
+
+  @override
+  String get twinResponseUnknown =>
+      'This answer matches no twinning started from this device. Start again from the group menu.';
+
+  @override
+  String get twinSaved => 'Twin saved.';
+
+  @override
+  String twinOpenFailed(String app) {
+    return 'Couldn\'t open $app. The twin is saved here; start again from the group menu to finish.';
+  }
+
+  @override
+  String get errorTwinExists =>
+      'This group is already twinned with another group in that app. Unlink it first from the group menu.';
 }

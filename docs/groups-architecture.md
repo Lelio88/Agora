@@ -160,6 +160,48 @@ montre au membre ([`mcp-architecture.md`](./mcp-architecture.md)).
 - **Proposer** : un appui ouvre l'éditeur d'un rdv du groupe (route `groups/:groupId/events/new`
   avec `start` et `end`), début et fin repris tels quels ; au retour, la liste se relit.
 
+## Jumelage avec une autre app
+
+Migration : `20261005120000_group_twins.sql` ; test : `supabase/tests/group_twins_test.sql`. Un
+groupe Agora peut avoir un **jumeau** dans Arpente (guide de visite) : un groupe de l'autre app
+dont ses membres voient le code (« Ce groupe existe aussi dans Arpente — Rejoindre »), et
+inversement. Les deux apps ne se parlent jamais : elles s'ouvrent l'une l'autre par des liens
+préremplis, et la personne valide dans l'app d'arrivée. Le protocole commun (adresses,
+paramètres, règles de sécurité) est dans `docs/liens-inter-apps.md` du dépôt méta.
+
+- **En base** : `group_twins (group_id, app, invite_code, remote_code)`, un jumeau par groupe et
+  par app. `invite_code` est une invitation ordinaire **sans échéance** (`expires_at` nul) : qui
+  arrive d'Arpente passe par `join_group`, donc par le choix du partage. `remote_code` nul = jumeau
+  en attente de la réponse d'Arpente. Seuls les membres le lisent ; on ne l'écrit que par
+  `twin_group(groupe, app, code_distant?)` (admins), qui crée le jumeau et son invitation ou le
+  complète, et rend le code à donner. **Un jumeau complet ne change pas de groupe Arpente**
+  (`twin_exists`) : un lien forgé ne doit pas rediriger les membres en silence ; pour en changer,
+  on défait d'abord. **Défaire = supprimer l'invitation** (son auteur ou un admin, RLS
+  existante) : le jumeau part en cascade, et le code donné à Arpente n'ouvre plus rien.
+- **Le prix d'une invitation permanente** : un membre parti ou exclu qui a noté son code peut
+  revenir tant que le jumelage tient. Défaire puis rejumeler change le code ; c'est le geste à
+  faire après une exclusion qui compte.
+- **La fenêtre « Inviter » ignore l'invitation du jumeau** : elle ne reprend que les invitations
+  à échéance future, et `create_invite` refuse toujours plus de 30 jours.
+- **Liens** (`domain/twin.dart`, pur) : reçus sur `#/twin?de=…&code=…&nom=…&etat=…` (demande) ou
+  `…&pour=…` (réponse) ; envoyés vers `https://arpente.heianenterprise.com/jumeler.html#…`, les
+  paramètres dans le **fragment** (un code est un secret : une requête finirait dans les
+  journaux de GitHub Pages). Un lien reçu n'est jamais gardé tel quel : seuls l'app (liste
+  fermée) et un code validé par son format en sont tirés ; le bouton « Rejoindre » reconstruit
+  l'adresse depuis la base fixe d'Arpente.
+- **Lancé depuis Agora** (menu du groupe → Jumelage, admins) : `twin_group` sans code distant,
+  puis la demande s'ouvre dans Arpente avec un jeton neuf. La réponse n'est acceptée que si elle
+  répond à une demande partie **de cet appareil** (`TwinRequests`, en mémoire : même jeton, même
+  invitation) — sinon un membre qui connaît une invitation du groupe pourrait faire rattacher un
+  groupe Arpente à lui. Une app fermée entre-temps fait relancer, ce qui reprend la même
+  invitation.
+- **Lancé depuis Arpente** : l'écran `/twin` propose un nouveau groupe (nommé comme le jumeau)
+  ou un groupe que l'on gère, jumelle, puis ouvre la réponse dans Arpente. Si Arpente ne s'ouvre
+  pas, le jumeau reste enregistré ici et l'écran le dit.
+- **Routage** : l'App Link de la racine suit aussi `#/twin` (`appLinkRoute`) ; ouvert déconnecté,
+  le lien est retenu (`PendingTwin`) comme une invitation, après elle.
+- **Hors des assistants IA et de Discord** : aucun outil ne lit les jumeaux ni leurs codes.
+
 ## Fichiers
 
 | Fichier | Rôle |
@@ -175,4 +217,7 @@ montre au membre ([`mcp-architecture.md`](./mcp-architecture.md)).
 | `app/lib/src/features/groups/data/supabase_groups_repository.dart` | PostgREST : jointures `group_members`→`groups`/`profiles`, RPC |
 | `app/lib/src/features/groups/application/groups_providers.dart` | providers, `GroupsService`, `PendingInvite`, `looksLikeInviteCode` |
 | `app/lib/src/features/groups/presentation/` | liste, éditeur, « Rejoindre », agenda du groupe, membres, invitation, `GroupKeys` |
+| `supabase/migrations/20261005120000_group_twins.sql` · `tests/group_twins_test.sql` | jumeau d'un groupe, invitation sans échéance, `twin_group`, défaire par l'invitation |
+| `app/lib/src/features/groups/domain/twin.dart` · `application/twin_providers.dart` | protocole des liens (pur), `TwinService`, `TwinRequests`, `PendingTwin` |
+| `app/lib/src/features/groups/presentation/twin_group_screen.dart` · `twin_sheet.dart` | écran `/twin` (demande, réponse), bandeau « Rejoindre aussi », feuille des admins |
 | `app/lib/src/common_widgets/agenda_view.dart` | vues kalender, barre, `VisibleRangeFollower` (partagés avec l'agenda perso) |

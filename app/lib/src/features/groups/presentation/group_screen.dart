@@ -1,7 +1,8 @@
 /// Agenda d'un groupe : les créneaux de tous les membres dans la même
 /// grille, une couleur par membre, des pastilles pour en masquer, et les
 /// rdv du groupe. Depuis la barre : inviter, les membres, et le menu du
-/// groupe (renommer, quitter, supprimer). « Proposer un rdv » (ou un appui
+/// groupe (renommer, jumeler, quitter, supprimer). Un groupe jumelé avec un
+/// groupe d'une autre app l'annonce en tête (« Rejoindre »). « Proposer un rdv » (ou un appui
 /// sur un créneau libre) crée un rdv du groupe ; un appui sur un rdv du
 /// groupe ouvre sa fiche (réponses).
 ///
@@ -29,6 +30,7 @@ import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/groups/presentation/group_labels.dart';
 import 'package:agora/src/features/groups/presentation/group_members_screen.dart';
 import 'package:agora/src/features/groups/presentation/invite_sheet.dart';
+import 'package:agora/src/features/groups/presentation/twin_sheet.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +39,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kalender/kalender.dart';
 
-enum _MenuAction { discord, rename, leave, delete }
+enum _MenuAction { discord, rename, twin, leave, delete }
 
 class GroupScreen extends ConsumerStatefulWidget {
   const GroupScreen({required this.groupId, super.key});
@@ -175,6 +177,7 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         value: members,
         data: (list) => Column(
           children: [
+            TwinBanner(groupId: widget.groupId),
             _MemberChips(
               members: list,
               hidden: _hidden,
@@ -308,6 +311,8 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
           () => service.rename(group.id, name: draft.name),
           l10n.groupSaved,
         );
+      case _MenuAction.twin:
+        await showTwinSheet(context, group);
       case _MenuAction.leave:
         if (group.role == GroupRole.owner) {
           ScaffoldMessenger.of(context)
@@ -496,6 +501,12 @@ class _GroupMenu extends StatelessWidget {
             key: GroupKeys.rename,
             value: _MenuAction.rename,
             child: Text(l10n.renameGroup),
+          ),
+        if (group.role.canManage)
+          PopupMenuItem(
+            key: GroupKeys.twinMenu,
+            value: _MenuAction.twin,
+            child: Text(l10n.twinMenu),
           ),
         PopupMenuItem(
           key: GroupKeys.leave,

@@ -2293,6 +2293,156 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Avec « Tout », les membres voient titres et lieux, y compris par l\'assistant IA qu\'ils ont branché sur Agora.'**
   String get shareDetailsAssistantHint;
+
+  /// Erreur : lien de jumelage inconnu ou mal formé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien de jumelage n\'est pas valable.'**
+  String get errorInvalidTwinLink;
+
+  /// Menu du groupe (admins) : ouvre le jumelage avec d'autres apps.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumelage'**
+  String get twinMenu;
+
+  /// Titre de l'écran et de la feuille de jumelage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumelage'**
+  String get twinTitle;
+
+  /// Bandeau d'un groupe jumelé ; {app} : nom de l'autre app (marque).
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce groupe existe aussi dans {app}.'**
+  String twinAlsoIn(String app);
+
+  /// Bandeau d'un groupe jumelé : rejoindre le groupe jumeau dans l'autre app.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre'**
+  String get twinJoinButton;
+
+  /// Jumelage : ce que fait un jumeau.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un jumeau est un groupe d\'une autre app. Ses membres y voient « Rejoindre aussi dans Agora », et ceux d\'ici « Rejoindre aussi dans {app} ». Chacun rejoint lui-même : personne n\'est ajouté d\'office.'**
+  String twinExplain(String app);
+
+  /// Jumelage : lancer la demande vers l'autre app.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumeler avec {app}'**
+  String twinStartButton(String app);
+
+  /// Jumelage lancé, sans réponse de l'autre app.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente de la réponse de {app}. Si elle ne vient pas, relance le jumelage.'**
+  String twinPending(String app);
+
+  /// Jumelage en attente : renvoyer la demande.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relancer'**
+  String get twinRestartButton;
+
+  /// Jumelage : le groupe a un jumeau complet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumelé avec un groupe {app}.'**
+  String twinLinked(String app);
+
+  /// Jumelage : supprimer le jumeau (et son invitation).
+  ///
+  /// In fr, this message translates to:
+  /// **'Défaire le jumelage'**
+  String get twinUnlinkButton;
+
+  /// Confirmation avant de défaire un jumelage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Défaire le jumelage avec {app} ?'**
+  String twinUnlinkTitle(String app);
+
+  /// Confirmation : ce que défaire change, et ce que ça ne change pas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le code donné à {app} n\'ouvrira plus ce groupe. Dans {app}, le bouton restera affiché jusqu\'à ce qu\'on l\'y retire.'**
+  String twinUnlinkBody(String app);
+
+  /// Confirmation : jumelage défait.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumelage défait.'**
+  String get twinUnlinked;
+
+  /// Demande de jumelage reçue d'une autre app.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le groupe {app} « {name} » propose un jumelage.'**
+  String twinRequestTitle(String app, String name);
+
+  /// Demande de jumelage reçue, sans nom de groupe lisible.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un groupe {app} propose un jumelage.'**
+  String twinRequestTitleUnnamed(String app);
+
+  /// Demande de jumelage : choisir le groupe Agora.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avec quel groupe Agora ?'**
+  String get twinChooseGroup;
+
+  /// Demande de jumelage : créer un groupe pour le jumeau.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nouveau groupe'**
+  String get twinNewGroup;
+
+  /// Demande de jumelage : accepter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumeler'**
+  String get twinConfirmButton;
+
+  /// Réponse de l'autre app à un jumelage lancé ici.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier « {group} » au groupe {app} choisi ?'**
+  String twinResponseQuestion(String group, String app);
+
+  /// Réponse de jumelage : enregistrer le jumeau.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier'**
+  String get twinLinkButton;
+
+  /// Réponse de jumelage sans demande correspondante.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette réponse ne correspond à aucun jumelage lancé depuis cet appareil. Relance le jumelage depuis le menu du groupe.'**
+  String get twinResponseUnknown;
+
+  /// Confirmation : jumeau enregistré.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jumelage enregistré.'**
+  String get twinSaved;
+
+  /// L'autre app n'a pas pu être ouverte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir {app}. Le jumelage est enregistré ici ; relance-le depuis le menu du groupe pour finir.'**
+  String twinOpenFailed(String app);
+
+  /// Erreur : le groupe choisi a déjà un jumeau complet dans l'autre app.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce groupe est déjà jumelé avec un autre groupe de cette app. Défais d\'abord ce jumelage depuis le menu du groupe.'**
+  String get errorTwinExists;
 }
 
 class _AppLocalizationsDelegate

@@ -1277,4 +1277,103 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get shareDetailsAssistantHint =>
       'Avec « Tout », les membres voient titres et lieux, y compris par l\'assistant IA qu\'ils ont branché sur Agora.';
+
+  @override
+  String get errorInvalidTwinLink => 'Ce lien de jumelage n\'est pas valable.';
+
+  @override
+  String get twinMenu => 'Jumelage';
+
+  @override
+  String get twinTitle => 'Jumelage';
+
+  @override
+  String twinAlsoIn(String app) {
+    return 'Ce groupe existe aussi dans $app.';
+  }
+
+  @override
+  String get twinJoinButton => 'Rejoindre';
+
+  @override
+  String twinExplain(String app) {
+    return 'Un jumeau est un groupe d\'une autre app. Ses membres y voient « Rejoindre aussi dans Agora », et ceux d\'ici « Rejoindre aussi dans $app ». Chacun rejoint lui-même : personne n\'est ajouté d\'office.';
+  }
+
+  @override
+  String twinStartButton(String app) {
+    return 'Jumeler avec $app';
+  }
+
+  @override
+  String twinPending(String app) {
+    return 'En attente de la réponse de $app. Si elle ne vient pas, relance le jumelage.';
+  }
+
+  @override
+  String get twinRestartButton => 'Relancer';
+
+  @override
+  String twinLinked(String app) {
+    return 'Jumelé avec un groupe $app.';
+  }
+
+  @override
+  String get twinUnlinkButton => 'Défaire le jumelage';
+
+  @override
+  String twinUnlinkTitle(String app) {
+    return 'Défaire le jumelage avec $app ?';
+  }
+
+  @override
+  String twinUnlinkBody(String app) {
+    return 'Le code donné à $app n\'ouvrira plus ce groupe. Dans $app, le bouton restera affiché jusqu\'à ce qu\'on l\'y retire.';
+  }
+
+  @override
+  String get twinUnlinked => 'Jumelage défait.';
+
+  @override
+  String twinRequestTitle(String app, String name) {
+    return 'Le groupe $app « $name » propose un jumelage.';
+  }
+
+  @override
+  String twinRequestTitleUnnamed(String app) {
+    return 'Un groupe $app propose un jumelage.';
+  }
+
+  @override
+  String get twinChooseGroup => 'Avec quel groupe Agora ?';
+
+  @override
+  String get twinNewGroup => 'Un nouveau groupe';
+
+  @override
+  String get twinConfirmButton => 'Jumeler';
+
+  @override
+  String twinResponseQuestion(String group, String app) {
+    return 'Relier « $group » au groupe $app choisi ?';
+  }
+
+  @override
+  String get twinLinkButton => 'Relier';
+
+  @override
+  String get twinResponseUnknown =>
+      'Cette réponse ne correspond à aucun jumelage lancé depuis cet appareil. Relance le jumelage depuis le menu du groupe.';
+
+  @override
+  String get twinSaved => 'Jumelage enregistré.';
+
+  @override
+  String twinOpenFailed(String app) {
+    return 'Impossible d\'ouvrir $app. Le jumelage est enregistré ici ; relance-le depuis le menu du groupe pour finir.';
+  }
+
+  @override
+  String get errorTwinExists =>
+      'Ce groupe est déjà jumelé avec un autre groupe de cette app. Défais d\'abord ce jumelage depuis le menu du groupe.';
 }

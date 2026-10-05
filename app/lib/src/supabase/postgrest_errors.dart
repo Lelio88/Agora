@@ -29,6 +29,8 @@ Future<T> guardPostgrest<T>(Future<T> Function() body) async {
       'not_group_owner' => const NotGroupOwnerException(),
       'invalid_member' => const InvalidMemberException(),
       'not_group_admin' => const NotGroupAdminException(),
+      'invalid_twin_code' => const InvalidTwinLinkException(),
+      'twin_exists' => const TwinAlreadyLinkedException(),
       _ when looksLikeNetworkError(error.message) => const NetworkException(),
       _ => const UnknownException(),
     };

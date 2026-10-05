@@ -14,6 +14,7 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/domain/groups_repository.dart';
+import 'package:agora/src/features/groups/domain/twin.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -203,6 +204,37 @@ final class SupabaseGroupsRepository implements GroupsRepository {
         () async => await _client.rpc<String>(
           'join_group',
           params: {'p_code': code, 'p_share_level': shareLevel.name},
+        ),
+      );
+
+  @override
+  Future<List<GroupTwin>> fetchTwins(String groupId) =>
+      guardPostgrest(() async {
+        final rows = await _client
+            .from('group_twins')
+            .select('app, invite_code, remote_code')
+            .eq('group_id', groupId);
+        return [
+          for (final row in rows)
+            if (TwinApp.fromCode(row['app'] as String?) case final app?)
+              GroupTwin(
+                app: app,
+                inviteCode: row['invite_code'] as String,
+                remoteCode: row['remote_code'] as String?,
+              ),
+        ];
+      });
+
+  @override
+  Future<String> twinGroup(String groupId, TwinApp app, {String? remoteCode}) =>
+      guardPostgrest(
+        () async => await _client.rpc<String>(
+          'twin_group',
+          params: {
+            'p_group_id': groupId,
+            'p_app': app.name,
+            'p_remote_code': remoteCode,
+          },
         ),
       );
 

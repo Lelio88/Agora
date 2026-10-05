@@ -12,7 +12,8 @@
 /// feature agenda, que l'écran du groupe ouvre par leur seul nom de route. Un lien d'invitation ouvert
 /// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion, comme une
 /// demande d'accès d'un assistant IA ([PendingConsent], lue aussi dans
-/// l'adresse de la page au démarrage : voir `assistant_providers.dart`).
+/// l'adresse de la page au démarrage : voir `assistant_providers.dart`) et
+/// un lien de jumelage venu d'une autre app ([PendingTwin]).
 library;
 
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
@@ -27,9 +28,11 @@ import 'package:agora/src/features/auth/presentation/verify_email_screen.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_editor_page.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_screen.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/application/twin_providers.dart';
 import 'package:agora/src/features/groups/presentation/find_slots_screen.dart';
 import 'package:agora/src/features/groups/presentation/group_screen.dart';
 import 'package:agora/src/features/groups/presentation/join_group_screen.dart';
+import 'package:agora/src/features/groups/presentation/twin_group_screen.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/presentation/profile_screen.dart';
 import 'package:agora/src/routing/app_route.dart';
@@ -43,17 +46,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authRepositoryProvider);
   final pendingInvite = ref.watch(pendingInviteProvider);
   final pendingConsent = ref.watch(pendingConsentProvider);
+  final pendingTwin = ref.watch(pendingTwinProvider);
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
     redirect: (context, state) {
-      // Invitation ouverte dans l'app par un App Link : suivre son fragment.
-      if (inviteRouteFromAppLink(state.uri) case final invite?) return invite;
+      // Lien ouvert dans l'app par un App Link : suivre son fragment.
+      if (appLinkRoute(state.uri) case final route?) return route;
       final isSignedIn = auth.currentUser != null;
       final location = state.matchedLocation;
       final invite = inviteCodeInLocation(location);
       if (!isSignedIn && invite != null) pendingInvite.code = invite;
+      if (!isSignedIn && location == twinPath) {
+        pendingTwin.location = state.uri.toString();
+      }
       if (!isSignedIn && location == consentPath) {
         if (consentRequestIn(state.uri) case final id?) {
           pendingConsent.authorizationId = id;
@@ -64,6 +71,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         location: location,
         pendingInvite: pendingInvite.code,
         pendingConsent: pendingConsent.authorizationId,
+        pendingTwin: pendingTwin.location,
       );
     },
     routes: [
@@ -119,6 +127,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             name: AppRoute.join.name,
             builder: (context, state) =>
                 JoinGroupScreen(code: state.pathParameters['code']),
+          ),
+          // Lien de jumelage venu d'une autre app : ses paramètres sont
+          // validés par l'écran (domain/twin.dart).
+          GoRoute(
+            path: twinPath.substring(1),
+            name: AppRoute.twin.name,
+            // Un second lien reçu pendant que l'écran est ouvert doit le
+            // remplacer, pas réutiliser l'état du premier.
+            builder: (context, state) => TwinGroupScreen(
+              key: ValueKey(state.uri.toString()),
+              params: state.uri.queryParameters,
+            ),
           ),
         ],
       ),

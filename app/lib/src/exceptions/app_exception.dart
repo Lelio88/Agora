@@ -141,6 +141,20 @@ final class NotGroupAdminException extends AppException {
     : super('not-group-admin', 'Only an admin of the group can do this');
 }
 
+/// Lien de jumelage inutilisable : app inconnue, code au mauvais format, ou
+/// réponse qui ne correspond à aucun jumelage lancé depuis cet appareil.
+final class InvalidTwinLinkException extends AppException {
+  const InvalidTwinLinkException()
+    : super('invalid-twin-link', 'Twin link unknown or malformed');
+}
+
+/// Le groupe a déjà un jumeau complet dans cette app : on le défait avant
+/// d'en choisir un autre (un lien ne remplace jamais un jumeau en silence).
+final class TwinAlreadyLinkedException extends AppException {
+  const TwinAlreadyLinkedException()
+    : super('twin-exists', 'This group already has a twin in that app');
+}
+
 // --- Discord ------------------------------------------------------------------
 
 /// Ce compte Discord est déjà relié à un autre compte Agora.

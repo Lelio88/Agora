@@ -134,30 +134,89 @@ void main() {
     expect(inviteCodeInLocation('/profile'), isNull);
   });
 
-  group('inviteRouteFromAppLink', () {
+  group('appLinkRoute', () {
     test('turns an invitation link opened in the app into its screen', () {
       // Android transmet le lien avec son fragment : « #/join/CODE ».
       expect(
-        inviteRouteFromAppLink(
+        appLinkRoute(
           Uri.parse('https://agora.heianenterprise.com/#/join/abcd2345'),
         ),
         '/join/ABCD2345',
       );
-      expect(
-        inviteRouteFromAppLink(Uri.parse('/#/join/ABCD2345')),
-        '/join/ABCD2345',
-      );
+      expect(appLinkRoute(Uri.parse('/#/join/ABCD2345')), '/join/ABCD2345');
     });
 
     test('leaves every other location alone', () {
-      expect(inviteRouteFromAppLink(Uri.parse('/join/ABCD2345')), isNull);
-      expect(inviteRouteFromAppLink(Uri.parse('/#/profile')), isNull);
-      expect(inviteRouteFromAppLink(Uri.parse('/#/join/ABCD')), isNull);
+      expect(appLinkRoute(Uri.parse('/join/ABCD2345')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/profile')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/join/ABCD')), isNull);
+      expect(appLinkRoute(Uri.parse('/groups/g#/join/ABCD2345')), isNull);
+      expect(appLinkRoute(Uri.parse('/')), isNull);
+    });
+
+    test('turns a twin link opened in the app into its screen', () {
+      // Arpente propose un jumelage : « #/twin?de=…&code=…&etat=… ».
       expect(
-        inviteRouteFromAppLink(Uri.parse('/groups/g#/join/ABCD2345')),
-        isNull,
+        appLinkRoute(
+          Uri.parse(
+            'https://agora.heianenterprise.com/'
+            '#/twin?de=arpente&code=ABC234&nom=Sortie+Caen&etat=abcdefghijklmnop',
+          ),
+        ),
+        '/twin?de=arpente&code=ABC234&nom=Sortie+Caen&etat=abcdefghijklmnop',
       );
-      expect(inviteRouteFromAppLink(Uri.parse('/')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/twin')), '/twin');
+    });
+
+    test('follows no other twin-like location', () {
+      expect(appLinkRoute(Uri.parse('/#/twins?de=arpente')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/twin/x?de=arpente')), isNull);
+      expect(appLinkRoute(Uri.parse('/groups/g#/twin?de=arpente')), isNull);
+    });
+  });
+
+  group('pending twin link', () {
+    const twin = '/twin?de=arpente&code=ABC234&etat=abcdefghijklmnop';
+
+    test('once signed in, the visitor is brought back to the twin link', () {
+      for (final location in ['/', '/sign-in', '/verify-email']) {
+        expect(
+          authRedirect(isSignedIn: true, location: location, pendingTwin: twin),
+          twin,
+          reason: location,
+        );
+      }
+    });
+
+    test('an assistant request and an invitation come first', () {
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingInvite: 'ABCD2345',
+          pendingTwin: twin,
+        ),
+        '/join/ABCD2345',
+      );
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingConsent: 'abc12345xyz',
+          pendingTwin: twin,
+        ),
+        '/oauth/consent?authorization_id=abc12345xyz',
+      );
+    });
+
+    test('a pending twin link does not hijack other screens', () {
+      for (final location in ['/profile', '/twin']) {
+        expect(
+          authRedirect(isSignedIn: true, location: location, pendingTwin: twin),
+          isNull,
+          reason: location,
+        );
+      }
     });
   });
 }

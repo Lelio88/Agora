@@ -3,6 +3,7 @@ library;
 
 import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
+import 'package:agora/src/features/groups/domain/twin.dart';
 import 'package:flutter/widgets.dart';
 
 abstract final class GroupKeys {
@@ -80,4 +81,20 @@ abstract final class GroupKeys {
   static const removeAdmin = ValueKey('group.member.removeAdmin');
   static const transfer = ValueKey('group.member.transfer');
   static const remove = ValueKey('group.member.remove');
+
+  // Jumelage.
+  static const twinScreen = ValueKey('group.twin.screen');
+  static const twinMenu = ValueKey('group.menu.twin');
+  static const twinConfirm = ValueKey('group.twin.confirm');
+  static const twinLink = ValueKey('group.twin.link');
+  static const twinNewGroupOption = ValueKey('group.twin.newGroup');
+  static const twinNameField = ValueKey('group.twin.name');
+  static ValueKey<String> twinGroupOption(String groupId) =>
+      ValueKey('group.twin.group.$groupId');
+  static ValueKey<String> twinStart(TwinApp app) =>
+      ValueKey('group.twin.${app.name}.start');
+  static ValueKey<String> twinUnlink(TwinApp app) =>
+      ValueKey('group.twin.${app.name}.unlink');
+  static ValueKey<String> twinJoin(TwinApp app) =>
+      ValueKey('group.twin.${app.name}.join');
 }

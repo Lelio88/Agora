@@ -8,6 +8,7 @@ library;
 
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
+import 'package:agora/src/features/groups/domain/twin.dart';
 
 abstract interface class GroupsRepository {
   /// Groupes dont l'utilisateur est membre, du plus ancien au plus récent.
@@ -50,6 +51,14 @@ abstract interface class GroupsRepository {
 
   /// Rejoint le groupe avec le partage choisi ; l'id du groupe.
   Future<String> joinGroup(String code, ShareLevel shareLevel);
+
+  /// Jumeaux du groupe dans d'autres apps (lisibles des membres).
+  Future<List<GroupTwin>> fetchTwins(String groupId);
+
+  /// Crée le jumeau du groupe dans [app] (et son invitation sans échéance),
+  /// ou le complète de [remoteCode] ; le code de l'invitation à donner à
+  /// l'autre app (admins seulement). Défaire = [revokeInvite] de ce code.
+  Future<String> twinGroup(String groupId, TwinApp app, {String? remoteCode});
 
   /// Créneaux du groupe de [from] (inclus) à [to] (exclu), un trimestre au
   /// plus, déjà passés par la règle de vie privée.

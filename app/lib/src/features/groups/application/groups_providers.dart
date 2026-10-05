@@ -14,6 +14,7 @@ import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/domain/groups_repository.dart';
+import 'package:agora/src/features/groups/domain/twin.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final groupsRepositoryProvider = Provider<GroupsRepository>(
@@ -74,6 +75,12 @@ final groupAgendaProvider = FutureProvider.autoDispose
           .fetchGroupAgenda(query.groupId, query.from, query.to),
     );
 
+/// Jumeaux d'un groupe dans d'autres apps (Arpente).
+final groupTwinsProvider = FutureProvider.autoDispose
+    .family<List<GroupTwin>, String>(
+      (ref, groupId) => ref.watch(groupsRepositoryProvider).fetchTwins(groupId),
+    );
+
 final invitePreviewProvider = FutureProvider.autoDispose
     .family<InvitePreview, String>(
       (ref, code) => ref.watch(groupsRepositoryProvider).previewInvite(code),
@@ -130,6 +137,23 @@ final class GroupsService {
     return groupId;
   }
 
+  /// Crée ou complète le jumeau du groupe dans [app] ; le code de
+  /// l'invitation à donner à l'autre app.
+  Future<String> twin(String groupId, TwinApp app, {String? remoteCode}) async {
+    final code = await _repository.twinGroup(
+      groupId,
+      app,
+      remoteCode: remoteCode,
+    );
+    _invalidate(groupId);
+    return code;
+  }
+
+  /// Défait le jumelage : l'invitation donnée à l'autre app n'ouvre plus
+  /// rien (le jumeau part avec elle).
+  Future<void> unlinkTwin(String groupId, GroupTwin twin) =>
+      _then(groupId, _repository.revokeInvite(twin.inviteCode));
+
   Future<void> _then(String groupId, Future<void> action) async {
     await action;
     _invalidate(groupId);
@@ -142,6 +166,7 @@ final groupsServiceProvider = Provider<GroupsService>(
     if (groupId == null) return;
     ref
       ..invalidate(groupMembersProvider(groupId))
+      ..invalidate(groupTwinsProvider(groupId))
       ..invalidate(groupAgendaProvider);
   }),
 );

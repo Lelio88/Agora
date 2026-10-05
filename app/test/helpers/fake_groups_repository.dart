@@ -2,6 +2,7 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/domain/groups_repository.dart';
+import 'package:agora/src/features/groups/domain/twin.dart';
 
 import 'fakes.dart';
 
@@ -30,13 +31,17 @@ final class FakeGroup {
 /// Faux [GroupsRepository] en mémoire, qui applique les règles du serveur
 /// que l'app observe : seul le propriétaire gère les rôles et transmet, il
 /// ne quitte pas sans transmettre, une invitation valable est réutilisée,
-/// un code inconnu est refusé sans dire pourquoi.
+/// un code inconnu est refusé sans dire pourquoi, seuls les admins jumellent
+/// et l'invitation d'un jumeau (sans échéance) échappe à « Inviter ».
 class FakeGroupsRepository implements GroupsRepository {
   static const me = FakeAuthRepository.userId;
 
   final groups = <String, FakeGroup>{};
   final invites = <String, ({String groupId, String createdBy})>{};
   final calls = <String>[];
+
+  /// Jumeaux de chaque groupe ; leurs invitations sont dans [invites].
+  final twins = <String, List<GroupTwin>>{};
   AppException? nextError;
   int _nextId = 1;
   int _nextCode = 0;
@@ -188,6 +193,7 @@ class FakeGroupsRepository implements GroupsRepository {
     final code = invites.entries
         .where((e) => e.value.groupId == groupId && e.value.createdBy == me)
         .map((e) => e.key)
+        .where((code) => !_isTwinInvite(code))
         .lastOrNull;
     return code == null ? null : _invite(code);
   }
@@ -210,6 +216,57 @@ class FakeGroupsRepository implements GroupsRepository {
   Future<void> revokeInvite(String code) async {
     _record('revokeInvite');
     invites.remove(code);
+    for (final list in twins.values) {
+      list.removeWhere((twin) => twin.inviteCode == code);
+    }
+  }
+
+  bool _isTwinInvite(String code) =>
+      twins.values.any((list) => list.any((t) => t.inviteCode == code));
+
+  @override
+  Future<List<GroupTwin>> fetchTwins(String groupId) async {
+    _record('fetchTwins');
+    _group(groupId);
+    return List.of(twins[groupId] ?? const <GroupTwin>[]);
+  }
+
+  @override
+  Future<String> twinGroup(
+    String groupId,
+    TwinApp app, {
+    String? remoteCode,
+  }) async {
+    _record('twinGroup');
+    final group = _group(groupId);
+    if (!_mine(group).role.canManage) throw const NotGroupAdminException();
+    final remote = remoteCode?.trim().toUpperCase();
+    if (remote != null && !app.acceptsCode(remote)) {
+      throw const InvalidTwinLinkException();
+    }
+    final list = twins.putIfAbsent(groupId, () => []);
+    final index = list.indexWhere((twin) => twin.app == app);
+    if (index < 0) {
+      final code = 'JUMX${(_nextCode++).toString().padLeft(4, '2')}'
+          .replaceAll('0', 'Z')
+          .replaceAll('1', 'Y');
+      invites[code] = (groupId: groupId, createdBy: me);
+      list.add(GroupTwin(app: app, inviteCode: code, remoteCode: remote));
+      return code;
+    }
+    final current = list[index];
+    final known = current.remoteCode;
+    if (remote != null && known != null && known != remote) {
+      throw const TwinAlreadyLinkedException();
+    }
+    if (remote != null) {
+      list[index] = GroupTwin(
+        app: app,
+        inviteCode: current.inviteCode,
+        remoteCode: remote,
+      );
+    }
+    return current.inviteCode;
   }
 
   @override
