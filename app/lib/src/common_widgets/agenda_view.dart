@@ -10,11 +10,17 @@
 ///   ne décrit pas ce qui est à l'écran (une vue continue publie sa plage
 ///   totale) et la suivre rechargerait sans fin ;
 /// - kalender publie sa plage visible pendant sa propre construction : le
-///   changement de plage est différé à la fin de l'image.
+///   changement de plage, comme le nom de la période dans la barre, est
+///   différé à la fin de l'image ;
+/// - la barre centre la navigation (`NavigationToolbar`, comme le titre
+///   d'une AppBar : centrée si elle tient, décalée sinon, jamais par-dessus
+///   les actions) ; sous [_wideToolbarWidth], les vues passent dessous, sur
+///   toute la largeur, plutôt que de défiler hors de l'écran.
 library;
 
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kalender/kalender.dart';
 
 enum AgendaView { day, week, month, schedule }
@@ -32,6 +38,7 @@ final class AgendaToolbarKeys {
   ValueKey<String> get week => ValueKey('$scope.viewWeek');
   ValueKey<String> get month => ValueKey('$scope.viewMonth');
   ValueKey<String> get schedule => ValueKey('$scope.viewSchedule');
+  ValueKey<String> get period => ValueKey('$scope.period');
 }
 
 /// Au-delà, une plage « visible » n'est pas une page mais une vue entière.
@@ -169,9 +176,15 @@ final class VisibleRangeFollower {
   }
 }
 
-/// Navigation (précédent, aujourd'hui, suivant), choix de la vue, puis
-/// [trailing] (actions propres à l'écran). Défilable : sur un téléphone
-/// étroit, tout ne tient pas côte à côte.
+/// Largeur à partir de laquelle la barre tient sur une ligne : la classe
+/// « étendue » des tailles de fenêtre de Material 3.
+const _wideToolbarWidth = 840.0;
+
+/// Navigation (précédent, aujourd'hui, suivant) au centre, nom de la période
+/// dessous, choix de la vue et [trailing] (actions propres à l'écran). Sur
+/// un écran large, les vues sont à gauche de la navigation et les actions à
+/// sa droite ; plus étroit, les vues passent sous la période, sur toute la
+/// largeur.
 class AgendaToolbar extends StatelessWidget {
   const AgendaToolbar({
     required this.view,
@@ -191,54 +204,216 @@ class AgendaToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    final navigation = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: l10n.previousPeriod,
+          icon: const Icon(Icons.chevron_left),
+          onPressed: controller.animateToPreviousPage,
+        ),
+        TextButton(
+          key: keys.today,
+          onPressed: () => controller.animateToDate(DateTime.now()),
+          child: Text(l10n.todayButton),
+        ),
+        IconButton(
+          tooltip: l10n.nextPeriod,
+          icon: const Icon(Icons.chevron_right),
+          onPressed: controller.animateToNextPage,
+        ),
+      ],
+    );
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: l10n.previousPeriod,
-            icon: const Icon(Icons.chevron_left),
-            onPressed: controller.animateToPreviousPage,
-          ),
-          TextButton(
-            key: keys.today,
-            onPressed: () => controller.animateToDate(DateTime.now()),
-            child: Text(l10n.todayButton),
-          ),
-          IconButton(
-            tooltip: l10n.nextPeriod,
-            icon: const Icon(Icons.chevron_right),
-            onPressed: controller.animateToNextPage,
-          ),
-          const SizedBox(width: 16),
-          SegmentedButton<AgendaView>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: AgendaView.day,
-                label: Text(l10n.viewDay, key: keys.day),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= _wideToolbarWidth;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: kMinInteractiveDimension,
+                child: NavigationToolbar(
+                  leading: isWide
+                      ? Center(
+                          widthFactor: 1,
+                          child: _viewSelector(l10n, fillWidth: false),
+                        )
+                      : null,
+                  middle: FittedBox(fit: BoxFit.scaleDown, child: navigation),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: trailing,
+                  ),
+                ),
               ),
-              ButtonSegment(
-                value: AgendaView.week,
-                label: Text(l10n.viewWeek, key: keys.week),
+              _PeriodLabel(
+                key: keys.period,
+                controller: controller,
+                view: view,
               ),
-              ButtonSegment(
-                value: AgendaView.month,
-                label: Text(l10n.viewMonth, key: keys.month),
-              ),
-              ButtonSegment(
-                value: AgendaView.schedule,
-                label: Text(l10n.viewSchedule, key: keys.schedule),
-              ),
+              if (!isWide) ...[
+                const SizedBox(height: 4),
+                _viewSelector(l10n, fillWidth: true),
+              ],
             ],
-            selected: {view},
-            onSelectionChanged: (selection) => onViewChanged(selection.first),
-          ),
-          if (trailing.isNotEmpty) const SizedBox(width: 8),
-          ...trailing,
-        ],
+          );
+        },
       ),
     );
   }
+
+  /// Choix de la vue ; [fillWidth] : segments égaux sur toute la largeur.
+  Widget _viewSelector(AppLocalizations l10n, {required bool fillWidth}) {
+    ButtonSegment<AgendaView> segment(
+      AgendaView value,
+      String label,
+      Key key,
+    ) => ButtonSegment(
+      value: value,
+      label: Text(
+        label,
+        key: key,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+    return SegmentedButton<AgendaView>(
+      showSelectedIcon: false,
+      expandedInsets: fillWidth ? EdgeInsets.zero : null,
+      segments: [
+        segment(AgendaView.day, l10n.viewDay, keys.day),
+        segment(AgendaView.week, l10n.viewWeek, keys.week),
+        segment(AgendaView.month, l10n.viewMonth, keys.month),
+        segment(AgendaView.schedule, l10n.viewSchedule, keys.schedule),
+      ],
+      selected: {view},
+      onSelectionChanged: (selection) => onViewChanged(selection.first),
+    );
+  }
+}
+
+/// Nom de la période que montre la page de kalender.
+class _PeriodLabel extends StatefulWidget {
+  const _PeriodLabel({required this.controller, required this.view, super.key});
+
+  final KalenderController controller;
+  final AgendaView view;
+
+  @override
+  State<_PeriodLabel> createState() => _PeriodLabelState();
+}
+
+class _PeriodLabelState extends State<_PeriodLabel> {
+  KalenderDateTimeRange? _range;
+
+  @override
+  void initState() {
+    super.initState();
+    _range = widget.controller.visibleDateTimeRange.value;
+    widget.controller.visibleDateTimeRange.addListener(_onRangeChanged);
+  }
+
+  @override
+  void didUpdateWidget(_PeriodLabel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.visibleDateTimeRange.removeListener(_onRangeChanged);
+    widget.controller.visibleDateTimeRange.addListener(_onRangeChanged);
+    _range = widget.controller.visibleDateTimeRange.value;
+  }
+
+  @override
+  void dispose() {
+    widget.controller.visibleDateTimeRange.removeListener(_onRangeChanged);
+    super.dispose();
+  }
+
+  /// kalender publie sa plage pendant sa propre construction : on la lit à
+  /// la fin de l'image, et on en demande une si rien n'était prévu.
+  void _onRangeChanged() {
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _range = widget.controller.visibleDateTimeRange.value);
+      })
+      ..ensureVisualUpdate();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final range = _range;
+    return Text(
+      range == null
+          ? ''
+          : agendaPeriodLabel(
+              view: widget.view,
+              start: range.start,
+              end: range.end,
+              l10n: AppLocalizations.of(context),
+            ),
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: Theme.of(context).textTheme.titleSmall,
+    );
+  }
+}
+
+/// Nom de la période qu'une page de [view] montre, du jour de [start] au
+/// jour de [end] exclu, dans la langue de [l10n] : « Lundi 5 octobre 2026 »,
+/// « 5 – 11 octobre 2026 », « 28 sept. – 4 oct. 2026 », « Octobre 2026 ».
+///
+/// La grille d'un mois déborde sur les mois voisins : elle porte, comme une
+/// page du planning, le nom du mois de son milieu.
+String agendaPeriodLabel({
+  required AgendaView view,
+  required DateTime start,
+  required DateTime end,
+  required AppLocalizations l10n,
+}) {
+  final locale = l10n.localeName;
+  final first = DateTime(start.year, start.month, start.day);
+  // Dernier jour par le calendrier, et non en retirant 24 h : la nuit d'un
+  // changement d'heure n'en fait pas 24.
+  final last = DateTime(end.year, end.month, end.day - 1);
+  final label = switch (view) {
+    AgendaView.day => DateFormat.yMMMMEEEEd(locale).format(first),
+    AgendaView.week => _rangeLabel(first, last, l10n),
+    AgendaView.month || AgendaView.schedule => DateFormat.yMMMM(locale).format(
+      DateTime(
+        first.year,
+        first.month,
+        first.day + last.difference(first).inDays ~/ 2,
+      ),
+    ),
+  };
+  return toBeginningOfSentenceCase(label, locale);
+}
+
+/// Du jour [first] au jour [last] inclus, en ne répétant ni le mois ni
+/// l'année quand ils sont communs.
+String _rangeLabel(DateTime first, DateTime last, AppLocalizations l10n) {
+  final locale = l10n.localeName;
+  if (first.year != last.year) {
+    final date = DateFormat.yMMMd(locale);
+    return '${date.format(first)} – ${date.format(last)}';
+  }
+  final year = DateFormat.y(locale).format(last);
+  if (first.month != last.month) {
+    final date = DateFormat.MMMd(locale);
+    return l10n.agendaPeriodSameYear(
+      date.format(first),
+      date.format(last),
+      year,
+    );
+  }
+  final day = DateFormat.d(locale);
+  return l10n.agendaPeriodSameMonth(
+    day.format(first),
+    day.format(last),
+    DateFormat.MMMM(locale).format(last),
+    year,
+  );
 }

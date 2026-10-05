@@ -195,6 +195,16 @@
   "@previousPeriod": {"description": "Infobulle du bouton qui recule d'une page."},
   "nextPeriod": "Période suivante",
   "@nextPeriod": {"description": "Infobulle du bouton qui avance d'une page."},
+  "agendaPeriodSameMonth": "{first} – {last} {month} {year}",
+  "@agendaPeriodSameMonth": {
+    "description": "Période affichée sous la navigation de l'agenda, quand ses jours tiennent dans un mois (ex. « 5 – 11 octobre 2026 »). first et last : numéros du premier et du dernier jour ; month : nom du mois en toutes lettres ; year : l'année.",
+    "placeholders": {"first": {"type": "String"}, "last": {"type": "String"}, "month": {"type": "String"}, "year": {"type": "String"}}
+  },
+  "agendaPeriodSameYear": "{first} – {last} {year}",
+  "@agendaPeriodSameYear": {
+    "description": "Période affichée sous la navigation de l'agenda, quand ses jours couvrent deux mois d'une même année (ex. « 28 sept. – 4 oct. 2026 »). first et last : jour et mois abrégé, déjà formatés ; year : l'année.",
+    "placeholders": {"first": {"type": "String"}, "last": {"type": "String"}, "year": {"type": "String"}}
+  },
   "newEventTooltip": "Nouveau rendez-vous",
   "@newEventTooltip": {"description": "Infobulle du bouton de création."},
   "newEventTitle": "Nouveau rendez-vous",

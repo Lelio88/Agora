@@ -83,11 +83,19 @@ class AgoraRobot {
     // L'app lit la taille de l'écran dans ce MediaQuery, qui l'annonce nulle
     // par défaut : les tests voient alors la mise en page étroite, celle d'un
     // téléphone. [screenSize] pose un vrai écran, et la surface de test avec.
+    // Sans écran posé, la surface garde ses 800 px de large mais passe de
+    // 600 à 800 px de haut : sous la barre d'agenda (navigation, période,
+    // vues), 600 px ne laissaient à la grille horaire que 256 px, et
+    // kalender n'y construisait plus les tuiles de 18 h que les parcours
+    // touchent — ni celles dont ils vérifient la disparition.
     if (screenSize != null) {
       tester.view.physicalSize = screenSize;
       tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+    } else {
+      tester.view.physicalSize =
+          const Size(800, 800) * tester.view.devicePixelRatio;
     }
+    addTearDown(tester.view.reset);
     this.auth = auth ?? FakeAuthRepository();
     this.profiles = profiles ?? FakeProfileRepository();
     this.calendar = calendar ?? FakeCalendarRepository();

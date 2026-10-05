@@ -132,8 +132,17 @@ Migration : `20260921220000_calendar_management.sql`.
   montrait jamais jeudi–dimanche. Toutes les vues se calent sur aujourd'hui quand on y arrive
   depuis une plage qui le contient (`keepTodayInView`) : kalender reprenait le début de la plage
   quittée, et un 1er du mois, le mois et le planning ouvraient le mois précédent.
+- **Barre d'agenda** (`AgendaToolbar`, partagée avec l'agenda d'un groupe) : « ‹ Aujourd'hui › »
+  au centre (`NavigationToolbar` : centrée si elle tient, décalée sinon, jamais par-dessus les
+  actions), et dessous le nom de la période affichée (`agendaPeriodLabel` : « 5 – 11 octobre
+  2026 », « 28 sept. – 4 oct. 2026 », « Octobre 2026 » ; la grille d'un mois, qui déborde sur
+  ses voisins, porte le nom du mois de son milieu). À partir de 840 px de large, les vues sont à
+  gauche et les actions à droite, sur la même ligne ; en dessous, les vues passent sous la
+  période, sur toute la largeur.
 - **Tests d'écran** : le robot annonce un écran de taille nulle, donc la mise en page de
   téléphone ; `pumpApp(screenSize: …)` pose un vrai écran (semaine complète au-delà de 600 px).
+  Sans écran posé, la surface fait 800 × 800 px : sous la barre d'agenda, c'est ce qui laisse à
+  la grille horaire la place de construire les tuiles de 10 h et 18 h que les parcours touchent.
 - **Glisser-déposer et étirement** (`onEventChanged`) sur les rdv d'un agenda où l'on écrit :
   appui long sur téléphone, glisser direct à la souris. Pour une occurrence, la question
   « déplacer cette occurrence ou toute la série » ; annulation ou échec remettent la tuile en

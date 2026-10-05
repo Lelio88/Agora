@@ -93,6 +93,8 @@
   "todayButton": "Today",
   "previousPeriod": "Previous period",
   "nextPeriod": "Next period",
+  "agendaPeriodSameMonth": "{month} {first} – {last}, {year}",
+  "agendaPeriodSameYear": "{first} – {last}, {year}",
   "newEventTooltip": "New event",
   "newEventTitle": "New event",
   "editEventTitle": "Edit event",

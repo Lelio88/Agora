@@ -275,6 +275,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nextPeriod => 'Période suivante';
 
   @override
+  String agendaPeriodSameMonth(
+    String first,
+    String last,
+    String month,
+    String year,
+  ) {
+    return '$first – $last $month $year';
+  }
+
+  @override
+  String agendaPeriodSameYear(String first, String last, String year) {
+    return '$first – $last $year';
+  }
+
+  @override
   String get newEventTooltip => 'Nouveau rendez-vous';
 
   @override

@@ -584,6 +584,23 @@ abstract class AppLocalizations {
   /// **'Période suivante'**
   String get nextPeriod;
 
+  /// Période affichée sous la navigation de l'agenda, quand ses jours tiennent dans un mois (ex. « 5 – 11 octobre 2026 »). first et last : numéros du premier et du dernier jour ; month : nom du mois en toutes lettres ; year : l'année.
+  ///
+  /// In fr, this message translates to:
+  /// **'{first} – {last} {month} {year}'**
+  String agendaPeriodSameMonth(
+    String first,
+    String last,
+    String month,
+    String year,
+  );
+
+  /// Période affichée sous la navigation de l'agenda, quand ses jours couvrent deux mois d'une même année (ex. « 28 sept. – 4 oct. 2026 »). first et last : jour et mois abrégé, déjà formatés ; year : l'année.
+  ///
+  /// In fr, this message translates to:
+  /// **'{first} – {last} {year}'**
+  String agendaPeriodSameYear(String first, String last, String year);
+
   /// Infobulle du bouton de création.
   ///
   /// In fr, this message translates to:
