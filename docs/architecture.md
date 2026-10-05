@@ -170,7 +170,11 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
 ## 4. Droits d'accès
 
 - **Tout fermé, puis ouvert au plus juste** : la migration révoque tout à `anon` et `authenticated`,
-  puis accorde colonne par colonne. `anon` n'a accès à rien.
+  puis accorde colonne par colonne. `anon` n'a accès à rien. La base accorde pourtant par défaut
+  tous les droits sur une table neuve (`TRUNCATE` compris, qui échappe à la RLS) : `event_responses`
+  les avait gardés jusqu'à `20261006120000_public_grants.sql`, qui ferme aussi ces défauts pour les
+  tables et séquences futures. `public_grants_test.sql` refuse tout droit à `anon` sur `public`, et
+  tout `TRUNCATE`, `TRIGGER` ou `REFERENCES` à `authenticated`.
 - **Écritures sensibles par RPC `SECURITY DEFINER`** (`search_path = ''`) : `create_group`,
   `create_invite`, `join_group`, `add_ics_calendar`, `set_event_visibility`. Postgres donnant
   `EXECUTE` à `PUBLIC` sur toute nouvelle fonction, chaque fonction est révoquée puis accordée
