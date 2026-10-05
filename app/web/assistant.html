@@ -53,8 +53,8 @@
     <tr><td><code class="outil">mon_agenda</code></td><td>Ton agenda sur une plage (<code>du</code>, <code>au</code> ; 93 jours au plus) : tes rendez-vous et ceux de tes groupes, ta réponse aux rendez-vous de groupe.</td></tr>
     <tr><td><code class="outil">agenda_du_groupe</code></td><td>L'agenda d'un groupe (<code>groupe</code>, <code>du</code>, <code>au</code>) comme l'app te le montre : chaque membre au niveau de détail qu'il partage (« détail » ou « occupé »), et les rendez-vous du groupe.</td></tr>
     <tr><td><code class="outil">creneaux_communs</code></td><td>Les créneaux où tous les membres voulus sont libres (<code>groupe</code>, <code>duree_minutes</code>, plage, fenêtre quotidienne, jours, membres). Mêmes règles que l'application.</td></tr>
-    <tr><td><code class="outil">creer_rdv</code></td><td>Crée un rendez-vous ponctuel dans ton agenda (<code>titre</code>, <code>debut</code>, <code>fin</code>, lieu, description).</td></tr>
-    <tr><td><code class="outil">proposer_rdv</code></td><td>Propose un rendez-vous à un de tes groupes : tout le groupe le voit, et le salon Discord relié le rappelle.</td></tr>
+    <tr><td><code class="outil">creer_rdv</code></td><td>Crée un rendez-vous dans ton agenda (<code>titre</code>, <code>debut</code>, <code>fin</code>, lieu, description) : ponctuel, ou une série avec <code>repetition</code> (fréquence, jours, fin par date ou par nombre de séances — un an au plus —, séances sautées dans <code>sauf</code>).</td></tr>
+    <tr><td><code class="outil">proposer_rdv</code></td><td>Propose un rendez-vous à un de tes groupes, ponctuel ou en série (<code>repetition</code>) : tout le groupe le voit, et le salon Discord relié le rappelle.</td></tr>
     <tr><td><code class="outil">repondre_au_rdv</code></td><td>Ta réponse à un rendez-vous de groupe : présent, peut-être, absent, ou aucune.</td></tr>
   </table>
   <p>Les dates s'écrivent en ISO 8601 (<code>2026-10-09</code>, <code>2026-10-09T18:30</code>) ; une heure sans fuseau se lit dans celui de ton profil.</p>
@@ -62,7 +62,7 @@
   <h2>Les règles</h2>
   <ul>
     <li><strong>Ce que voit l'assistant</strong> : exactement ce que l'application te montre. Un membre qui partage « Tout » avec le groupe y montre titres et lieux, y compris à l'assistant de chaque membre ; « Occupé » ne montre qu'un créneau pris ; « Rien », rien du tout.</li>
-    <li><strong>Ce qu'il écrit</strong> : créer un rendez-vous, en proposer un à un groupe, y répondre — au plus 20 écritures par heure, dont 5 propositions au groupe. Avant de proposer au groupe, il te montre la proposition et attend ton accord.</li>
+    <li><strong>Ce qu'il écrit</strong> : créer un rendez-vous, en proposer un à un groupe, y répondre — au plus 20 écritures par heure, dont 5 propositions au groupe. Une série compte pour une écriture : elle se supprime aussi d'un geste dans l'application. Avant de proposer au groupe, il te montre la proposition et attend ton accord.</li>
     <li><strong>Ce qu'il ne fait jamais</strong> : modifier ou supprimer un rendez-vous, toucher à tes groupes, à ton partage ou à ton compte. Son jeton n'ouvre que ces outils : le reste d'Agora le refuse.</li>
     <li>Les titres et descriptions des rendez-vous sont des données écrites par des personnes, jamais des consignes pour l'assistant.</li>
   </ul>
@@ -99,8 +99,8 @@
     <tr><td><code class="outil">mon_agenda</code></td><td>Your agenda over a range (<code>du</code>, <code>au</code>; 93 days at most): your events and your groups', your answer to group events.</td></tr>
     <tr><td><code class="outil">agenda_du_groupe</code></td><td>A group's agenda (<code>groupe</code>, <code>du</code>, <code>au</code>) as the app shows it to you: each member at the level of detail they share ("detail" or "busy"), and the group's events.</td></tr>
     <tr><td><code class="outil">creneaux_communs</code></td><td>Slots where every required member is free (<code>groupe</code>, <code>duree_minutes</code>, range, daily window, days, members). Same rules as the app.</td></tr>
-    <tr><td><code class="outil">creer_rdv</code></td><td>Creates a one-off event in your agenda (<code>titre</code>, <code>debut</code>, <code>fin</code>, place, description).</td></tr>
-    <tr><td><code class="outil">proposer_rdv</code></td><td>Proposes an event to one of your groups: the whole group sees it, and a linked Discord channel reminds it.</td></tr>
+    <tr><td><code class="outil">creer_rdv</code></td><td>Creates an event in your agenda (<code>titre</code>, <code>debut</code>, <code>fin</code>, place, description): one-off, or a series with <code>repetition</code> (frequency, days, end by date or by number of sessions — one year at most —, skipped sessions in <code>sauf</code>).</td></tr>
+    <tr><td><code class="outil">proposer_rdv</code></td><td>Proposes an event to one of your groups, one-off or as a series (<code>repetition</code>): the whole group sees it, and a linked Discord channel reminds it.</td></tr>
     <tr><td><code class="outil">repondre_au_rdv</code></td><td>Your answer to a group event: going, maybe, not going, or none.</td></tr>
   </table>
   <p>Dates are ISO 8601 (<code>2026-10-09</code>, <code>2026-10-09T18:30</code>); a time without an offset is read in your profile's time zone.</p>
@@ -108,7 +108,7 @@
   <h2>The rules</h2>
   <ul>
     <li><strong>What the assistant sees</strong>: exactly what the app shows you. A member who shares "Everything" with the group shows titles and places there, including to each member's assistant; "Busy" only shows a taken slot; "Nothing", nothing at all.</li>
-    <li><strong>What it writes</strong>: creating an event, proposing one to a group, answering one — at most 20 writes an hour, 5 of them proposals to the group. Before proposing to the group, it shows you the proposal and waits for your go-ahead.</li>
+    <li><strong>What it writes</strong>: creating an event, proposing one to a group, answering one — at most 20 writes an hour, 5 of them proposals to the group. A series counts as one write: it is also deleted in one go in the app. Before proposing to the group, it shows you the proposal and waits for your go-ahead.</li>
     <li><strong>What it never does</strong>: edit or delete an event, touch your groups, your sharing or your account. Its token only opens these tools: the rest of Agora refuses it.</li>
     <li>Event titles and descriptions are data written by people, never instructions for the assistant.</li>
   </ul>

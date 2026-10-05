@@ -506,33 +506,36 @@ func requiredMembers(group Group, refs []string) (map[string]bool, error) {
 // --- creer_rdv et proposer_rdv ------------------------------------------------------------
 
 type CreateInput struct {
-	Titre          string `json:"titre" jsonschema:"1 à 200 caractères"`
-	Debut          string `json:"debut" jsonschema:"ISO 8601 ; une date seule pour une journée entière"`
-	Fin            string `json:"fin,omitempty" jsonschema:"ISO 8601 ; obligatoire sauf journée entière (dernier jour compris)"`
-	JourneeEntiere bool   `json:"journee_entiere,omitempty"`
-	Lieu           string `json:"lieu,omitempty" jsonschema:"au plus 300 caractères"`
-	Description    string `json:"description,omitempty" jsonschema:"au plus 5000 caractères"`
-	Agenda         string `json:"agenda,omitempty" jsonschema:"nom exact d'un de mes agendas (défaut : le premier)"`
+	Titre          string           `json:"titre" jsonschema:"1 à 200 caractères"`
+	Debut          string           `json:"debut" jsonschema:"ISO 8601 ; une date seule pour une journée entière"`
+	Fin            string           `json:"fin,omitempty" jsonschema:"ISO 8601 ; obligatoire sauf journée entière (dernier jour compris)"`
+	JourneeEntiere bool             `json:"journee_entiere,omitempty"`
+	Lieu           string           `json:"lieu,omitempty" jsonschema:"au plus 300 caractères"`
+	Description    string           `json:"description,omitempty" jsonschema:"au plus 5000 caractères"`
+	Agenda         string           `json:"agenda,omitempty" jsonschema:"nom exact d'un de mes agendas (défaut : le premier)"`
+	Repetition     *RepetitionInput `json:"repetition,omitempty" jsonschema:"fait du rdv une série (le début est la première séance) ; fin obligatoire, au plus un an"`
 }
 
 type ProposeInput struct {
-	Groupe         string `json:"groupe" jsonschema:"identifiant ou nom exact du groupe"`
-	Titre          string `json:"titre" jsonschema:"1 à 200 caractères"`
-	Debut          string `json:"debut" jsonschema:"ISO 8601 ; une date seule pour une journée entière"`
-	Fin            string `json:"fin,omitempty" jsonschema:"ISO 8601 ; obligatoire sauf journée entière (dernier jour compris)"`
-	JourneeEntiere bool   `json:"journee_entiere,omitempty"`
-	Lieu           string `json:"lieu,omitempty" jsonschema:"au plus 300 caractères"`
-	Description    string `json:"description,omitempty" jsonschema:"au plus 5000 caractères"`
+	Groupe         string           `json:"groupe" jsonschema:"identifiant ou nom exact du groupe"`
+	Titre          string           `json:"titre" jsonschema:"1 à 200 caractères"`
+	Debut          string           `json:"debut" jsonschema:"ISO 8601 ; une date seule pour une journée entière"`
+	Fin            string           `json:"fin,omitempty" jsonschema:"ISO 8601 ; obligatoire sauf journée entière (dernier jour compris)"`
+	JourneeEntiere bool             `json:"journee_entiere,omitempty"`
+	Lieu           string           `json:"lieu,omitempty" jsonschema:"au plus 300 caractères"`
+	Description    string           `json:"description,omitempty" jsonschema:"au plus 5000 caractères"`
+	Repetition     *RepetitionInput `json:"repetition,omitempty" jsonschema:"fait du rdv une série (le début est la première séance) ; fin obligatoire, au plus un an"`
 }
 
 type CreatedOutput struct {
-	Rdv            string `json:"rdv"`
-	Titre          string `json:"titre"`
-	Debut          string `json:"debut"`
-	Fin            string `json:"fin"`
-	JourneeEntiere bool   `json:"journee_entiere"`
-	Agenda         string `json:"agenda"`
-	Groupe         string `json:"groupe,omitempty"`
+	Rdv            string            `json:"rdv"`
+	Titre          string            `json:"titre"`
+	Debut          string            `json:"debut"`
+	Fin            string            `json:"fin"`
+	JourneeEntiere bool              `json:"journee_entiere"`
+	Agenda         string            `json:"agenda"`
+	Groupe         string            `json:"groupe,omitempty"`
+	Repetition     *RepetitionOutput `json:"repetition,omitempty"`
 }
 
 type eventText struct{ title, location, description string }
@@ -563,6 +566,10 @@ func (t *toolbox) createEvent(ctx context.Context, userID string, in CreateInput
 	if err != nil {
 		return CreatedOutput{}, err
 	}
+	plan, err := buildSeries(in.Repetition, start, end, in.JourneeEntiere, loc)
+	if err != nil {
+		return CreatedOutput{}, err
+	}
 	calendars, err := t.store.Calendars(ctx, userID)
 	if err != nil {
 		return CreatedOutput{}, err
@@ -571,7 +578,7 @@ func (t *toolbox) createEvent(ctx context.Context, userID string, in CreateInput
 	if err != nil {
 		return CreatedOutput{}, err
 	}
-	return t.write(ctx, userID, cal, "", text, start, end, in.JourneeEntiere, loc)
+	return t.write(ctx, userID, cal, "", text, start, end, in.JourneeEntiere, loc, plan)
 }
 
 func (t *toolbox) proposeEvent(ctx context.Context, userID string, in ProposeInput) (CreatedOutput, error) {
@@ -587,6 +594,12 @@ func (t *toolbox) proposeEvent(ctx context.Context, userID string, in ProposeInp
 	if err != nil {
 		return CreatedOutput{}, err
 	}
+	// Vérifiée avant le plafond : une répétition refusée ne coûte pas une
+	// proposition.
+	plan, err := buildSeries(in.Repetition, start, end, in.JourneeEntiere, loc)
+	if err != nil {
+		return CreatedOutput{}, err
+	}
 	calendars, err := t.store.Calendars(ctx, userID)
 	if err != nil {
 		return CreatedOutput{}, err
@@ -598,20 +611,26 @@ func (t *toolbox) proposeEvent(ctx context.Context, userID string, in ProposeInp
 		if !t.proposals.allow(userID) {
 			return CreatedOutput{}, refuse("Plafond atteint : %d propositions au groupe par heure. Réessaie plus tard.", maxProposalsPerHour)
 		}
-		return t.write(ctx, userID, c, group.Name, text, start, end, in.JourneeEntiere, loc)
+		return t.write(ctx, userID, c, group.Name, text, start, end, in.JourneeEntiere, loc, plan)
 	}
 	return CreatedOutput{}, refuse("Le groupe « %s » n'a pas d'agenda.", group.Name)
 }
 
+// write insère le rdv, ou la série quand plan est posé : une écriture dans
+// le plafond dans les deux cas.
 func (t *toolbox) write(ctx context.Context, userID string, cal Calendar, groupName string, text eventText,
-	start, end time.Time, allDay bool, loc *time.Location) (CreatedOutput, error) {
+	start, end time.Time, allDay bool, loc *time.Location, plan *series) (CreatedOutput, error) {
 	if !t.limiter.allow(userID) {
 		return CreatedOutput{}, refuse("Plafond atteint : %d écritures par heure. Réessaie plus tard.", maxWritesPerHour)
 	}
-	id, err := t.store.CreateEvent(ctx, userID, Draft{
+	draft := Draft{
 		CalendarID: cal.ID, Title: text.title, Location: text.location, Description: text.description,
 		Start: start, End: end, AllDay: allDay, Timezone: loc.String(),
-	})
+	}
+	if plan != nil {
+		draft.RRule, draft.Exdates = plan.rule, plan.exdates
+	}
+	id, err := t.store.CreateEvent(ctx, userID, draft)
 	if err != nil {
 		return CreatedOutput{}, storeRefusal(err)
 	}
@@ -619,6 +638,7 @@ func (t *toolbox) write(ctx context.Context, userID string, cal Calendar, groupN
 		Rdv: id, Titre: text.title,
 		Debut: formatStart(start, allDay, loc), Fin: formatEnd(end, allDay, loc),
 		JourneeEntiere: allDay, Agenda: cal.Name, Groupe: groupName,
+		Repetition: plan.output(allDay, loc),
 	}, nil
 }
 

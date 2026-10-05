@@ -113,14 +113,34 @@ groupe se montre avant d'être envoyée.
 | `mon_agenda(du?, au?)` | `my_agenda` | ≤ 93 jours, 300 lignes au plus ; chaque rdv porte sa référence `rdv` |
 | `agenda_du_groupe(groupe, du?, au?)` | `group_agenda` | ce que l'app montre : `detail` ou `occupe` |
 | `creneaux_communs(groupe, duree_minutes, …)` | `group_agenda` + `worker/slots` | mêmes règles que l'écran et `/dispo` ; jamais le passé |
-| `creer_rdv(titre, debut, fin?, …)` | `INSERT events` | rdv ponctuel, agenda natif perso (le plus ancien, ou celui nommé) |
-| `proposer_rdv(groupe, titre, debut, fin?, …)` | `INSERT events` (agenda du groupe) | à montrer avant, visible du groupe et de Discord |
+| `creer_rdv(titre, debut, fin?, …, repetition?)` | `INSERT events` | rdv ponctuel ou série, agenda natif perso (le plus ancien, ou celui nommé) |
+| `proposer_rdv(groupe, titre, debut, fin?, …, repetition?)` | `INSERT events` (agenda du groupe) | ponctuel ou série ; à montrer avant, visible du groupe et de Discord |
 | `repondre_au_rdv(rdv, reponse)` | `respond_to_event` | la référence porte l'occurrence d'une série dépliée |
 
 Écritures : 20 par heure et par membre, dont 5 propositions au groupe (ce que tout le groupe voit,
 et que Discord rappelle) — en mémoire, le worker tourne en un exemplaire ; jamais de
 modification ni de suppression. Un groupe, un agenda ou un membre se désigne par identifiant ou nom
 exact ; ambigu ou inconnu, la demande est refusée avec les choix possibles.
+
+**Séries** (`repetition`, `repetition.go`) : une série est sa seule ligne maîtresse (`rrule` +
+`exdates`), que le worker déplie comme toute série ; elle compte pour **une** écriture (et une
+proposition au groupe). Règles :
+
+- seul le sous-ensemble que l'éditeur de l'app relit est écrit (`FREQ`, `INTERVAL`, `BYDAY`,
+  `UNTIL` ou `COUNT`), dans l'ordre de `RecurrenceRule.toRRule` ;
+- fin obligatoire (`jusqu_au`, date comprise, ou `nombre` de séances), dernière séance au plus un an
+  (heure murale) après la première : une consigne injectée ne remplit pas un agenda pour des
+  années, et une série se supprime d'un geste dans l'app ;
+- le début est la première séance (un des `jours` choisis), sinon refus ;
+- les séances sautées (`sauf`) se donnent par leur date ; l'instant exclu est celui que
+  `recurrence.Expand` calcule pour ce jour (fuseau de la série, changement d'heure compris) — le seul
+  que le worker reconnaîtra. Une date qui ne tombe pas sur une séance est refusée ;
+- la réponse résume la série (`seances`, `premiere`, `derniere`) ; un seul titre et une seule
+  description pour toutes les séances (l'assistant ne modifie jamais une occurrence).
+
+Limites connues côté app : l'éditeur ne montre que la fréquence d'une série (pas sa fin, ses jours
+ni son intervalle) ; les lire et les garder tient tant qu'on ne rechoisit pas la fréquence. Et
+changer l'horaire d'une série efface ses séances sautées (invariant des séries).
 
 ## Révoquer
 

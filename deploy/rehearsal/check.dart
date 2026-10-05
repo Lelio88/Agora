@@ -386,6 +386,17 @@ Future<void> _checkAssistant(String key, SupabaseClient alice, String groupId) a
     'arguments': {'titre': 'Dentiste', 'debut': '${date}T09:00', 'fin': '${date}T09:30'},
   });
   _check('creer_rdv écrit dans l\'agenda d\'Alice', created?['result'] != null && created?['result']['isError'] != true, created);
+  final (_, series) = await _mcp(access, 'tools/call', {
+    'name': 'creer_rdv',
+    'arguments': {
+      'titre': 'Cours',
+      'debut': '${date}T08:00',
+      'fin': '${date}T10:00',
+      'repetition': {'frequence': 'hebdomadaire', 'nombre': 3},
+    },
+  });
+  _check('creer_rdv crée une série en une écriture',
+      series?['result']?['structuredContent']?['repetition']?['seances'] == 3, series?['result']);
 
   final assistant = {'apikey': key, 'Authorization': 'Bearer $access', 'Origin': _web};
   final rest = await http.get(Uri.parse('$_api/rest/v1/events?select=id'), headers: assistant);

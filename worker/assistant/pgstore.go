@@ -244,14 +244,19 @@ func (s *PgStore) GroupAgenda(ctx context.Context, userID, groupID string, from,
 }
 
 // CreateEvent insère le rdv comme l'app : INSERT sous la RLS (can_add_event).
+// Une série est sa seule ligne maîtresse : le déclencheur de la table
+// prévient le worker, qui la déplie.
 func (s *PgStore) CreateEvent(ctx context.Context, userID string, d Draft) (string, error) {
 	var id string
 	err := s.asUser(ctx, userID, func(tx pgx.Tx) error {
 		return tx.QueryRow(ctx, `insert into public.events
-				(calendar_id, title, location, description, starts_at, ends_at, all_day, timezone)
-			values ($1::uuid, $2, nullif($3, ''), nullif($4, ''), $5, $6, $7, $8)
+				(calendar_id, title, location, description, starts_at, ends_at, all_day, timezone,
+				 rrule, exdates)
+			values ($1::uuid, $2, nullif($3, ''), nullif($4, ''), $5, $6, $7, $8,
+				nullif($9, ''), coalesce($10::timestamptz[], '{}'))
 			returning id::text`,
-			d.CalendarID, d.Title, d.Location, d.Description, d.Start, d.End, d.AllDay, d.Timezone).Scan(&id)
+			d.CalendarID, d.Title, d.Location, d.Description, d.Start, d.End, d.AllDay, d.Timezone,
+			d.RRule, d.Exdates).Scan(&id)
 	})
 	if err != nil {
 		return "", fmt.Errorf("create event: %w", err)

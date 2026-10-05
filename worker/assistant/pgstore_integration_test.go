@@ -155,6 +155,26 @@ func TestPgStoreActsAsTheMember(t *testing.T) {
 		t.Fatalf("Cléo répond à un rdv d'un autre groupe : err = %v", err)
 	}
 
+	// Une série est sa seule ligne maîtresse, règle et séances sautées
+	// comprises, écrite comme le membre (droits de colonne d'authenticated).
+	skip := start.AddDate(0, 0, 7)
+	course, err := store.CreateEvent(ctx, itAda, Draft{CalendarID: personal, Title: "Cours",
+		Start: start, End: start.Add(2 * time.Hour), Timezone: "Europe/Paris",
+		RRule: "FREQ=WEEKLY;COUNT=4", Exdates: []time.Time{skip}})
+	if err != nil {
+		t.Fatalf("CreateEvent (série) : %v", err)
+	}
+	var rule string
+	var exdates []time.Time
+	if err := admin.QueryRow(ctx, `select rrule, exdates from public.events where id = $1`, course).
+		Scan(&rule, &exdates); err != nil || rule != "FREQ=WEEKLY;COUNT=4" || len(exdates) != 1 || !exdates[0].Equal(skip) {
+		t.Fatalf("série écrite : règle %q, exceptions %v, %v", rule, exdates, err)
+	}
+	var none []time.Time
+	if err := admin.QueryRow(ctx, `select exdates from public.events where id = $1`, mine).Scan(&none); err != nil || len(none) != 0 {
+		t.Fatalf("rdv ponctuel : exceptions %v, %v ; attendu aucune (jamais nulles)", none, err)
+	}
+
 	var role string
 	if err := worker.QueryRow(ctx, `select current_user`).Scan(&role); err != nil || role != "agora_worker" {
 		t.Fatalf("après les transactions, la connexion est %q, %v : la bascule doit rester locale", role, err)

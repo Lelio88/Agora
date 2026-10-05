@@ -21,7 +21,7 @@ type Store interface {
 	MyAgenda(ctx context.Context, userID string, from, to time.Time) ([]Entry, error)
 	// GroupAgenda lit public.group_agenda : la règle de visibilité s'applique.
 	GroupAgenda(ctx context.Context, userID, groupID string, from, to time.Time) ([]GroupEntry, error)
-	// CreateEvent insère un rdv ponctuel et rend son identifiant.
+	// CreateEvent insère un rdv (ponctuel ou série) et rend son identifiant.
 	CreateEvent(ctx context.Context, userID string, draft Draft) (string, error)
 	// Respond appelle public.respond_to_event ; status vide efface la réponse.
 	Respond(ctx context.Context, userID, eventID string, occurrence *time.Time, status string) error
@@ -100,7 +100,7 @@ type GroupEntry struct {
 	AllDay       bool
 }
 
-// Draft est un rdv ponctuel à créer.
+// Draft est un rdv à créer : ponctuel, ou série quand RRule est posée.
 type Draft struct {
 	CalendarID  string
 	Title       string
@@ -110,4 +110,8 @@ type Draft struct {
 	End         time.Time
 	AllDay      bool
 	Timezone    string
+	// RRule (RFC 5545, sans « RRULE: ») et Exdates (créneaux d'origine des
+	// séances sautées) font du rdv une série ; vides pour un rdv ponctuel.
+	RRule   string
+	Exdates []time.Time
 }
