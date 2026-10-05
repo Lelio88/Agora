@@ -1,7 +1,7 @@
 name: agora
 description: "Agora - agendas partagés en groupe, avec bot Discord."
 publish_to: 'none'
-version: 0.5.0+9
+version: 0.6.0+10
 
 environment:
   sdk: ^3.13.2
