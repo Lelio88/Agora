@@ -262,6 +262,16 @@ Barre d'agenda revue : navigation centrée, nom de la période affichée, et sur
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.7.0+11 (agendas de proches)
+
+Français, envoyées sur `alpha` :
+
+```
+Tenez l'agenda de vos proches : Mes agendas → Ajouter un proche. Notez-y ses jours de repos et son anniversaire (répété tous les ans), ou importez son planning par lien iCal. Ces agendas restent à vous seul : jamais vus de vos groupes, jamais comptés comme vos créneaux pris.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
