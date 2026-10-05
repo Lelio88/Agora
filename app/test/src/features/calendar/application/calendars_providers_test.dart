@@ -105,6 +105,20 @@ void main() {
     },
   );
 
+  test("the default calendar is never a close one's", () async {
+    start([
+      const UserCalendar(
+        id: 'cal-lea',
+        name: 'Léa',
+        kind: CalendarKind.native,
+        isContact: true,
+      ),
+      _personal,
+    ]);
+
+    expect(await container.read(defaultCalendarIdProvider.future), 'cal-1');
+  });
+
   test('deleting a calendar refreshes the list', () async {
     start([_personal, _work]);
     await container.read(calendarsProvider.future);

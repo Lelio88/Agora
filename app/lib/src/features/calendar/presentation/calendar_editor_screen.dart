@@ -1,7 +1,9 @@
 /// Éditeur d'un agenda : nom, couleur, et ce que voient les membres de ses
-/// groupes. Comme l'éditeur de rdv, il ne parle pas au serveur : il renvoie
-/// un [CalendarEditorResult] à « Mes agendas », qui confirme une
-/// suppression et appelle le service.
+/// groupes — sauf pour l'agenda d'un proche, toujours invisible : l'écran le
+/// dit au lieu d'offrir un réglage qui n'aurait pas d'effet. Comme
+/// l'éditeur de rdv, il ne parle pas au serveur : il renvoie un
+/// [CalendarEditorResult] à « Mes agendas », qui confirme une suppression et
+/// appelle le service.
 ///
 /// Pour un agenda importé, il montre aussi l'état de la synchro et propose
 /// de la relancer — jamais le lien, que l'app ne connaît pas.
@@ -42,6 +44,7 @@ class CalendarEditorScreen extends StatefulWidget {
   const CalendarEditorScreen({
     this.existing,
     this.canDelete = false,
+    this.contact = false,
     super.key,
   });
 
@@ -51,15 +54,23 @@ class CalendarEditorScreen extends StatefulWidget {
   /// Faux pour le dernier agenda natif, qui ne se supprime pas.
   final bool canDelete;
 
+  /// Création de l'agenda d'un proche (sans effet sur un agenda existant,
+  /// qui dit lui-même ce qu'il est).
+  final bool contact;
+
   static Future<CalendarEditorResult?> show(
     BuildContext context, {
     UserCalendar? existing,
     bool canDelete = false,
+    bool contact = false,
   }) => Navigator.of(context).push<CalendarEditorResult>(
     MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) =>
-          CalendarEditorScreen(existing: existing, canDelete: canDelete),
+      builder: (_) => CalendarEditorScreen(
+        existing: existing,
+        canDelete: canDelete,
+        contact: contact,
+      ),
     ),
   );
 
@@ -74,6 +85,7 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
       widget.existing?.colorHex ??
       (widget.existing == null ? appPalette.first : null);
   late EventVisibility? _visibility = widget.existing?.visibility;
+  late final bool _isContact = widget.existing?.isContact ?? widget.contact;
 
   @override
   void dispose() {
@@ -88,7 +100,8 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
         CalendarDraft(
           name: _name.text,
           colorHex: _colorHex,
-          visibility: _visibility,
+          visibility: _isContact ? EventVisibility.invisible : _visibility,
+          isContact: _isContact,
         ),
       ),
     );
@@ -101,9 +114,11 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
     return Scaffold(
       key: CalendarKeys.calendarEditor,
       appBar: AppBar(
-        title: Text(
-          existing == null ? l10n.newCalendarTitle : l10n.editCalendarTitle,
-        ),
+        title: Text(switch ((existing, _isContact)) {
+          (null, true) => l10n.newContactTitle,
+          (null, false) => l10n.newCalendarTitle,
+          _ => l10n.editCalendarTitle,
+        }),
       ),
       body: Form(
         key: _formKey,
@@ -116,7 +131,11 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
                 key: CalendarKeys.calendarName,
                 controller: _name,
                 autofocus: existing == null,
-                decoration: InputDecoration(labelText: l10n.calendarNameLabel),
+                decoration: InputDecoration(
+                  labelText: _isContact
+                      ? l10n.contactNameLabel
+                      : l10n.calendarNameLabel,
+                ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: (value) {
                   final trimmed = value?.trim() ?? '';
@@ -136,11 +155,18 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
                 onSelected: (hex) => setState(() => _colorHex = hex),
               ),
               const SizedBox(height: 8),
-              VisibilityField(
-                key: CalendarKeys.calendarVisibility,
-                value: _visibility,
-                onChanged: (value) => setState(() => _visibility = value),
-              ),
+              if (_isContact)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.lock_outline),
+                  title: Text(l10n.contactCalendarHint),
+                )
+              else
+                VisibilityField(
+                  key: CalendarKeys.calendarVisibility,
+                  value: _visibility,
+                  onChanged: (value) => setState(() => _visibility = value),
+                ),
               if (existing != null && existing.isImported)
                 _SyncSection(calendar: existing),
               const SizedBox(height: 24),

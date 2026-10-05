@@ -110,10 +110,10 @@ groupe se montre avant d'être envoyée.
 | Outil | Ce qu'il appelle | Note |
 |---|---|---|
 | `mes_groupes` | `group_members` + `groups` + `profiles` | rôle, partage, membres |
-| `mon_agenda(du?, au?)` | `my_agenda` | ≤ 93 jours, 300 lignes au plus ; chaque rdv porte sa référence `rdv` |
+| `mon_agenda(du?, au?)` | `my_agenda` | ≤ 93 jours, 300 lignes au plus ; chaque rdv porte sa référence `rdv` ; celui de l'agenda d'un proche porte `proche` (jamais une indisponibilité du membre, que les consignes rappellent) |
 | `agenda_du_groupe(groupe, du?, au?)` | `group_agenda` | ce que l'app montre : `detail` ou `occupe` |
 | `creneaux_communs(groupe, duree_minutes, …)` | `group_agenda` + `worker/slots` | mêmes règles que l'écran et `/dispo` ; jamais le passé |
-| `creer_rdv(titre, debut, fin?, …, repetition?)` | `INSERT events` | rdv ponctuel ou série, agenda natif perso (le plus ancien, ou celui nommé) |
+| `creer_rdv(titre, debut, fin?, …, repetition?)` | `INSERT events` | rdv ponctuel ou série, agenda natif perso (le plus ancien qui ne soit pas celui d'un proche, ou celui nommé — un proche se vise par son nom) |
 | `proposer_rdv(groupe, titre, debut, fin?, …, repetition?)` | `INSERT events` (agenda du groupe) | ponctuel ou série ; à montrer avant, visible du groupe et de Discord |
 | `repondre_au_rdv(rdv, reponse)` | `respond_to_event` | la référence porte l'occurrence d'une série dépliée |
 

@@ -62,11 +62,14 @@ type Group struct {
 // Calendar est un agenda que le membre peut lire : le sien (Personal), ou
 // celui d'un de ses groupes (GroupID).
 type Calendar struct {
-	ID        string
-	Name      string
-	GroupID   string
-	Personal  bool
-	Native    bool
+	ID       string
+	Name     string
+	GroupID  string
+	Personal bool
+	Native   bool
+	// Contact : l'agenda d'un proche (ses repos, son anniversaire), tenu par
+	// le membre pour lui seul. Ses rdv ne sont jamais ses indisponibilités.
+	Contact   bool
 	CreatedAt time.Time
 }
 

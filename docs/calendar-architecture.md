@@ -85,6 +85,19 @@ Migration : `20260921220000_calendar_management.sql`.
   verrouillant les agendas de la personne avant de compter (deux suppressions simultanées ne
   vident pas le compte). Une contrainte ou un trigger aurait aussi bloqué la cascade de la
   suppression du compte.
+- **Agendas de proches** (`20261007120000_contact_calendars.sql`, test
+  `contact_calendars_test.sql`) : l'agenda qu'on tient pour quelqu'un d'autre — ses repos, son
+  anniversaire —, natif ou importé par lien iCal (`add_ics_calendar(…, p_contact => true)` : le
+  planning d'un ami en roulement ; il compte dans les dix liens iCal par personne, qui bornent
+  la charge du worker). Marqué `calendars.contact`, il est **à soi seul** : toujours
+  `invisible` (contrainte, qui dit `is not distinct from` — une visibilité nulle passerait sinon),
+  marquage non modifiable (aucun droit d'`UPDATE` sur la colonne), jamais l'agenda par défaut
+  (app et `creer_rdv`), jamais compté comme « dernier agenda natif ». Surtout,
+  `private.resolve_group_agenda` l'écarte **même pour son propriétaire** : elle rend à chacun ses
+  propres rdv en détail quelle que soit leur visibilité, et les repos de Léa seraient sinon
+  devenus les créneaux pris d'Ana dans la vue du groupe, « Trouver un créneau », `/dispo` et
+  l'assistant. `my_agenda` les rend, et l'assistant les reçoit marqués `proche`. Pas de lien avec
+  un compte Agora : rattacher par adresse révélerait qu'une adresse est inscrite.
 - **Masquer un agenda dans SA vue** : `public.calendar_preferences (user_id, calendar_id,
   hidden)`, une ligne par personne et par agenda (prête pour les agendas de groupe). C'est de
   l'**affichage**, pas de la vie privée : rien ne change pour les groupes. L'app filtre

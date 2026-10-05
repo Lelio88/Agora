@@ -42,6 +42,9 @@ class _ImportCalendarScreenState extends State<ImportCalendarScreen> {
   final _url = TextEditingController();
   String _colorHex = appPalette[1];
 
+  /// Le planning d'un proche : importé dans un agenda de proche, à soi seul.
+  bool _forContact = false;
+
   @override
   void dispose() {
     _name.dispose();
@@ -56,6 +59,7 @@ class _ImportCalendarScreenState extends State<ImportCalendarScreen> {
         name: _name.text.trim(),
         url: _url.text.trim(),
         colorHex: _colorHex,
+        isContact: _forContact,
       ),
     );
   }
@@ -116,7 +120,16 @@ class _ImportCalendarScreenState extends State<ImportCalendarScreen> {
                 selected: _colorHex,
                 onSelected: (hex) => setState(() => _colorHex = hex),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                key: CalendarKeys.importForContact,
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.importForContactLabel),
+                subtitle: Text(l10n.importForContactHint),
+                value: _forContact,
+                onChanged: (value) => setState(() => _forContact = value),
+              ),
+              const SizedBox(height: 16),
               SubmitButton(
                 key: CalendarKeys.importSave,
                 label: l10n.importCalendarButton,

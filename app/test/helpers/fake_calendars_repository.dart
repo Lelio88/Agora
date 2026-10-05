@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:agora/src/exceptions/app_exception.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/calendars_repository.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 
@@ -81,7 +82,10 @@ class FakeCalendarsRepository implements CalendarsRepository {
         name: draft.name.trim(),
         kind: CalendarKind.native,
         colorHex: draft.colorHex,
-        visibility: draft.visibility,
+        visibility: draft.isContact
+            ? EventVisibility.invisible
+            : draft.visibility,
+        isContact: draft.isContact,
       ),
     );
   }
@@ -101,6 +105,8 @@ class FakeCalendarsRepository implements CalendarsRepository {
         name: draft.name.trim(),
         kind: CalendarKind.ics,
         colorHex: draft.colorHex,
+        visibility: draft.isContact ? EventVisibility.invisible : null,
+        isContact: draft.isContact,
       ),
     );
   }
@@ -123,11 +129,12 @@ class FakeCalendarsRepository implements CalendarsRepository {
       name: draft.name.trim(),
       kind: old.kind,
       colorHex: draft.colorHex,
-      visibility: draft.visibility,
+      visibility: old.isContact ? EventVisibility.invisible : draft.visibility,
       groupId: old.groupId,
       hidden: old.hidden,
       lastSyncedAt: old.lastSyncedAt,
       syncError: old.syncError,
+      isContact: old.isContact,
     );
   }
 

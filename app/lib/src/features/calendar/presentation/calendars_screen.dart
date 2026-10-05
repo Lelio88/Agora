@@ -1,8 +1,9 @@
 /// « Mes agendas » : les agendas personnels, leur couleur et ce qu'en voient
 /// les groupes ; une case pour les montrer ou les masquer dans sa propre
 /// vue ; créer, importer par lien iCal, modifier, relancer la synchro,
-/// supprimer. Puis les agendas de mes groupes (leurs rdv), à montrer ou
-/// masquer de la même façon ; un appui ouvre le groupe.
+/// supprimer. Puis les agendas de proches (repos, anniversaires de
+/// quelqu'un d'autre, à soi seul), et les agendas de mes groupes (leurs
+/// rdv), à montrer ou masquer de la même façon ; un appui ouvre le groupe.
 ///
 /// Choix non évidents :
 /// - l'état de synchro d'un agenda importé arrive en temps réel (la table
@@ -12,7 +13,8 @@
 ///   le compte), jamais ce que voient les groupes ;
 /// - supprimer un agenda annonce d'abord combien de rdv partent avec lui ;
 ///   le dernier agenda natif n'offre pas de bouton de suppression (le
-///   serveur le refuse de toute façon).
+///   serveur le refuse de toute façon) ; un agenda de proche n'en tient
+///   jamais lieu.
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
@@ -55,7 +57,10 @@ class CalendarsScreen extends ConsumerWidget {
       body: AsyncValueWidget<List<UserCalendar>>(
         value: calendars,
         data: (all) {
-          final personal = all.where((c) => c.isPersonal).toList();
+          final personal = all
+              .where((c) => c.isPersonal && !c.isContact)
+              .toList();
+          final contacts = all.where((c) => c.isContact).toList();
           final ofGroups = all.where((c) => !c.isPersonal).toList();
           // Le nom du groupe plutôt que celui de son agenda, figé à sa
           // création : un groupe renommé garde sinon son ancien nom ici.
@@ -90,6 +95,31 @@ class CalendarsScreen extends ConsumerWidget {
                           .setHidden(calendar.id, hidden: !shown),
                     ),
                   ),
+                ListTile(
+                  key: CalendarKeys.contactCalendarsHeader,
+                  title: Text(
+                    l10n.contactCalendarsTitle,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                for (final calendar in contacts)
+                  _CalendarTile(
+                    calendar: calendar,
+                    onTap: () => _edit(context, ref, calendar, canDelete: true),
+                    onShownChanged: (shown) => _run(
+                      context,
+                      () => ref
+                          .read(calendarsServiceProvider)
+                          .setHidden(calendar.id, hidden: !shown),
+                    ),
+                  ),
+                ListTile(
+                  key: CalendarKeys.newContactCalendar,
+                  leading: const Icon(Icons.person_add_alt_1_outlined),
+                  title: Text(l10n.newContactButton),
+                  subtitle: Text(l10n.newContactHint),
+                  onTap: () => _create(context, ref, contact: true),
+                ),
                 if (ofGroups.isNotEmpty) ...[
                   ListTile(
                     key: CalendarKeys.groupCalendarsHeader,
@@ -140,13 +170,18 @@ class CalendarsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final result = await CalendarEditorScreen.show(context);
+  Future<void> _create(
+    BuildContext context,
+    WidgetRef ref, {
+    bool contact = false,
+  }) async {
+    final result = await CalendarEditorScreen.show(context, contact: contact);
     if (result is! CalendarEditorSaved || !context.mounted) return;
+    final l10n = AppLocalizations.of(context);
     await _run(
       context,
       () => ref.read(calendarsServiceProvider).create(result.draft),
-      success: AppLocalizations.of(context).calendarSaved,
+      success: contact ? l10n.contactSaved : l10n.calendarSaved,
     );
   }
 
@@ -273,9 +308,11 @@ class _CalendarTile extends StatelessWidget {
       Theme.of(context).colorScheme.primary,
     );
     final visibility = Text(
-      l10n.calendarVisibilitySummary(
-        visibilityLabel(calendar.visibility, l10n),
-      ),
+      calendar.isContact
+          ? l10n.contactCalendarSubtitle
+          : l10n.calendarVisibilitySummary(
+              visibilityLabel(calendar.visibility, l10n),
+            ),
     );
     return ListTile(
       key: CalendarKeys.calendarTile(calendar.id),

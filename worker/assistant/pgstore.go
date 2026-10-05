@@ -169,7 +169,7 @@ func (s *PgStore) Calendars(ctx context.Context, userID string) ([]Calendar, err
 	var calendars []Calendar
 	err := s.asUser(ctx, userID, func(tx pgx.Tx) error {
 		rows, err := tx.Query(ctx, `select c.id::text, c.name, coalesce(c.group_id::text, ''),
-				c.owner_id is not distinct from $1::uuid, c.kind = 'native', c.created_at
+				c.owner_id is not distinct from $1::uuid, c.kind = 'native', c.contact, c.created_at
 			from public.calendars c
 			where c.owner_id = $1::uuid
 			   or c.group_id in (select group_id from public.group_members where user_id = $1::uuid)
@@ -179,7 +179,7 @@ func (s *PgStore) Calendars(ctx context.Context, userID string) ([]Calendar, err
 		}
 		calendars, err = pgx.CollectRows(rows, func(row pgx.CollectableRow) (Calendar, error) {
 			var c Calendar
-			err := row.Scan(&c.ID, &c.Name, &c.GroupID, &c.Personal, &c.Native, &c.CreatedAt)
+			err := row.Scan(&c.ID, &c.Name, &c.GroupID, &c.Personal, &c.Native, &c.Contact, &c.CreatedAt)
 			return c, err
 		})
 		return err

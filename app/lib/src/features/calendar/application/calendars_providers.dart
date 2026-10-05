@@ -41,10 +41,13 @@ final calendarsProvider = FutureProvider<List<UserCalendar>>((ref) async {
 });
 
 /// Agenda où se créent les rdv : le plus ancien où l'on peut écrire (celui
-/// de l'inscription tant qu'il existe). Le serveur en garantit toujours un.
+/// de l'inscription tant qu'il existe), jamais celui d'un proche. Le serveur
+/// en garantit toujours un.
 final defaultCalendarIdProvider = FutureProvider<String>((ref) async {
   final calendars = await ref.watch(calendarsProvider.future);
-  final writable = calendars.where((c) => c.isWritable).firstOrNull;
+  final writable = calendars
+      .where((c) => c.isWritable && !c.isContact)
+      .firstOrNull;
   if (writable == null) throw const CalendarNotFoundException();
   return writable.id;
 });

@@ -1380,4 +1380,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorTwinExists =>
       'This group is already twinned with another group in that app. Unlink it first from the group menu.';
+
+  @override
+  String get newContactTitle => 'New close one';
+
+  @override
+  String get contactNameLabel => 'Their name';
+
+  @override
+  String get contactCalendarHint =>
+      'Visible to you only: their days off and birthday never count as your busy times.';
+
+  @override
+  String get contactCalendarsTitle => 'Close ones';
+
+  @override
+  String get newContactButton => 'Add a close one';
+
+  @override
+  String get newContactHint => 'Their days off, their birthday: just for you';
+
+  @override
+  String get contactSaved => 'Close one added.';
+
+  @override
+  String get contactCalendarSubtitle => 'Just for you';
+
+  @override
+  String get importForContactLabel => 'A close one\'s schedule';
+
+  @override
+  String get importForContactHint =>
+      'Visible to you only, never counted as your busy times.';
 }

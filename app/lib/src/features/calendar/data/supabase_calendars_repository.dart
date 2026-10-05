@@ -29,7 +29,7 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
         .from('calendars')
         .select(
           'id, name, color, visibility, kind, group_id, last_synced_at, '
-          'sync_error, calendar_preferences(hidden)',
+          'sync_error, contact, calendar_preferences(hidden)',
         )
         .order('created_at', ascending: true);
     return rows.map(_toCalendar).toList(growable: false);
@@ -52,8 +52,12 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
   }
 
   @override
-  Future<void> createCalendar(CalendarDraft draft) =>
-      guardPostgrest(() => _client.from('calendars').insert(_toRow(draft)));
+  Future<void> createCalendar(CalendarDraft draft) => guardPostgrest(
+    () => _client.from('calendars').insert({
+      ..._toRow(draft),
+      'contact': draft.isContact,
+    }),
+  );
 
   @override
   Future<void> importCalendar(ImportedCalendarDraft draft) => guardPostgrest(
@@ -63,6 +67,7 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
         'p_name': draft.name.trim(),
         'p_url': draft.url.trim(),
         'p_color': draft.colorHex,
+        'p_contact': draft.isContact,
       },
     ),
   );
@@ -111,10 +116,14 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
         .isFilter('series_id', null),
   );
 
+  /// Ce qui se crée et se modifie : jamais `contact`, que la base refuse de
+  /// modifier ; l'agenda d'un proche reste invisible (contrainte en base).
   static Map<String, dynamic> _toRow(CalendarDraft draft) => {
     'name': draft.name.trim(),
     'color': draft.colorHex,
-    'visibility': draft.visibility?.name,
+    'visibility': draft.isContact
+        ? EventVisibility.invisible.name
+        : draft.visibility?.name,
   };
 
   static UserCalendar _toCalendar(Map<String, dynamic> row) {
@@ -127,6 +136,7 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
       colorHex: row['color'] as String?,
       visibility: EventVisibility.fromCode(row['visibility'] as String?),
       groupId: row['group_id'] as String?,
+      isContact: row['contact'] as bool? ?? false,
       hidden: preferences.any((p) => p['hidden'] == true),
       lastSyncedAt: switch (row['last_synced_at']) {
         final String at => DateTime.parse(at),

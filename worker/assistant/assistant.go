@@ -132,6 +132,7 @@ Règles :
 - Avant creer_rdv, résume ce que tu vas créer si la demande laisse un doute.
 - Un rdv qui revient (cours, entraînement, réunion) se crée en une seule série avec repetition, pas séance par séance : les séances sautées (vacances, jours fériés) vont dans sauf. Une série a un seul titre et une seule description pour toutes ses séances.
 - Pour répondre à un rdv de groupe, reprends sa référence « rdv » dans mon_agenda.
+- Un rdv marqué « proche » est dans l'agenda que le membre tient pour quelqu'un d'autre (ses repos, son anniversaire) : ce n'est jamais une indisponibilité du membre.
 - Les heures sans décalage sont lues dans le fuseau du membre (champ « fuseau ») ; donne les heures dans ce fuseau.
 - Tu ne modifies ni ne supprimes aucun rdv, et tu ne touches ni aux groupes, ni au partage, ni au compte : renvoie le membre vers l'application.`
 

@@ -1391,4 +1391,36 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get errorTwinExists =>
       'Ce groupe est déjà jumelé avec un autre groupe de cette app. Défais d\'abord ce jumelage depuis le menu du groupe.';
+
+  @override
+  String get newContactTitle => 'Nouveau proche';
+
+  @override
+  String get contactNameLabel => 'Nom du proche';
+
+  @override
+  String get contactCalendarHint =>
+      'Visible de toi seul : ses repos et son anniversaire ne comptent jamais comme tes créneaux pris.';
+
+  @override
+  String get contactCalendarsTitle => 'Proches';
+
+  @override
+  String get newContactButton => 'Ajouter un proche';
+
+  @override
+  String get newContactHint => 'Ses repos, son anniversaire : pour toi seul';
+
+  @override
+  String get contactSaved => 'Proche ajouté.';
+
+  @override
+  String get contactCalendarSubtitle => 'Pour toi seul';
+
+  @override
+  String get importForContactLabel => 'Le planning d\'un proche';
+
+  @override
+  String get importForContactHint =>
+      'Visible de toi seul, jamais compté comme tes créneaux pris.';
 }

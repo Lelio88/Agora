@@ -404,5 +404,15 @@
   "twinResponseUnknown": "This answer matches no twinning started from this device. Start again from the group menu.",
   "twinSaved": "Twin saved.",
   "twinOpenFailed": "Couldn't open {app}. The twin is saved here; start again from the group menu to finish.",
-  "errorTwinExists": "This group is already twinned with another group in that app. Unlink it first from the group menu."
+  "errorTwinExists": "This group is already twinned with another group in that app. Unlink it first from the group menu.",
+  "newContactTitle": "New close one",
+  "contactNameLabel": "Their name",
+  "contactCalendarHint": "Visible to you only: their days off and birthday never count as your busy times.",
+  "contactCalendarsTitle": "Close ones",
+  "newContactButton": "Add a close one",
+  "newContactHint": "Their days off, their birthday: just for you",
+  "contactSaved": "Close one added.",
+  "contactCalendarSubtitle": "Just for you",
+  "importForContactLabel": "A close one's schedule",
+  "importForContactHint": "Visible to you only, never counted as your busy times."
 }

@@ -8,6 +8,11 @@
 /// - [hidden] est un **affichage** : l'agenda disparaît de sa propre vue,
 ///   sans rien changer pour les autres.
 ///
+/// Un agenda de proche ([isContact]) est celui que l'utilisateur tient pour
+/// quelqu'un d'autre — ses repos, son anniversaire. Il est à lui seul :
+/// toujours invisible pour les groupes, jamais compté comme ses créneaux
+/// pris, jamais son agenda par défaut. Le marquage ne s'enlève pas.
+///
 /// Un agenda importé ([CalendarKind.ics]) est en lecture seule : le worker
 /// le relit depuis son lien toutes les 30 minutes. L'app n'en connaît que
 /// l'état de synchro ([lastSyncedAt], [syncError]) — jamais le lien, qui
@@ -57,6 +62,7 @@ final class UserCalendar {
     this.hidden = false,
     this.lastSyncedAt,
     this.syncError,
+    this.isContact = false,
   });
 
   final String id;
@@ -78,6 +84,9 @@ final class UserCalendar {
   /// Échec de la dernière relecture ; `null` si elle a réussi.
   final FeedSyncError? syncError;
 
+  /// L'agenda d'un proche, tenu pour lui seul.
+  final bool isContact;
+
   bool get isPersonal => groupId == null;
 
   bool get isImported => kind == CalendarKind.ics;
@@ -96,20 +105,30 @@ final class UserCalendar {
     hidden: hidden ?? this.hidden,
     lastSyncedAt: lastSyncedAt,
     syncError: syncError,
+    isContact: isContact,
   );
 }
 
 /// Ce que l'utilisateur règle en créant ou en modifiant un agenda.
 final class CalendarDraft {
-  const CalendarDraft({required this.name, this.colorHex, this.visibility})
-    : assert(
-        visibility != EventVisibility.details,
-        'an agenda can only restrict what groups see',
-      );
+  const CalendarDraft({
+    required this.name,
+    this.colorHex,
+    this.visibility,
+    this.isContact = false,
+  }) : assert(
+         visibility != EventVisibility.details,
+         'an agenda can only restrict what groups see',
+       );
 
   final String name;
   final String? colorHex;
+
+  /// Ignorée pour un proche, toujours invisible.
   final EventVisibility? visibility;
+
+  /// Crée l'agenda d'un proche (n'a d'effet qu'à la création).
+  final bool isContact;
 }
 
 /// Un agenda à importer par son lien iCal (`https://` ou `webcal://`).
@@ -118,6 +137,7 @@ final class ImportedCalendarDraft {
     required this.name,
     required this.url,
     this.colorHex,
+    this.isContact = false,
   });
 
   final String name;
@@ -125,6 +145,9 @@ final class ImportedCalendarDraft {
   /// Le lien : un secret, qui part au serveur et n'en revient jamais.
   final String url;
   final String? colorHex;
+
+  /// Le planning d'un proche, importé dans un agenda de proche.
+  final bool isContact;
 
   @override
   String toString() => 'ImportedCalendarDraft($name)';

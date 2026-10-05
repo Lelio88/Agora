@@ -2460,6 +2460,66 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ce groupe est déjà jumelé avec un autre groupe de cette app. Défais d\'abord ce jumelage depuis le menu du groupe.'**
   String get errorTwinExists;
+
+  /// Titre de l'éditeur à la création de l'agenda d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau proche'**
+  String get newContactTitle;
+
+  /// Champ du nom dans l'éditeur de l'agenda d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du proche'**
+  String get contactNameLabel;
+
+  /// Éditeur d'un agenda de proche, à la place du réglage de partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visible de toi seul : ses repos et son anniversaire ne comptent jamais comme tes créneaux pris.'**
+  String get contactCalendarHint;
+
+  /// Mes agendas : en-tête des agendas tenus pour des proches.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proches'**
+  String get contactCalendarsTitle;
+
+  /// Mes agendas : créer l'agenda d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un proche'**
+  String get newContactButton;
+
+  /// Mes agendas : précision sous « Ajouter un proche ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Ses repos, son anniversaire : pour toi seul'**
+  String get newContactHint;
+
+  /// Confirmation : agenda de proche créé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proche ajouté.'**
+  String get contactSaved;
+
+  /// Mes agendas : sous-titre d'un agenda de proche (jamais partagé).
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour toi seul'**
+  String get contactCalendarSubtitle;
+
+  /// Import iCal : l'agenda importé est celui d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le planning d\'un proche'**
+  String get importForContactLabel;
+
+  /// Import iCal : ce que change « Le planning d'un proche ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Visible de toi seul, jamais compté comme tes créneaux pris.'**
+  String get importForContactHint;
 }
 
 class _AppLocalizationsDelegate

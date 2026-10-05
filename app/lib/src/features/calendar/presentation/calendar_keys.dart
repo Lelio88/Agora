@@ -35,6 +35,8 @@ abstract final class CalendarKeys {
 
   static const calendarsScreen = ValueKey('calendars.screen');
   static const newCalendar = ValueKey('calendars.new');
+  static const newContactCalendar = ValueKey('calendars.newContact');
+  static const contactCalendarsHeader = ValueKey('calendars.contacts');
   static const calendarEditor = ValueKey('calendars.editor');
   static const calendarName = ValueKey('calendars.editor.name');
   static const calendarVisibility = ValueKey('calendars.editor.visibility');
@@ -48,6 +50,7 @@ abstract final class CalendarKeys {
   static const importUrl = ValueKey('calendars.import.url');
   static const importName = ValueKey('calendars.import.name');
   static const importSave = ValueKey('calendars.import.save');
+  static const importForContact = ValueKey('calendars.import.forContact');
   static const importHelp = ValueKey('calendars.import.help');
 
   static const importedEventSheet = ValueKey('calendar.imported.sheet');

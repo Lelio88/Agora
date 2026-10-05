@@ -214,6 +214,7 @@ type EntryOut struct {
 	Fin            string `json:"fin" jsonschema:"comprise pour une journée entière"`
 	JourneeEntiere bool   `json:"journee_entiere"`
 	Agenda         string `json:"agenda"`
+	Proche         string `json:"proche,omitempty" jsonschema:"présent si le rdv est dans l'agenda d'un proche (ses repos, son anniversaire) : ce n'est jamais une indisponibilité du membre"`
 	Groupe         string `json:"groupe,omitempty" jsonschema:"présent si c'est un rdv de ce groupe"`
 	Recurrent      bool   `json:"recurrent"`
 	MaReponse      string `json:"ma_reponse,omitempty" jsonschema:"present, peut_etre ou absent, pour un rdv de groupe"`
@@ -254,11 +255,19 @@ func (t *toolbox) myAgenda(ctx context.Context, userID string, in RangeInput) (A
 		out.Rdv = append(out.Rdv, EntryOut{
 			Rdv: reference(e), Titre: e.Title, Lieu: e.Location, Description: e.Description,
 			Debut: formatStart(e.Start, e.AllDay, loc), Fin: formatEnd(e.End, e.AllDay, loc),
-			JourneeEntiere: e.AllDay, Agenda: cal.Name, Groupe: groupNames[cal.GroupID],
+			JourneeEntiere: e.AllDay, Agenda: cal.Name, Proche: contactName(cal), Groupe: groupNames[cal.GroupID],
 			Recurrent: e.SeriesID != "", MaReponse: responseLabels[e.MyResponse],
 		})
 	}
 	return out, nil
+}
+
+// contactName rend le nom du proche quand l'agenda est celui d'un proche.
+func contactName(c Calendar) string {
+	if c.Contact {
+		return c.Name
+	}
+	return ""
 }
 
 // calendarNames indexe les agendas lisibles, et nomme les groupes.
@@ -644,7 +653,8 @@ func (t *toolbox) write(ctx context.Context, userID string, cal Calendar, groupN
 
 // personalCalendar choisit l'agenda perso : celui nommé, sinon le plus ancien
 // agenda natif (celui que crée l'inscription). Un agenda importé (iCal) est
-// en lecture seule.
+// en lecture seule. L'agenda d'un proche se vise par son nom, jamais d'office :
+// un rdv du membre n'y a pas sa place.
 func personalCalendar(calendars []Calendar, name string) (Calendar, error) {
 	var mine []Calendar
 	for _, c := range calendars {
@@ -656,7 +666,7 @@ func personalCalendar(calendars []Calendar, name string) (Calendar, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		for _, c := range mine {
-			if c.Native {
+			if c.Native && !c.Contact {
 				return c, nil
 			}
 		}

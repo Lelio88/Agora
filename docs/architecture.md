@@ -87,7 +87,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `group_members` | rôle (`owner`/`admin`/`member`) **et `share_level`**, le partage choisi pour ce groupe | `create_group()`, `join_group()` ; chacun règle son `share_level` |
 | `group_invites` | code de 8 caractères, expiration (nulle pour l'invitation d'un jumeau), nombre d'usages | `create_invite()` (tout membre) ; `twin_group()` |
 | `group_twins` | jumeau du groupe dans une autre app (Arpente) : son code d'entrée (nul = en attente) et l'invitation donnée à l'autre app | `twin_group()` (admins) ; défait avec son invitation — voir [`groups-architecture.md`](./groups-architecture.md) §Jumelage |
-| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; suppression par `delete_calendar()` |
+| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; `contact` (l'agenda d'un proche, à soi seul) ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; suppression par `delete_calendar()` |
 | `calendar_preferences` | affichage **par personne** : agenda masqué dans sa propre vue (pas de la vie privée) | l'utilisateur |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
 | `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
@@ -114,7 +114,9 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 ## 3. Règle de visibilité — le cœur métier
 
 Pour un rdv **personnel** vu depuis un groupe, le niveau effectif est le **plus restrictif** de
-trois réglages, avec l'ordre `details` < `busy` < `invisible` (d'où `greatest()` en SQL) :
+trois réglages, avec l'ordre `details` < `busy` < `invisible` (d'où `greatest()` en SQL). Un rdv
+de l'**agenda d'un proche** (`calendars.contact`) ne sort jamais vers un groupe, pas même vers son
+propriétaire, à qui la règle rend sinon ses propres rdv en détail :
 
 | Réglage | Où | Valeurs |
 |---|---|---|

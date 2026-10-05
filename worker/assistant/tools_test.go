@@ -474,3 +474,48 @@ func TestGroupProposalsHaveTheirOwnLowerCap(t *testing.T) {
 		t.Fatalf("le rdv perso garde son propre plafond : %v", err)
 	}
 }
+
+func TestMyAgendaMarksAContactCalendar(t *testing.T) {
+	store := newFake()
+	store.calendars = append(store.calendars,
+		Calendar{ID: "cal-lea", Name: "Léa", Personal: true, Native: true, Contact: true})
+	store.agenda = []Entry{
+		{EventID: "e1", CalendarID: "cal-lea", Title: "Repos",
+			Start: time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC), End: time.Date(2026, 10, 13, 0, 0, 0, 0, time.UTC), AllDay: true},
+		{EventID: "e2", CalendarID: "cal-perso", Title: "Dentiste",
+			Start: time.Date(2026, 10, 12, 8, 0, 0, 0, time.UTC), End: time.Date(2026, 10, 12, 9, 0, 0, 0, time.UTC)},
+	}
+	out, err := newTestToolbox(store).myAgenda(context.Background(), ada, RangeInput{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	repos, dentiste := out.Rdv[0], out.Rdv[1]
+	if repos.Proche != "Léa" || repos.Agenda != "Léa" {
+		t.Fatalf("le repos de Léa doit être marqué comme celui d'un proche : %+v", repos)
+	}
+	if dentiste.Proche != "" {
+		t.Fatalf("un rdv à soi n'est pas celui d'un proche : %+v", dentiste)
+	}
+}
+
+func TestCreateEventNeverDefaultsToAContactCalendar(t *testing.T) {
+	store := newFake()
+	// Plus ancien que l'agenda de l'inscription : seul le marquage l'écarte.
+	store.calendars = append([]Calendar{
+		{ID: "cal-lea", Name: "Léa", Personal: true, Native: true, Contact: true, CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)},
+	}, store.calendars...)
+	tools := newTestToolbox(store)
+
+	if _, err := tools.createEvent(context.Background(), ada, CreateInput{Titre: "Dentiste", Debut: "2026-10-09T09:00", Fin: "2026-10-09T09:30"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.drafts[0].CalendarID; got != "cal-perso" {
+		t.Fatalf("agenda par défaut = %q, attendu le sien, jamais celui d'un proche", got)
+	}
+	if _, err := tools.createEvent(context.Background(), ada, CreateInput{Titre: "Repos", Debut: "2026-10-12", JourneeEntiere: true, Agenda: "Léa"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.drafts[1].CalendarID; got != "cal-lea" {
+		t.Fatalf("nommé, l'agenda d'un proche se vise : %q", got)
+	}
+}
