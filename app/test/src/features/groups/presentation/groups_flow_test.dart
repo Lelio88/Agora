@@ -225,6 +225,10 @@ void main() {
     await robot.openGroup('g-coloc');
     await robot.tap(GroupKeys.members);
     expect(find.byKey(GroupKeys.memberMenu('u-lea')), findsNothing);
+    await robot.goBack();
+    // Le réglage se voit sur la page du groupe, et s'y change.
+    robot.expectText('Je partage : Occupé');
+    await robot.tap(GroupKeys.myShareChip);
     await robot.tap(GroupKeys.myShare(ShareLevel.details));
 
     final me = groups.groups['g-coloc']!.members.firstWhere(
@@ -232,6 +236,7 @@ void main() {
     );
     expect(me.share, ShareLevel.details);
     robot.expectText('Partage enregistré.');
+    robot.expectText('Je partage : Tout');
   });
 
   testWidgets('a member leaves the group', (tester) async {
@@ -339,6 +344,7 @@ void main() {
     );
 
     await robot.openGroup('g-coloc');
+    await robot.tap(GroupKeys.members);
     await robot.tap(GroupKeys.invite);
 
     expect(find.text('WXYZ2345'), findsOneWidget);
@@ -356,6 +362,7 @@ void main() {
     await robot.pumpApp(auth: _signedIn(), groups: groups);
 
     await robot.openGroup('g-coloc');
+    await robot.tap(GroupKeys.members);
     await robot.tap(GroupKeys.invite);
 
     expect(find.byKey(GroupKeys.inviteCode), findsOneWidget);

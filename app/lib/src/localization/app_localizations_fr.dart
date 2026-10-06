@@ -21,9 +21,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get profileTooltip => 'Profil';
-
-  @override
   String get emailLabel => 'Adresse e-mail';
 
   @override
@@ -116,9 +113,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get resetPasswordButton => 'Changer le mot de passe';
-
-  @override
-  String get profileTitle => 'Profil';
 
   @override
   String get profileLanguageLabel => 'Langue';
@@ -398,9 +392,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get calendarsTitle => 'Mes agendas';
 
   @override
-  String get manageCalendarsTooltip => 'Mes agendas';
-
-  @override
   String get newCalendarButton => 'Nouvel agenda';
 
   @override
@@ -414,9 +405,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get calendarColorLabel => 'Couleur';
-
-  @override
-  String get calendarShownTooltip => 'Afficher dans mon agenda';
 
   @override
   String calendarVisibilitySummary(String level) {
@@ -487,9 +475,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get navAgenda => 'Agenda';
-
-  @override
-  String get navGroups => 'Groupes';
 
   @override
   String get groupsTitle => 'Groupes';
@@ -883,9 +868,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get occurrenceResponseNote =>
       'Rendez-vous répété : votre réponse vaut pour cette date.';
-
-  @override
-  String get groupCalendarsTitle => 'Agendas de mes groupes';
 
   @override
   String get proposedByMe => 'Proposé par vous';
@@ -1590,4 +1572,39 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get dayEmpty => 'Rien de noté ce jour-là.';
+
+  @override
+  String groupMyShareChip(String level) {
+    return 'Je partage : $level';
+  }
+
+  @override
+  String groupNextEvent(String title, String when) {
+    return 'Prochain : $title, $when';
+  }
+
+  @override
+  String get shareInviteButton => 'Partager';
+
+  @override
+  String inviteShareLink(String group, String link) {
+    return 'Rejoins « $group » sur Agora : $link';
+  }
+
+  @override
+  String inviteShareCode(String group, String code) {
+    return 'Rejoins « $group » sur Agora avec le code $code';
+  }
+
+  @override
+  String get pasteTooltip => 'Coller';
+
+  @override
+  String get shareShortDetails => 'Tout';
+
+  @override
+  String get shareShortBusy => 'Occupé';
+
+  @override
+  String get shareShortNothing => 'Rien';
 }

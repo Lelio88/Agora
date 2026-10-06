@@ -2,6 +2,8 @@ import 'package:agora/src/composition_root.dart';
 import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/device/platform_device_timezone.dart';
+import 'package:agora/src/device/share_plus_sharer.dart';
+import 'package:agora/src/device/sharer.dart';
 import 'package:agora/src/device/url_launcher_link_opener.dart';
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
 import 'package:agora/src/features/assistant/data/supabase_assistant_repository.dart';
@@ -42,6 +44,7 @@ void main() {
       isA<PlatformDeviceTimezone>(),
     );
     expect(container.read(linkOpenerProvider), isA<UrlLauncherLinkOpener>());
+    expect(container.read(sharerProvider), isA<SharePlusSharer>());
     expect(
       container.read(calendarRepositoryProvider),
       isA<SupabaseCalendarRepository>(),

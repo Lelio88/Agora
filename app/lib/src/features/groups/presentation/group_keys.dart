@@ -41,6 +41,7 @@ abstract final class GroupKeys {
   static const refresh = ValueKey('group.refresh');
   static const proposeEvent = ValueKey('group.proposeEvent');
   static const findSlots = ValueKey('group.findSlots');
+  static const myShareChip = ValueKey('group.myShareChip');
 
   // Créneaux communs.
   static const slotsScreen = ValueKey('group.slots');
@@ -68,6 +69,8 @@ abstract final class GroupKeys {
   static const copyCode = ValueKey('group.invite.copyCode');
   static const copyLink = ValueKey('group.invite.copyLink');
   static const revokeInvite = ValueKey('group.invite.revoke');
+  static const shareInvite = ValueKey('group.invite.share');
+  static const pasteCode = ValueKey('groups.join.paste');
 
   // Membres.
   static const membersScreen = ValueKey('group.membersScreen');

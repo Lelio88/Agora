@@ -66,9 +66,13 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
   jamais imposé — envoyé avec l'adhésion.
 - **Lien d'invitation** : `https://<site>/#/join/CODE`, l'adresse venant du build
   (`AGORA_WEB_URL`, `lib/src/config/web_links.dart`). Sans elle, seul le code est proposé. La
-  fenêtre d'invitation **réutilise** la dernière invitation valable de l'utilisateur plutôt que
-  d'en créer une à chaque ouverture (chaque code actif ouvre le groupe) ; elle se désactive d'un
-  geste.
+  fenêtre d'invitation (Membres → Inviter) **réutilise** la dernière invitation valable de
+  l'utilisateur plutôt que d'en créer une à chaque ouverture (chaque code actif ouvre le
+  groupe) ; elle se désactive d'un geste. Sur Android, « Partager » ouvre la feuille de partage
+  du téléphone (`Sharer`, adossé à share_plus) avec le lien, ou le code sans adresse web ; sur
+  le web, où share_plus retomberait sur un lien e-mail, seuls les boutons Copier restent.
+  « Rejoindre » met le code en capitales et colle le presse-papiers : d'un lien reçu, il ne
+  garde que le code.
 - **Le lien ouvre l'app Android** (App Link) quand elle est installée. Android ne filtre pas sur
   le fragment : le filtre `autoVerify` du manifeste vise la racine `/` du site, et le routeur
   convertit `/#/join/CODE` en `/join/CODE` (`inviteRouteFromAppLink`, avant la règle de
@@ -84,9 +88,17 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
 - **Pas de temps réel** pour l'agenda d'un groupe : les rdv des autres membres ne sont pas
   lisibles en direct (la RLS les cache), seule la RPC les résout. Il se relit à l'ouverture, au
   changement de plage, après chaque action, et par le bouton « actualiser ».
-- **Membres** : son propre partage (réglable), puis chaque membre avec rôle et partage, et les
-  actions que son rôle permet (propriétaire : admin, transmettre, exclure un membre ; admin :
-  exclure un membre ; membre : rien). Le serveur revérifie tout.
+- **En tête de la page du groupe**, deux puces : « Je partage : … » (son propre partage, le
+  réglage de vie privée qui compte ; un appui ouvre le choix, appliqué aussitôt) et « Trouver un
+  créneau ». La barre de titre ne garde que Membres et le menu.
+- **Membres** : « Inviter » en tête, puis chaque membre avec rôle et partage, et les actions
+  que son rôle permet (propriétaire : admin, transmettre, exclure un membre ; admin : exclure un
+  membre ; membre : rien). Le serveur revérifie tout.
+- **Actualiser reste un bouton** de la barre d'agenda : tirer vers le bas ne convient pas à une
+  grille horaire (il faudrait d'abord remonter à minuit) ni à la vue mois, qui ne défile pas.
+- **Dans l'onglet Social**, chaque groupe montre son prochain rdv des 31 prochains jours
+  (`nextGroupEventsProvider`, une seule lecture de `my_agenda` pour tous), sinon son rôle et son
+  partage.
 - **Renommer** (`renameGroup`) n'envoie que le nom : une colonne absente d'un PATCH PostgREST
   n'est pas touchée, alors qu'une description `null` envoyée l'effacerait.
 - **Barre d'agenda** : chaque écran donne ses propres clés (`AgendaToolbarKeys`) — l'agenda
@@ -146,7 +158,7 @@ membres du groupe, l'app précise que les membres voient titres et lieux **y com
 l'assistant IA qu'ils ont branché** (`shareDetailsAssistantHint`) : l'assistant voit ce que l'app
 montre au membre ([`mcp-architecture.md`](./mcp-architecture.md)).
 
-« Trouver un créneau » (barre de l'agenda du groupe, route `groups/:groupId/slots`,
+« Trouver un créneau » (puce en tête de la page du groupe, route `groups/:groupId/slots`,
 `FindSlotsScreen`) : les plages où tous les membres choisis sont libres.
 
 - **Calcul dans l'app** (`domain/free_slots.dart`, fonction pure `findFreeSlots`) ; le worker

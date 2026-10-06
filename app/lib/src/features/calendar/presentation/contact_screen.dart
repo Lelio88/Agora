@@ -19,7 +19,7 @@ import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/application/calendar_service.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
-import 'package:agora/src/features/calendar/application/contact_providers.dart';
+import 'package:agora/src/features/calendar/application/upcoming_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/contact_agenda.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';

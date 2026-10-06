@@ -19,6 +19,7 @@ import 'package:agora/src/features/groups/presentation/group_labels.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,6 +50,21 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
   void dispose() {
     _codeField.dispose();
     super.dispose();
+  }
+
+  /// Colle le presse-papiers : un lien d'invitation reçu (« …/join/CODE »)
+  /// n'en garde que le code.
+  Future<void> _paste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim() ?? '';
+    if (text.isEmpty || !mounted) return;
+    final fromLink = RegExp(r'/join/([^/?#\s]+)').firstMatch(text)?.group(1);
+    final code = (fromLink ?? text).toUpperCase();
+    _codeField.value = TextEditingValue(
+      text: code,
+      selection: TextSelection.collapsed(offset: code.length),
+    );
+    setState(() => _codeError = null);
   }
 
   void _submitCode() {
@@ -113,9 +129,17 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
         controller: _codeField,
         autofocus: true,
         textCapitalization: TextCapitalization.characters,
+        // Le code s'écrit en capitales, quel que soit le clavier.
+        inputFormatters: [_UpperCase()],
         decoration: InputDecoration(
           labelText: l10n.inviteCodeLabel,
           errorText: _codeError,
+          suffixIcon: IconButton(
+            key: GroupKeys.pasteCode,
+            tooltip: l10n.pasteTooltip,
+            icon: const Icon(Icons.content_paste),
+            onPressed: _paste,
+          ),
         ),
         onSubmitted: (_) => _submitCode(),
       ),
@@ -193,4 +217,14 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
           );
         },
       );
+}
+
+/// Met la saisie en capitales : un code tapé en minuscules reste valable,
+/// et s'affiche comme on l'a reçu.
+final class _UpperCase extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }

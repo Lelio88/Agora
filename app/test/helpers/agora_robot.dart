@@ -8,6 +8,7 @@ import 'package:agora/src/device/device_timezone.dart';
 import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/features/auth/presentation/captcha_field.dart';
 import 'package:agora/src/device/link_opener.dart';
+import 'package:agora/src/device/sharer.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
@@ -53,6 +54,7 @@ class AgoraRobot {
   late final FakeDiscordRepository discord;
   late final FakeAssistantRepository assistant;
   late final FakeLinkOpener links;
+  late final FakeSharer sharer;
 
   /// Erreurs remontées par les providers, comme en production
   /// (`AsyncErrorLogger`) : un parcours réussi n'en laisse aucune.
@@ -75,6 +77,7 @@ class AgoraRobot {
     Uri? webBaseUrl,
     CaptchaConfig? captcha,
     FakeLinkOpener? links,
+    FakeSharer? sharer,
     Locale? locale = const Locale('fr'),
     String deviceTimezone = 'America/Montreal',
     bool intro = false,
@@ -108,6 +111,7 @@ class AgoraRobot {
     addTearDown(this.discord.dispose);
     this.assistant = assistant ?? FakeAssistantRepository();
     this.links = links ?? FakeLinkOpener();
+    this.sharer = sharer ?? FakeSharer();
     addTearDown(this.auth.dispose);
     addTearDown(this.calendar.dispose);
     addTearDown(this.calendars.dispose);
@@ -137,6 +141,7 @@ class AgoraRobot {
             (config, onToken) => FakeCaptchaField(onToken: onToken),
           ),
           linkOpenerProvider.overrideWithValue(this.links),
+          sharerProvider.overrideWithValue(this.sharer),
           introSoundProvider.overrideWithValue(sound ?? FakeIntroSound()),
           deviceTimezoneProvider.overrideWithValue(
             FakeDeviceTimezone(deviceTimezone),

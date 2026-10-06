@@ -56,6 +56,11 @@ void main() {
 
     await robot.openSocialTab();
     expect(find.byKey(GroupKeys.groupTile('g-1')), findsOneWidget);
+    // La page d'un groupe : puces, barre d'agenda d'une ligne.
+    await robot.tap(GroupKeys.groupTile('g-1'));
+    expect(find.byKey(GroupKeys.myShareChip), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await robot.goBack();
     await robot.tap(CalendarKeys.contactTile(_peushu.id));
     await robot.tap(CalendarKeys.contactWorkHours);
     await robot.chooseRepeat(Frequency.weekly);

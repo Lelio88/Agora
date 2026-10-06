@@ -11,7 +11,7 @@ library;
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/common_widgets/section_title.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
-import 'package:agora/src/features/calendar/application/contact_providers.dart';
+import 'package:agora/src/features/calendar/application/upcoming_providers.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_actions.dart';

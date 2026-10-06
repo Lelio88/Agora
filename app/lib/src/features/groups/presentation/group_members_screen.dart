@@ -1,6 +1,7 @@
-/// Membres d'un groupe : ce que l'utilisateur y partage (réglable), puis la
-/// liste des membres avec leur rôle et leur partage, et les actions que son
-/// rôle permet.
+/// Membres d'un groupe : « Inviter » en tête, puis la liste des membres
+/// avec leur rôle et leur partage, et les actions que son rôle permet. Ce
+/// que l'utilisateur partage lui-même se règle depuis la page du groupe
+/// (puce « Je partage : … »).
 ///
 /// Qui peut quoi (le serveur le vérifie de toute façon) :
 /// - le propriétaire nomme ou retire des admins, transmet le groupe, exclut
@@ -15,6 +16,7 @@ import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/groups/presentation/group_labels.dart';
+import 'package:agora/src/features/groups/presentation/invite_sheet.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,44 +47,19 @@ class GroupMembersScreen extends ConsumerWidget {
         value: members,
         data: (list) => ListView(
           children: [
-            if (group != null) ...[
+            if (group != null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Text(
-                  l10n.myShareLabel,
-                  style: Theme.of(context).textTheme.titleMedium,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: FilledButton.tonalIcon(
+                    key: GroupKeys.invite,
+                    icon: const Icon(Icons.person_add_alt_1_outlined),
+                    label: Text(l10n.inviteTooltip),
+                    onPressed: () => showInviteSheet(context, group),
+                  ),
                 ),
               ),
-              RadioGroup<ShareLevel>(
-                groupValue: group.shareLevel,
-                onChanged: (level) {
-                  if (level == null || level == group.shareLevel) return;
-                  _run(
-                    context,
-                    () => ref
-                        .read(groupsServiceProvider)
-                        .setMyShareLevel(groupId, level),
-                    l10n.shareSaved,
-                  );
-                },
-                child: Column(
-                  children: [
-                    for (final level in ShareLevel.values)
-                      RadioListTile<ShareLevel>(
-                        key: GroupKeys.myShare(level),
-                        value: level,
-                        title: Text(shareLevelLabel(level, l10n)),
-                        // « Tout » vaut aussi pour l'assistant IA qu'un
-                        // membre a branché : il voit ce que l'app lui montre.
-                        subtitle: level == ShareLevel.details
-                            ? Text(l10n.shareDetailsAssistantHint)
-                            : null,
-                      ),
-                  ],
-                ),
-              ),
-              const Divider(),
-            ],
             for (final (rank, member) in list.indexed)
               _MemberTile(
                 member: member,

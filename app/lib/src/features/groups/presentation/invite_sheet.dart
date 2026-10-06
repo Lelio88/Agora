@@ -1,6 +1,7 @@
 /// Fenêtre d'invitation : le code en cours de l'utilisateur (créé s'il n'en
-/// a pas), à copier, et le lien vers la version web quand le build en
-/// connaît l'adresse. Le code se désactive d'un geste.
+/// a pas), à partager d'un geste par la feuille de partage du téléphone
+/// (WhatsApp, SMS…) ou à copier, et le lien vers la version web quand le
+/// build en connaît l'adresse. Le code se désactive d'un geste.
 ///
 /// Choix non évident : on réutilise la dernière invitation encore valable
 /// de l'utilisateur plutôt que d'en créer une à chaque ouverture — sinon
@@ -8,6 +9,7 @@
 library;
 
 import 'package:agora/src/config/web_links.dart';
+import 'package:agora/src/device/sharer.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
@@ -67,6 +69,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final base = ref.watch(webBaseUrlProvider);
+    final sharer = ref.watch(sharerProvider);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -114,6 +117,26 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    // Sur le téléphone, partager d'un geste (WhatsApp, SMS…) :
+                    // le lien s'il y a une adresse web, sinon le code.
+                    if (sharer.isAvailable)
+                      FilledButton.icon(
+                        key: GroupKeys.shareInvite,
+                        icon: const Icon(Icons.share_outlined),
+                        label: Text(l10n.shareInviteButton),
+                        onPressed: () => sharer.share(
+                          link == null
+                              ? l10n.inviteShareCode(
+                                  widget.group.name,
+                                  invite.code,
+                                )
+                              : l10n.inviteShareLink(
+                                  widget.group.name,
+                                  '$link',
+                                ),
+                          subject: l10n.inviteTitle(widget.group.name),
+                        ),
+                      ),
                     FilledButton.tonalIcon(
                       key: GroupKeys.copyCode,
                       icon: const Icon(Icons.copy),
@@ -121,7 +144,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                       onPressed: () => _copy(invite.code, l10n.codeCopied),
                     ),
                     if (link != null)
-                      FilledButton.icon(
+                      FilledButton.tonalIcon(
                         key: GroupKeys.copyLink,
                         icon: const Icon(Icons.link),
                         label: Text(l10n.copyLink),

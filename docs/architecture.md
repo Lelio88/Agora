@@ -426,3 +426,7 @@ jeton. Pile, pièges, première installation et répétition locale :
   prendraient l'appel pour le serveur.
 - ❌ Lire l'adresse de la page dans `Uri.base` sur le web : `<base href="/">` la ramène à la racine
   (chemin et requête perdus) — `pageLocation()` lit `window.location`.
+- ❌ Demander la ligne en retour d'un INSERT sur `calendars` (`.insert(...).select()`, donc
+  `RETURNING`) : la règle de lecture `private.can_read_calendar(id)` relit la table, où la ligne
+  tout juste insérée n'est pas encore visible — PostgREST répond 403 et rien n'est créé. Les faux
+  dépôts des tests ne le voient pas : insérer, puis relire (`createCalendar`).

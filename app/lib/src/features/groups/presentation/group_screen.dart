@@ -1,12 +1,18 @@
 /// Agenda d'un groupe : les créneaux de tous les membres dans la même
 /// grille, une couleur par membre, des pastilles pour en masquer, et les
-/// rdv du groupe. Depuis la barre : inviter, les membres, et le menu du
-/// groupe (renommer, jumeler, quitter, supprimer). Un groupe jumelé avec un
-/// groupe d'une autre app l'annonce en tête (« Rejoindre »). « Proposer un rdv » (ou un appui
-/// sur un créneau libre) crée un rdv du groupe ; un appui sur un rdv du
-/// groupe ouvre sa fiche (réponses).
+/// rdv du groupe. En tête, deux puces : « Je partage : … » (ce que je
+/// partage avec ce groupe, le réglage de vie privée qui compte) et
+/// « Trouver un créneau ». Depuis la barre : les membres (d'où l'on
+/// invite) et le menu du groupe (Discord, renommer, jumeler, quitter,
+/// supprimer). Un groupe jumelé avec un groupe d'une autre app l'annonce en
+/// tête (« Rejoindre »). « Proposer un rdv » (ou un appui sur un créneau
+/// libre) crée un rdv du groupe ; un appui sur un rdv du groupe ouvre sa
+/// fiche (réponses).
 ///
 /// Choix non évidents :
+/// - l'actualisation reste un bouton : tirer vers le bas ne conviendrait
+///   pas à une grille horaire (il faudrait d'abord remonter à minuit) ni à
+///   la vue mois, qui ne défile pas ;
 /// - les créneaux viennent de `group_agenda`, déjà passés par la règle de
 ///   vie privée : un créneau « occupé » n'a ni titre ni lieu, et un membre
 ///   qui ne partage rien n'a aucun créneau. L'écran n'a rien à cacher ;
@@ -29,7 +35,7 @@ import 'package:agora/src/features/groups/presentation/group_editor_screen.dart'
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/groups/presentation/group_labels.dart';
 import 'package:agora/src/features/groups/presentation/group_members_screen.dart';
-import 'package:agora/src/features/groups/presentation/invite_sheet.dart';
+import 'package:agora/src/features/groups/presentation/share_level_sheet.dart';
 import 'package:agora/src/features/groups/presentation/twin_sheet.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
@@ -152,18 +158,6 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         actions: [
           if (myGroup != null) ...[
             IconButton(
-              key: GroupKeys.findSlots,
-              tooltip: l10n.findSlotTooltip,
-              icon: const Icon(Icons.event_available_outlined),
-              onPressed: _findSlots,
-            ),
-            IconButton(
-              key: GroupKeys.invite,
-              tooltip: l10n.inviteTooltip,
-              icon: const Icon(Icons.person_add_alt_1_outlined),
-              onPressed: () => showInviteSheet(context, myGroup),
-            ),
-            IconButton(
               key: GroupKeys.members,
               tooltip: l10n.groupMembersTooltip,
               icon: const Icon(Icons.group_outlined),
@@ -178,6 +172,12 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
         data: (list) => Column(
           children: [
             TwinBanner(groupId: widget.groupId),
+            if (myGroup != null)
+              _GroupActions(
+                group: myGroup,
+                onShare: () => showShareLevelSheet(context, ref, myGroup),
+                onFindSlots: _findSlots,
+              ),
             _MemberChips(
               members: list,
               hidden: _hidden,
@@ -193,6 +193,7 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
               trailing: [
                 IconButton(
                   key: GroupKeys.refresh,
+                  visualDensity: VisualDensity.compact,
                   tooltip: MaterialLocalizations.of(context)
                       .refreshIndicatorSemanticLabel,
                   icon: const Icon(Icons.refresh),
@@ -436,6 +437,54 @@ Widget _buildTile(
       style: TextStyle(color: foreground, fontSize: 12),
     ),
   );
+}
+
+/// Les deux actions qui comptent, en clair : ce que je partage (un appui
+/// le change) et trouver un créneau commun.
+class _GroupActions extends StatelessWidget {
+  const _GroupActions({
+    required this.group,
+    required this.onShare,
+    required this.onFindSlots,
+  });
+
+  final MyGroup group;
+  final VoidCallback onShare;
+  final VoidCallback onFindSlots;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      child: Row(
+        children: [
+          ActionChip(
+            key: GroupKeys.myShareChip,
+            avatar: Icon(switch (group.shareLevel) {
+              ShareLevel.details => Icons.visibility_outlined,
+              ShareLevel.busy => Icons.lock_clock_outlined,
+              ShareLevel.invisible => Icons.visibility_off_outlined,
+            }, size: 18),
+            label: Text(
+              l10n.groupMyShareChip(
+                shareLevelShortLabel(group.shareLevel, l10n),
+              ),
+            ),
+            onPressed: onShare,
+          ),
+          const SizedBox(width: 8),
+          ActionChip(
+            key: GroupKeys.findSlots,
+            avatar: const Icon(Icons.event_available_outlined, size: 18),
+            label: Text(l10n.findSlotTooltip),
+            onPressed: onFindSlots,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _MemberChips extends StatelessWidget {

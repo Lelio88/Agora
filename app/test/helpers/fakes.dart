@@ -5,6 +5,7 @@ import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:agora/src/device/intro_sound.dart';
 import 'package:agora/src/device/link_opener.dart';
+import 'package:agora/src/device/sharer.dart';
 import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
@@ -231,6 +232,19 @@ class FakeIntroSound implements IntroSound {
 
   @override
   Future<void> dispose() async => disposals++;
+}
+
+/// Feuille de partage factice : retient les textes partagés.
+class FakeSharer implements Sharer {
+  FakeSharer({this.isAvailable = true});
+
+  @override
+  final bool isAvailable;
+
+  final shared = <String>[];
+
+  @override
+  Future<void> share(String text, {String? subject}) async => shared.add(text);
 }
 
 class FakeLinkOpener implements LinkOpener {

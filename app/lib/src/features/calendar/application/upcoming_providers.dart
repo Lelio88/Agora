@@ -1,8 +1,9 @@
-/// Lectures propres aux agendas de proches : leurs dates à retenir des
-/// prochains jours (onglet Social) et l'agenda d'un proche (sa page).
+/// Lectures des prochains jours pour l'onglet Social : les dates à retenir
+/// des proches, l'agenda d'un proche (sa page) et le prochain rdv de chacun
+/// de mes groupes.
 ///
 /// Choix non évidents :
-/// - une seule plage pour les deux, les [upcomingDays] jours qui commencent
+/// - une seule plage pour toutes, les [upcomingDays] jours qui commencent
 ///   à minuit aujourd'hui : stable dans la journée, elle reste en cache
 ///   d'un écran à l'autre ;
 /// - on lit [agendaProvider], pas l'agenda visible : masquer un proche de
@@ -52,4 +53,28 @@ final contactAgendaProvider = FutureProvider.autoDispose
       return items
           .where((item) => item.calendarId == calendarId)
           .toList(growable: false);
+    });
+
+/// Le prochain rdv de chacun de mes groupes (pas encore fini), sur les
+/// [upcomingDays] prochains jours, par identifiant de groupe. Les rdv de
+/// groupe arrivent dans `my_agenda` par l'agenda du groupe.
+final nextGroupEventsProvider =
+    FutureProvider.autoDispose<Map<String, AgendaItem>>((ref) async {
+      final calendars = await ref.watch(calendarsProvider.future);
+      final groupOf = {
+        for (final calendar in calendars) calendar.id: ?calendar.groupId,
+      };
+      if (groupOf.isEmpty) return const {};
+      final now = DateTime.now();
+      final items = await ref.watch(agendaProvider(upcomingRange(now)).future);
+      final next = <String, AgendaItem>{};
+      for (final item in items) {
+        final groupId = groupOf[item.calendarId];
+        if (groupId == null || !item.end.isAfter(now)) continue;
+        final known = next[groupId];
+        if (known == null || item.start.isBefore(known.start)) {
+          next[groupId] = item;
+        }
+      }
+      return next;
     });

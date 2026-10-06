@@ -24,6 +24,14 @@ String shareLevelLabel(ShareLevel level, AppLocalizations l10n) =>
       ShareLevel.invisible => l10n.shareNothing,
     };
 
+/// Niveau de partage en un mot, pour une puce (« Je partage : Tout »).
+String shareLevelShortLabel(ShareLevel level, AppLocalizations l10n) =>
+    switch (level) {
+      ShareLevel.details => l10n.shareShortDetails,
+      ShareLevel.busy => l10n.shareShortBusy,
+      ShareLevel.invisible => l10n.shareShortNothing,
+    };
+
 /// Couleur du membre arrivé en position [rank] (0 : le premier).
 Color memberColor(int rank, ColorScheme colors) =>
     colorFromHex(appPalette[rank % appPalette.length], colors.primary);

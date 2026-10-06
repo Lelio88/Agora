@@ -7,7 +7,13 @@
 ///   est retiré, pour que le dernier agenda natif ne parte jamais ;
 /// - masquer un agenda est un upsert sur (utilisateur, agenda) ;
 /// - l'import passe par la RPC `add_ics_calendar` : le lien part dans une
-///   table que personne ne relit, pas même son propriétaire.
+///   table que personne ne relit, pas même son propriétaire ;
+/// - créer un agenda ne demande pas la ligne en retour (`RETURNING`) : la
+///   règle de lecture, `private.can_read_calendar(id)`, relit la table, où
+///   la ligne tout juste insérée n'est pas encore visible — le serveur
+///   refuserait (403). On relit donc, juste après, le plus récent de ses
+///   agendas à ce nom (un agenda sans groupe n'est lisible que de son
+///   propriétaire).
 library;
 
 import 'dart:async';
@@ -54,10 +60,16 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
   @override
   Future<String> createCalendar(CalendarDraft draft) =>
       guardPostgrest(() async {
+        final values = {..._toRow(draft), 'contact': draft.isContact};
+        await _client.from('calendars').insert(values);
         final row = await _client
             .from('calendars')
-            .insert({..._toRow(draft), 'contact': draft.isContact})
             .select('id')
+            .isFilter('group_id', null)
+            .eq('name', values['name'] as String)
+            .eq('contact', draft.isContact)
+            .order('created_at', ascending: false)
+            .limit(1)
             .single();
         return row['id'] as String;
       });

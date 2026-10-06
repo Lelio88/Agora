@@ -116,12 +116,6 @@ abstract class AppLocalizations {
   /// **'Bonjour, {name} !'**
   String homeGreeting(String name);
 
-  /// Infobulle du bouton qui ouvre le profil.
-  ///
-  /// In fr, this message translates to:
-  /// **'Profil'**
-  String get profileTooltip;
-
   /// Champ adresse e-mail des formulaires de compte.
   ///
   /// In fr, this message translates to:
@@ -295,12 +289,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Changer le mot de passe'**
   String get resetPasswordButton;
-
-  /// Titre de l'écran de profil.
-  ///
-  /// In fr, this message translates to:
-  /// **'Profil'**
-  String get profileTitle;
 
   /// Réglage de la langue de l'app et des e-mails.
   ///
@@ -811,12 +799,6 @@ abstract class AppLocalizations {
   /// **'Mes agendas'**
   String get calendarsTitle;
 
-  /// Infobulle du bouton qui ouvre la gestion des agendas.
-  ///
-  /// In fr, this message translates to:
-  /// **'Mes agendas'**
-  String get manageCalendarsTooltip;
-
   /// Bouton qui crée un agenda.
   ///
   /// In fr, this message translates to:
@@ -846,12 +828,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Couleur'**
   String get calendarColorLabel;
-
-  /// Case qui montre ou masque un agenda dans sa propre vue (sans effet pour les groupes).
-  ///
-  /// In fr, this message translates to:
-  /// **'Afficher dans mon agenda'**
-  String get calendarShownTooltip;
 
   /// Sous-titre d'un agenda dans la liste : ce que voient les groupes.
   ///
@@ -954,12 +930,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Agenda'**
   String get navAgenda;
-
-  /// Onglet des groupes.
-  ///
-  /// In fr, this message translates to:
-  /// **'Groupes'**
-  String get navGroups;
 
   /// Titre de l'écran des groupes.
   ///
@@ -1626,12 +1596,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Rendez-vous répété : votre réponse vaut pour cette date.'**
   String get occurrenceResponseNote;
-
-  /// Titre de la section des agendas de groupe dans « Mes agendas ».
-  ///
-  /// In fr, this message translates to:
-  /// **'Agendas de mes groupes'**
-  String get groupCalendarsTitle;
 
   /// Auteur d'un rendez-vous de groupe quand c'est l'utilisateur.
   ///
@@ -2790,6 +2754,60 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Rien de noté ce jour-là.'**
   String get dayEmpty;
+
+  /// Page d'un groupe : ce que je partage avec lui ; un appui le change.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je partage : {level}'**
+  String groupMyShareChip(String level);
+
+  /// Social : sous-titre d'un groupe, son prochain rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prochain : {title}, {when}'**
+  String groupNextEvent(String title, String when);
+
+  /// Invitation : ouvrir la feuille de partage du téléphone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get shareInviteButton;
+
+  /// Texte partagé avec le lien d'invitation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoins « {group} » sur Agora : {link}'**
+  String inviteShareLink(String group, String link);
+
+  /// Texte partagé avec le code d'invitation (sans adresse web).
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoins « {group} » sur Agora avec le code {code}'**
+  String inviteShareCode(String group, String code);
+
+  /// Rejoindre un groupe : coller le code ou le lien reçu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Coller'**
+  String get pasteTooltip;
+
+  /// Puce de la page d'un groupe : je partage tout (titres et lieux).
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout'**
+  String get shareShortDetails;
+
+  /// Puce de la page d'un groupe : je partage « occupé », sans détail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Occupé'**
+  String get shareShortBusy;
+
+  /// Puce de la page d'un groupe : je ne partage rien.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien'**
+  String get shareShortNothing;
 }
 
 class _AppLocalizationsDelegate
