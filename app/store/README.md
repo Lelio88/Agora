@@ -272,6 +272,16 @@ Tenez l'agenda de vos proches : Mes agendas → Ajouter un proche. Notez-y ses j
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.8.0+12 (refonte de l'interface)
+
+Français, envoyées sur `alpha` :
+
+```
+Nouvelle navigation : Agenda, Social, Moi. Social réunit proches et groupes, avec les anniversaires à venir ; la page d'un proche note en un geste son anniversaire, ses horaires ou un repos. Répétitions : jours au choix, une semaine sur deux, date de fin. L'agenda gagne de la place sur téléphone, et un rdv s'ouvre d'abord en lecture. Dans un groupe, « Je partage » se voit en tête et l'invitation se partage par SMS ou WhatsApp.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
