@@ -972,6 +972,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get discordLinkFailed => 'Impossible d\'ouvrir Discord.';
 
   @override
+  String get googleSectionTitle => 'Google';
+
+  @override
+  String googleAccountLinked(String account) {
+    return 'Relié à $account';
+  }
+
+  @override
+  String googleAccountOnlyWayIn(String account) {
+    return 'Tu te connectes avec $account.';
+  }
+
+  @override
+  String get googleAccountNotLinked =>
+      'Relie ton compte Google pour te connecter en un geste.';
+
+  @override
+  String get googleLinkButton => 'Relier Google';
+
+  @override
+  String get googleUnlinkButton => 'Délier';
+
+  @override
+  String get googleLinkFailed => 'Impossible d\'ouvrir Google.';
+
+  @override
+  String get errorGoogleAlreadyLinked =>
+      'Ce compte Google est déjà relié à un autre compte Agora.';
+
+  @override
+  String get errorLastSignInMethod =>
+      'C\'est ton seul moyen de te connecter : il ne peut pas être délié.';
+
+  @override
   String get groupDiscordMenu => 'Salon Discord';
 
   @override

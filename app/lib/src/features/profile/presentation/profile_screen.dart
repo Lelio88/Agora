@@ -1,7 +1,7 @@
 /// Onglet « Moi » de l'accueil : qui je suis (nom affiché, e-mail), mes
 /// réglages (langue de l'app et des e-mails, fuseau horaire, mes agendas),
-/// mes connexions (Discord, assistants IA), puis la déconnexion, les pages
-/// légales et, tout en bas, la suppression du compte.
+/// mes connexions (Google, Discord, assistants IA), puis la déconnexion, les
+/// pages légales et, tout en bas, la suppression du compte.
 ///
 /// Choix non évidents :
 /// - chaque réglage s'applique **tout de suite** (pas de bouton
@@ -29,6 +29,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/presentation/google_account_tile.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
 import 'package:agora/src/features/discord/presentation/discord_account_section.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
@@ -238,6 +239,10 @@ class _MePage extends ConsumerWidget {
                 onTap: () => CalendarsScreen.show(context),
               ),
               SectionTitle(l10n.meConnectionsTitle),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: GoogleAccountTile(),
+              ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: DiscordAccountSection(),

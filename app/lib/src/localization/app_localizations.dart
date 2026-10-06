@@ -1753,6 +1753,60 @@ abstract class AppLocalizations {
   /// **'Impossible d\'ouvrir Discord.'**
   String get discordLinkFailed;
 
+  /// Titre de la ligne Google du profil (section Connexions).
+  ///
+  /// In fr, this message translates to:
+  /// **'Google'**
+  String get googleSectionTitle;
+
+  /// Compte Google relié ; account est son adresse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relié à {account}'**
+  String googleAccountLinked(String account);
+
+  /// Compte ouvert par Google, qui n'a pas d'autre moyen de connexion : il ne se délie pas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu te connectes avec {account}.'**
+  String googleAccountOnlyWayIn(String account);
+
+  /// Profil : aucun compte Google relié.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relie ton compte Google pour te connecter en un geste.'**
+  String get googleAccountNotLinked;
+
+  /// Bouton qui ouvre la liaison du compte Google.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier Google'**
+  String get googleLinkButton;
+
+  /// Bouton qui retire la liaison du compte Google.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délier'**
+  String get googleUnlinkButton;
+
+  /// La page de liaison Google n'a pas pu s'ouvrir.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir Google.'**
+  String get googleLinkFailed;
+
+  /// Liaison refusée : le compte Google appartient déjà à quelqu'un d'autre sur Agora.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce compte Google est déjà relié à un autre compte Agora.'**
+  String get errorGoogleAlreadyLinked;
+
+  /// Délier refusé : le compte n'aurait plus aucun moyen de connexion.
+  ///
+  /// In fr, this message translates to:
+  /// **'C\'est ton seul moyen de te connecter : il ne peut pas être délié.'**
+  String get errorLastSignInMethod;
+
   /// Entrée du menu d'un groupe qui ouvre le réglage du salon Discord.
   ///
   /// In fr, this message translates to:
@@ -2677,7 +2731,7 @@ abstract class AppLocalizations {
   /// **'Réglages'**
   String get meSettingsTitle;
 
-  /// Onglet Moi : titre de la section Discord et assistant IA.
+  /// Onglet Moi : titre de la section Google, Discord et assistant IA.
   ///
   /// In fr, this message translates to:
   /// **'Connexions'**

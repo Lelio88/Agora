@@ -63,6 +63,18 @@ final class CaptchaFailedException extends AppException {
     : super('captcha-failed', 'Captcha verification failed');
 }
 
+/// Délier le seul moyen de se connecter laisserait le compte sans accès.
+final class LastSignInMethodException extends AppException {
+  const LastSignInMethodException()
+    : super('last-sign-in-method', 'Only identity of the account');
+}
+
+/// Ce compte Google est déjà relié à un autre compte Agora.
+final class GoogleAlreadyLinkedException extends AppException {
+  const GoogleAlreadyLinkedException()
+    : super('google-already-linked', 'Google account linked elsewhere');
+}
+
 final class RateLimitedException extends AppException {
   const RateLimitedException()
     : super('rate-limited', 'Too many requests, retry later');

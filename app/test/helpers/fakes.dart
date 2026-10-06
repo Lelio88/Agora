@@ -10,6 +10,7 @@ import 'package:agora/src/exceptions/app_exception.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
+import 'package:agora/src/features/auth/domain/linked_account.dart';
 import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/domain/profile_repository.dart';
@@ -131,6 +132,35 @@ class FakeAuthRepository implements AuthRepository {
   void completeSocialSignIn(String email) =>
       _emit(AppUser(id: userId, email: email));
 
+  /// Comptes de fournisseurs reliés à celui-ci.
+  final linked = <SocialProvider, LinkedAccount>{};
+  final _identities = StreamController<void>.broadcast();
+
+  /// Le retour d'une liaison : le compte est relié, la session le signale.
+  void completeLink(SocialProvider provider, String label) {
+    linked[provider] = LinkedAccount(label: label, isOnlyWayIn: false);
+    _identities.add(null);
+  }
+
+  @override
+  Future<LinkedAccount?> linkedAccount(SocialProvider provider) async =>
+      linked[provider];
+
+  @override
+  Stream<void> identityChanges() => _identities.stream;
+
+  @override
+  Future<bool> linkAccount(SocialProvider provider) async {
+    await _record('linkAccount:${provider.code}');
+    return socialOpens;
+  }
+
+  @override
+  Future<void> unlinkAccount(SocialProvider provider) async {
+    await _record('unlinkAccount:${provider.code}');
+    linked.remove(provider);
+  }
+
   @override
   Future<void> requestPasswordReset({
     required String email,
@@ -185,6 +215,7 @@ class FakeAuthRepository implements AuthRepository {
   /// teardowns et bloquerait le test 30 s.
   void dispose() {
     unawaited(_changes.close());
+    unawaited(_identities.close());
   }
 }
 

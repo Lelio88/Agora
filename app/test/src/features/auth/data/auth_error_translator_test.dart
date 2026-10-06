@@ -19,6 +19,8 @@ void main() {
     'captcha_failed': CaptchaFailedException,
     'over_email_send_rate_limit': RateLimitedException,
     'over_request_rate_limit': RateLimitedException,
+    // Délier le seul moyen de se connecter d'un compte.
+    'single_identity_not_deletable': LastSignInMethodException,
   };
 
   byCode.forEach((code, expected) {

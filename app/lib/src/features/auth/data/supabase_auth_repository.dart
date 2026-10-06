@@ -11,6 +11,11 @@
 ///   l'enregistrement échoue après la vérification, le code est consommé :
 ///   il faut en redemander un.
 ///
+/// - [linkAccount] passe par `linkIdentity` (OAuth, flux PKCE), comme la
+///   liaison Discord : le retour arrive par la même adresse
+///   (`app.agora://login-callback` ou la page web), et [linkedAccount]
+///   relit les identités auprès du serveur ;
+///
 /// - [deleteAccount] passe par la RPC `delete_my_account` : le Supabase
 ///   auto-hébergé n'a pas d'edge runtime, et la transmission des groupes doit
 ///   se faire dans la même transaction que l'effacement.
@@ -23,6 +28,7 @@ import 'package:agora/src/features/auth/data/auth_error_translator.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/domain/linked_account.dart';
 import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:agora/src/supabase/oauth_callback.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
@@ -68,11 +74,59 @@ final class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<bool> signInWith(SocialProvider provider) => _guard(
-    () => _auth.signInWithOAuth(switch (provider) {
-      SocialProvider.google => OAuthProvider.google,
-      SocialProvider.discord => OAuthProvider.discord,
-    }, redirectTo: oauthRedirect()),
+    () => _auth.signInWithOAuth(
+      _oauthProvider(provider),
+      redirectTo: oauthRedirect(),
+    ),
   );
+
+  @override
+  Future<LinkedAccount?> linkedAccount(SocialProvider provider) => _guard(
+    () async => linkedAccountFrom(await _auth.getUserIdentities(), provider),
+  );
+
+  @override
+  Stream<void> identityChanges() => _auth.onAuthStateChange
+      .where(
+        (state) =>
+            state.event == AuthChangeEvent.userUpdated ||
+            state.event == AuthChangeEvent.signedIn,
+      )
+      .map((_) {});
+
+  @override
+  Future<bool> linkAccount(SocialProvider provider) async {
+    try {
+      return await _auth.linkIdentity(
+        _oauthProvider(provider),
+        redirectTo: oauthRedirect(),
+      );
+    } on AuthException catch (error) {
+      if (error.code == 'identity_already_exists') {
+        throw switch (provider) {
+          SocialProvider.google => const GoogleAlreadyLinkedException(),
+          SocialProvider.discord => const DiscordAlreadyLinkedException(),
+        };
+      }
+      throw translateAuthError(error);
+    } on Exception catch (error) {
+      throw translateAuthError(error);
+    }
+  }
+
+  @override
+  Future<void> unlinkAccount(SocialProvider provider) => _guard(() async {
+    final identity = (await _auth.getUserIdentities())
+        .where((i) => i.provider == provider.code)
+        .firstOrNull;
+    if (identity != null) await _auth.unlinkIdentity(identity);
+  });
+
+  static OAuthProvider _oauthProvider(SocialProvider provider) =>
+      switch (provider) {
+        SocialProvider.google => OAuthProvider.google,
+        SocialProvider.discord => OAuthProvider.discord,
+      };
 
   @override
   Future<void> verifySignUpCode({
@@ -200,4 +254,30 @@ Future<void> blindSignUp(Future<AuthResponse> Function() signUp) async {
     if (e.code == 'user_already_exists') return;
     rethrow;
   }
+}
+
+/// Le compte de [provider] parmi [identities], ou `null` : nommé par son
+/// adresse, à défaut son nom. Seul moyen de se connecter quand il est la
+/// seule identité du compte (un mot de passe en est une, `email`).
+@visibleForTesting
+LinkedAccount? linkedAccountFrom(
+  List<UserIdentity> identities,
+  SocialProvider provider,
+) {
+  final identity = identities
+      .where((i) => i.provider == provider.code)
+      .firstOrNull;
+  if (identity == null) return null;
+  final data = identity.identityData;
+  final label = [data?['email'], data?['name'], data?['full_name']]
+      .whereType<String>()
+      .map((value) => value.trim())
+      .firstWhere(
+        (value) => value.isNotEmpty,
+        orElse: () => switch (provider) {
+          SocialProvider.google => 'Google',
+          SocialProvider.discord => 'Discord',
+        },
+      );
+  return LinkedAccount(label: label, isOnlyWayIn: identities.length == 1);
 }

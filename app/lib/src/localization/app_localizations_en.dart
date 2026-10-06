@@ -962,6 +962,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discordLinkFailed => 'Could not open Discord.';
 
   @override
+  String get googleSectionTitle => 'Google';
+
+  @override
+  String googleAccountLinked(String account) {
+    return 'Linked to $account';
+  }
+
+  @override
+  String googleAccountOnlyWayIn(String account) {
+    return 'You sign in with $account.';
+  }
+
+  @override
+  String get googleAccountNotLinked =>
+      'Link your Google account to sign in with one tap.';
+
+  @override
+  String get googleLinkButton => 'Link Google';
+
+  @override
+  String get googleUnlinkButton => 'Unlink';
+
+  @override
+  String get googleLinkFailed => 'Could not open Google.';
+
+  @override
+  String get errorGoogleAlreadyLinked =>
+      'This Google account is already linked to another Agora account.';
+
+  @override
+  String get errorLastSignInMethod =>
+      'This is your only way to sign in: it can\'t be unlinked.';
+
+  @override
   String get groupDiscordMenu => 'Discord channel';
 
   @override

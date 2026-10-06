@@ -5,6 +5,8 @@ library;
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/auth_repository.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/domain/linked_account.dart';
+import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -38,3 +40,23 @@ final currentUserProvider = StreamProvider<AppUser?>(
 final currentUserIdProvider = FutureProvider<String?>(
   (ref) async => (await ref.watch(currentUserProvider.future))?.id,
 );
+
+/// Le compte de [SocialProvider] relié à celui-ci, ou `null` ; aucun sans
+/// compte Agora. Relu à chaque changement d'identité : une liaison se
+/// termine hors de l'app (navigateur) et n'y revient que par un évènement
+/// d'authentification.
+final linkedAccountProvider =
+    StreamProvider.family<LinkedAccount?, SocialProvider>((
+      ref,
+      provider,
+    ) async* {
+      final repository = ref.watch(authRepositoryProvider);
+      if (await ref.watch(currentUserIdProvider.future) == null) {
+        yield null;
+        return;
+      }
+      yield await repository.linkedAccount(provider);
+      await for (final _ in repository.identityChanges()) {
+        yield await repository.linkedAccount(provider);
+      }
+    });

@@ -24,6 +24,7 @@ const _byCode = <String, AppException>{
   'captcha_failed': CaptchaFailedException(),
   'over_email_send_rate_limit': RateLimitedException(),
   'over_request_rate_limit': RateLimitedException(),
+  'single_identity_not_deletable': LastSignInMethodException(),
 };
 
 AppException translateAuthError(Exception error) {

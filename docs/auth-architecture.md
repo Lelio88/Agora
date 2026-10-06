@@ -20,6 +20,13 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
   vers un fournisseur que GoTrue n'a pas activé mènerait à une page d'erreur, si bien que le
   build et le `.env` du serveur se règlent ensemble. Pas de CAPTCHA sur ce chemin : le
   fournisseur vérifie la personne, et aucun e-mail d'Agora n'est envoyé.
+- **Relier Google à un compte existant** (Moi → Connexions, `GoogleAccountTile`) :
+  `linkIdentity`, comme Discord, et la ligne n'existe que si le build propose Google. Les
+  identités se relisent auprès de GoTrue (`linkedAccountProvider`, relu à chaque changement
+  de session). Un compte ouvert par Google n'a que cette identité : la ligne le dit, sans
+  bouton « Délier », que GoTrue refuserait (`single_identity_not_deletable` →
+  `LastSignInMethodException`). Un compte Google déjà relié ailleurs donne
+  `GoogleAlreadyLinkedException`.
 - **Écran de consentement Google** (projet Google Cloud « Agora », branding validé et publié) :
   il tient à trois choses à ne pas casser. D'abord, la page d'accueil déclarée,
   `/presentation.html`, lisible sans compte et qui explique l'app. Ensuite, les liens vers les
@@ -157,11 +164,11 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 
 | Fichier | Rôle |
 |---|---|
-| `app/lib/src/features/auth/domain/auth_repository.dart` | Contrat : inscription, code, connexion, réinitialisation, déconnexion |
+| `app/lib/src/features/auth/domain/auth_repository.dart` | Contrat : inscription, code, connexion, réinitialisation, déconnexion, comptes reliés |
 | `app/lib/src/features/auth/data/supabase_auth_repository.dart` | Implémentation GoTrue ; utilisateur sans identité → adresse déjà prise |
 | `app/lib/src/features/auth/data/auth_error_translator.dart` | Codes GoTrue → `AppException` |
 | `app/lib/src/features/auth/domain/credential_rules.dart` | Règles de saisie, alignées sur `config.toml` |
-| `app/lib/src/features/auth/presentation/` | Cinq écrans, `AuthActionController`, `AuthScaffold(busy:)`, `AuthKeys` |
+| `app/lib/src/features/auth/presentation/` | Cinq écrans, `AuthActionController`, `AuthScaffold(busy:)`, `AuthKeys`, `GoogleAccountTile` (ligne du profil) |
 | `app/lib/src/features/profile/` | Profil : lecture/écriture de `profiles`, écran, contrôleur |
 | `supabase/migrations/20260921171319_profile_locale_timezone.sql` | Langue et fuseau à l'inscription, validation du fuseau, recopie de la langue |
 | `supabase/migrations/20260921175536_account_deletion.sql` | `delete_my_account()` : transmission des groupes, puis effacement en cascade |

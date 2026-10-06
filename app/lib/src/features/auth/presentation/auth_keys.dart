@@ -2,6 +2,7 @@
 /// dépendre de son libellé traduit.
 library;
 
+import 'package:agora/src/features/auth/domain/social_provider.dart';
 import 'package:flutter/widgets.dart';
 
 abstract final class AuthKeys {
@@ -28,4 +29,12 @@ abstract final class AuthKeys {
   /// Bouton « Continuer avec… » d'un fournisseur (`google`, `discord`).
   static ValueKey<String> socialSignIn(String provider) =>
       ValueKey('auth.social.$provider');
+
+  /// Ligne d'un fournisseur relié, dans le profil, et ses boutons.
+  static ValueKey<String> account(SocialProvider provider) =>
+      ValueKey('auth.account.${provider.code}');
+  static ValueKey<String> linkAccount(SocialProvider provider) =>
+      ValueKey('auth.account.${provider.code}.link');
+  static ValueKey<String> unlinkAccount(SocialProvider provider) =>
+      ValueKey('auth.account.${provider.code}.unlink');
 }

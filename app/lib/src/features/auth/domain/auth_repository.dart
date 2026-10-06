@@ -14,6 +14,7 @@ library;
 
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
+import 'package:agora/src/features/auth/domain/linked_account.dart';
 import 'package:agora/src/features/auth/domain/social_provider.dart';
 
 abstract interface class AuthRepository {
@@ -51,6 +52,23 @@ abstract interface class AuthRepository {
   /// elle n'a pas pu s'ouvrir. La session arrive au retour, par
   /// [watchCurrentUser].
   Future<bool> signInWith(SocialProvider provider);
+
+  /// Le compte de [provider] relié à celui-ci, ou `null`. Relu auprès du
+  /// serveur : juste après une liaison, la session peut dater d'avant.
+  Future<LinkedAccount?> linkedAccount(SocialProvider provider);
+
+  /// Émet quand les identités du compte ont pu changer (retour d'une
+  /// liaison faite dans le navigateur).
+  Stream<void> identityChanges();
+
+  /// Ouvre la page de [provider] pour relier son compte à celui-ci ;
+  /// `false` si elle n'a pas pu s'ouvrir. La liaison arrive au retour, par
+  /// [identityChanges].
+  Future<bool> linkAccount(SocialProvider provider);
+
+  /// Délie le compte de [provider] ; refusé s'il est le seul moyen de se
+  /// connecter ([LinkedAccount.isOnlyWayIn]).
+  Future<void> unlinkAccount(SocialProvider provider);
 
   /// Envoie un code de réinitialisation, si un compte utilise [email].
   Future<void> requestPasswordReset({
