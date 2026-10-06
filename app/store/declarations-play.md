@@ -256,6 +256,12 @@ transfert déclenché par l'utilisateur, donc pas un partage. L'autorisation
 (nom du client, date) est gardée par le serveur d'authentification jusqu'à
 son retrait : elle relève de **ID utilisateur** et **Autres actions**, déjà
 déclarés — rien à ajouter, et l'app elle-même ne contacte aucun hôte de plus.
+Un **proche relié à un membre** garde l'identifiant de ce membre et recopie
+son nom : **ID utilisateur** et **Nom**, déjà déclarés. Les proches ne
+viennent pas du carnet d'adresses de l'appareil (aucune permission
+`READ_CONTACTS`) : le type **Contacts** reste non déclaré. Un compte
+**Google relié** depuis Moi → Connexions ne recueille que ce que la
+connexion Google recueillait déjà (ID utilisateur, nom, adresse e-mail).
 
 ### Les types que l'on ne déclare pas
 

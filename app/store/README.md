@@ -328,6 +328,16 @@ L'application vous tutoie désormais partout : les quelques écrans qui vous vou
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.9.0+15 (proches reliés, formulaires courts, Google)
+
+Français, envoyées sur `alpha` :
+
+```
+Proches : un anniversaire ne demande plus qu'une date, et des horaires de travail que les jours et les heures ; les repos s'en déduisent. « Congé » note un jour ou une période. Reliez un proche à un membre de vos groupes : son nom suit son profil, et sa page montre ce qu'il partage dans vos groupes. Moi → Connexions relie aussi votre compte Google.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
