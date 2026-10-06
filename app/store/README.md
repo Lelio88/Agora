@@ -11,7 +11,7 @@ regarde sur un vrai téléphone.
 | Fichier | Produit par |
 |---|---|
 | [`declarations-play.md`](declarations-play.md) | les réponses aux questionnaires obligatoires, et ce qui les justifie |
-| `01-agenda.png` … `06-import.png` | captures d'émulateur, scène posée par [`tools/store/seed_demo.py`](../../tools/store/seed_demo.py) |
+| `01-agenda.png` … `08-mois.png` | captures d'émulateur, scène posée par [`tools/store/seed_demo.py`](../../tools/store/seed_demo.py) |
 | `icon-512.png`, `feature-1024x500.png` | [`tools/store/make_store_assets.py`](../../tools/store/make_store_assets.py) |
 
 Le même script écrit aussi les `mipmap-*` d'Android, l'icône adaptative et le
@@ -24,10 +24,22 @@ Elles viennent d'un **émulateur**, pas du navigateur : Flutter web ignore le
 ratio de pixels émulé et rend un layout de tablette, inutilisable pour une
 fiche.
 
+Huit captures, dans l'ordre de la fiche : `01-agenda` (vue Planning),
+`02-groupe` (Coloc), `03-social` (onglet Social : anniversaire à venir, proche,
+groupes), `04-creneaux` (Trouver un créneau), `05-rdv` (la Raclette et ses
+réponses), `06-import` (Moi → Mes agendas), `07-proche` (la page de Hugo),
+`08-mois` (vue Mois : pastilles et liste du jour).
+
 ```bash
 supabase db reset && python tools/store/seed_demo.py   # la scène de démo
+# Les séries (anniversaire et horaires de Hugo) ne s'affichent que dépliées :
+cd worker && AGORA_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
+  AGORA_HTTP_ADDR=127.0.0.1:58091 go run ./cmd/worker &   # lancé AVANT la scène
 
-# Un émulateur au format attendu par Play (9:16) et une barre de statut propre
+# L'émulateur « agora », au format attendu par Play (9:16), à l'heure de Paris
+# (sinon toute la scène glisse de deux heures), et une barre de statut propre
+emulator -avd agora -no-snapshot-load -no-audio -gpu swiftshader_indirect &
+adb shell cmd alarm set-timezone Europe/Paris
 adb shell wm size 1080x1920 && adb shell wm density 420
 adb shell settings put global sysui_demo_allowed 1
 adb shell am broadcast -a com.android.systemui.demo -e command enter
@@ -42,8 +54,14 @@ cd app && flutter build apk --profile --target-platform android-x64 \
   --dart-define-from-file=config/emulateur.json     # SUPABASE_URL=http://10.0.2.2:55321
 adb install -r -t build/app/outputs/flutter-apk/app-profile.apk
 adb shell cmd locale set-app-locales app.agora --locales fr-FR
-adb exec-out screencap -p > app/store/01-agenda.png
+# Une capture : sur l'appareil, puis rapatriée (une redirection depuis Git
+# Bash corrompt le PNG) ; Play veut du PNG 24 bits, sans couche alpha.
+adb shell screencap -p /sdcard/c.png && adb pull /sdcard/c.png app/store/01-agenda.png
+python -c "from PIL import Image; Image.open('app/store/01-agenda.png').convert('RGB').save('app/store/01-agenda.png')"
 ```
+
+Pour les captures de l'agenda (01 et 08), Hugo est masqué (Agendas affichés) :
+ses horaires de semaine couvriraient sinon la semaine de Camille.
 
 Trois pièges qui coûtent une heure chacun :
 

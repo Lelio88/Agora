@@ -5,9 +5,13 @@ Pourquoi un script : une capture se refait — un libellé qui change, une vue
 qu'on ajoute, une traduction qui s'allonge. Rejouer la scène à l'identique vaut
 mieux que de recomposer à la main des rendez-vous plausibles.
 
-La scène raconte le produit en cinq écrans : mon agenda, l'agenda d'un groupe
-où chacun partage ce qu'il veut, la recherche de créneau commun, un rdv proposé
-avec ses réponses, et un agenda importé par lien iCal.
+La scène raconte le produit en sept écrans : mon agenda, l'agenda d'un groupe
+où chacun partage ce qu'il veut, l'onglet Social, la recherche de créneau
+commun, un rdv proposé avec ses réponses, un agenda importé par lien iCal, et
+l'agenda d'un proche (son anniversaire, ses horaires).
+
+Les séries (anniversaire, horaires) ne s'affichent qu'une fois dépliées par le
+worker : le lancer sur la pile locale avant de prendre les captures.
 
 Deux groupes, pas un : c'est le seul moyen de montrer la promesse centrale —
 Camille ouvre le détail à sa coloc et se contente de « occupé » avec le club
@@ -274,6 +278,63 @@ def main() -> None:
             },
             key=SECRET,
         )
+
+    # --- Un proche : l'agenda que Camille tient pour son frère, à elle seule.
+    # Son anniversaire tombe dans trois jours (« À venir » dans Social), ses
+    # horaires se répètent en semaine, et il est de repos mercredi. Créé avec
+    # la clé de service, comme l'agenda importé : demander la ligne en retour
+    # d'un INSERT sur `calendars` se heurte à la règle de lecture.
+    hugo = call(
+        '/rest/v1/calendars',
+        {
+            'owner_id': call('/auth/v1/user', token=camille)['id'],
+            'name': 'Hugo',
+            'color': '#FB8C00',
+            'visibility': 'invisible',
+            'contact': True,
+        },
+        key=SECRET,
+    )[0]['id']
+    anniversaire = (TODAY + timedelta(days=3)).date()
+    call(
+        '/rest/v1/events',
+        {
+            'calendar_id': hugo,
+            'title': 'Anniversaire de Hugo',
+            'starts_at': f'{anniversaire}T00:00:00+00:00',
+            'ends_at': f'{anniversaire + timedelta(days=1)}T00:00:00+00:00',
+            'all_day': True,
+            'timezone': 'Europe/Paris',
+            'rrule': 'FREQ=YEARLY',
+        },
+        token=camille,
+    )
+    call(
+        '/rest/v1/events',
+        {
+            'calendar_id': hugo,
+            'title': 'Travail',
+            'starts_at': at(0, 9),
+            'ends_at': at(0, 17),
+            'all_day': False,
+            'timezone': 'Europe/Paris',
+            'rrule': 'FREQ=WEEKLY;BYDAY=MO,TU,TH,FR',
+        },
+        token=camille,
+    )
+    repos = (MONDAY + timedelta(days=2)).date()
+    call(
+        '/rest/v1/events',
+        {
+            'calendar_id': hugo,
+            'title': 'Repos',
+            'starts_at': f'{repos}T00:00:00+00:00',
+            'ends_at': f'{repos + timedelta(days=1)}T00:00:00+00:00',
+            'all_day': True,
+            'timezone': 'Europe/Paris',
+        },
+        token=camille,
+    )
 
     # **Le mot de passe ne s'imprime pas.** Il est fixe et sans valeur pour la
     # pile locale, mais `seed_review.py` réutilise cette fonction avec un mot
