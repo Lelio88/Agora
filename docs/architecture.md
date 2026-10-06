@@ -87,7 +87,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `group_members` | rôle (`owner`/`admin`/`member`) **et `share_level`**, le partage choisi pour ce groupe | `create_group()`, `join_group()` ; chacun règle son `share_level` |
 | `group_invites` | code de 8 caractères, expiration (nulle pour l'invitation d'un jumeau), nombre d'usages | `create_invite()` (tout membre) ; `twin_group()` |
 | `group_twins` | jumeau du groupe dans une autre app (Arpente) : son code d'entrée (nul = en attente) et l'invitation donnée à l'autre app | `twin_group()` (admins) ; défait avec son invitation — voir [`groups-architecture.md`](./groups-architecture.md) §Jumelage |
-| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; `contact` (l'agenda d'un proche, à soi seul) ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; suppression par `delete_calendar()` |
+| `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; `contact` (l'agenda d'un proche, à soi seul) et `contact_user_id` (le co-membre que ce proche désigne, lien connu du seul propriétaire) ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; `link_contact()`, `create_member_contact()` ; suppression par `delete_calendar()` |
 | `calendar_preferences` | affichage **par personne** : agenda masqué dans sa propre vue (pas de la vie privée) | l'utilisateur |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
 | `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
@@ -107,6 +107,11 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
   rdv à part rattaché à sa série (`series_id`, `recurrence_id`) ; une occurrence supprimée est
   une exception (`exdates`). Pas de fréquence infra-journalière (contrainte `CHECK`). Détail :
   [`calendar-architecture.md`](./calendar-architecture.md).
+- **Proche relié à un membre** (`20261008120000_contact_member.sql`) : le lien ne se pose que
+  vers un co-membre (`not_a_co_member`), un seul proche par membre (index unique partiel), et
+  ne s'écrit que par RPC. Le nom du proche suit le profil du membre (trigger
+  `private.follow_contact_name` sur `profiles`) **tant qu'ils partagent un groupe** ; hors de
+  tout groupe commun, délié ou compte supprimé (`on delete set null`), il garde le dernier.
 - **Clé de synchro iCal** : index unique partiel `(calendar_id, source_uid, recurrence_id)
   WHERE source_uid IS NOT NULL`. S'il n'était pas partiel, deux rdv natifs d'un même agenda
   entreraient en collision.
@@ -152,6 +157,10 @@ propriétaire que par `private.resolve_group_agenda(groupe, lecteur, de, à, pla
   l'assistant est le membre lui-même. Choix assumé, signalé sous le niveau « Tout » et dans la
   politique de confidentialité.
 
+La page d'un proche relié à un membre montre ce que ce membre partage : l'app réunit les
+`group_agenda()` des groupes communs (`memberAgendaProvider`), sans nouvelle lecture côté
+serveur — elle n'y voit rien de plus qu'en ouvrant chacun de ces groupes.
+
 Les tables `events` et `event_occurrences` ne sont lisibles en direct que par le propriétaire,
 ou par les membres pour un agenda de groupe. **Toute nouvelle façon de lire des rdv doit passer
 par cette fonction**, sinon elle contourne les réglages de vie privée.
@@ -178,7 +187,8 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   tables et séquences futures. `public_grants_test.sql` refuse tout droit à `anon` sur `public`, et
   tout `TRUNCATE`, `TRIGGER` ou `REFERENCES` à `authenticated`.
 - **Écritures sensibles par RPC `SECURITY DEFINER`** (`search_path = ''`) : `create_group`,
-  `create_invite`, `join_group`, `add_ics_calendar`, `set_event_visibility`. Postgres donnant
+  `create_invite`, `join_group`, `add_ics_calendar`, `set_event_visibility`, `link_contact`,
+  `create_member_contact`. Postgres donnant
   `EXECUTE` à `PUBLIC` sur toute nouvelle fonction, chaque fonction est révoquée puis accordée
   explicitement.
 - **Pas d'escalade de rôle** : seul `share_level` est modifiable dans `group_members`. Le rôle ne
@@ -323,8 +333,8 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
-| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques ; `assistant_test.sql` : bascule de rôle du worker sans héritage, jeton d'assistant refusé par PostgREST et le temps réel |
-| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; fiche de lecture d'un rdv, vue mois d'un téléphone, agendas affichés ; « Mes agendas » ; import iCal, état de synchro, rdv importé ; onglet Social, page d'un proche et ses formulaires courts ; Google dans Moi → Connexions ; jours, rythme et fin d'une répétition) ; branchement de `prodOverrides` |
+| Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques ; `assistant_test.sql` : bascule de rôle du worker sans héritage, jeton d'assistant refusé par PostgREST et le temps réel ; `contact_member_test.sql` : lien d'un proche à un co-membre seulement, au seul propriétaire, nom suivi dans un groupe commun |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; fiche de lecture d'un rdv, vue mois d'un téléphone, agendas affichés ; « Mes agendas » ; import iCal, état de synchro, rdv importé ; onglet Social, page d'un proche, ses formulaires courts et son lien à un membre ; Google dans Moi → Connexions ; jours, rythme et fin d'une répétition) ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences, iCal, Discord) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role

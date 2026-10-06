@@ -1546,6 +1546,62 @@ class AppLocalizationsEn extends AppLocalizations {
       'The end must come after the first working day.';
 
   @override
+  String get contactLinkTitle => 'Member of your groups';
+
+  @override
+  String get contactLinkedHint =>
+      'Their name follows their profile, and what they share in your groups shows here.';
+
+  @override
+  String get contactNotLinkedHint =>
+      'Link this close one to a member of your groups to see what they share there.';
+
+  @override
+  String get contactLinkButton => 'Link';
+
+  @override
+  String get contactUnlinkButton => 'Unlink';
+
+  @override
+  String get contactPickMemberTitle => 'Link to a member';
+
+  @override
+  String get contactPickMemberEmpty => 'No member of your groups to link.';
+
+  @override
+  String get contactLinkedSaved => 'Close one linked.';
+
+  @override
+  String get contactUnlinkedSaved => 'Link removed.';
+
+  @override
+  String get contactSharedTitle => 'In your groups, next 7 days';
+
+  @override
+  String get contactSharedEmpty => 'Nothing shared in the next 7 days.';
+
+  @override
+  String get calendarNameFollowsProfile =>
+      'Their name follows their Agora profile.';
+
+  @override
+  String get memberAddContact => 'Add to my close ones';
+
+  @override
+  String get memberOpenContact => 'Open their close-one page';
+
+  @override
+  String get memberIsContact => 'in your close ones';
+
+  @override
+  String get errorNotCoMember =>
+      'This person no longer shares a group with you.';
+
+  @override
+  String get errorContactAlreadyLinked =>
+      'This person is already linked to another of your close ones.';
+
+  @override
   String contactImportedName(String name) {
     return '$name\'s schedule';
   }

@@ -121,6 +121,13 @@ abstract final class CalendarKeys {
   static ValueKey<String> contactEvent(String instanceKey) =>
       ValueKey('contact.event.$instanceKey');
 
+  // Proche relié à un membre de ses groupes.
+  static const contactLink = ValueKey('contact.link');
+  static const contactUnlink = ValueKey('contact.unlink');
+  static ValueKey<String> contactLinkOption(String userId) =>
+      ValueKey('contact.link.$userId');
+  static const contactShared = ValueKey('contact.shared');
+
   // Formulaires courts d'un proche (anniversaire, travail, congé).
   static const contactForm = ValueKey('contact.form');
   static const contactFormDate = ValueKey('contact.form.date');

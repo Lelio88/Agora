@@ -78,6 +78,10 @@ abstract final class GroupKeys {
       ValueKey('group.myShare.${level.name}');
   static ValueKey<String> memberTile(String userId) =>
       ValueKey('group.member.$userId');
+
+  /// Ajouter ce membre à mes proches, ou ouvrir sa page de proche.
+  static ValueKey<String> memberContact(String userId) =>
+      ValueKey('group.member.$userId.contact');
   static ValueKey<String> memberMenu(String userId) =>
       ValueKey('group.member.$userId.menu');
   static const makeAdmin = ValueKey('group.member.makeAdmin');

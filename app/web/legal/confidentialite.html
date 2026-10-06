@@ -45,7 +45,7 @@
     <tr><th>Donnée</th><th>Pourquoi</th></tr>
     <tr><td>Adresse e-mail, mot de passe (jamais en clair : il est haché)</td><td>Créer le compte, s'y connecter, envoyer les codes de confirmation</td></tr>
     <tr><td>Nom affiché, fuseau horaire, langue, image de profil si vous en fournissez une</td><td>Vous nommer dans vos groupes et afficher les horaires à votre heure</td></tr>
-    <tr><td>Vos agendas et vos rdv : titre, description, lieu, horaires, récurrence, niveau de visibilité ; et les agendas que vous tenez pour des proches (leurs repos, leur anniversaire, ou leur planning importé par lien iCal), visibles de vous seul — et de l'assistant IA que vous auriez branché</td><td>C'est le contenu de l'application</td></tr>
+    <tr><td>Vos agendas et vos rdv : titre, description, lieu, horaires, récurrence, niveau de visibilité ; et les agendas que vous tenez pour des proches (leurs horaires de travail et congés, leur anniversaire, ou leur planning importé par lien iCal), visibles de vous seul — et de l'assistant IA que vous auriez branché. Un proche peut être relié à un membre de vos groupes : le lien n'est connu que de vous, et le nom du proche suit alors celui de ce membre</td><td>C'est le contenu de l'application</td></tr>
     <tr><td>Vos groupes : appartenance, rôle, niveau de partage choisi, invitations créées, réponses aux rdv proposés, et, si un admin l'a jumelé avec un groupe de l'app Arpente, le code de ce groupe (visible des membres)</td><td>Faire fonctionner les agendas partagés, et proposer aux membres de rejoindre aussi le groupe jumeau</td></tr>
     <tr><td>Les liens iCal que vous importez, et les rdv qu'ils contiennent</td><td>Relire l'agenda distant toutes les 30 minutes</td></tr>
     <tr><td>Si vous vous connectez avec Google ou Discord, ou reliez l'un d'eux à votre compte (Moi → Connexions) : l'identifiant de votre compte chez ce fournisseur, et le nom et l'adresse e-mail qu'il transmet</td><td>Créer votre compte et vous reconnecter, sans mot de passe</td></tr>
@@ -76,6 +76,7 @@
   <p>Les rdv proposés <em>à un groupe</em> sont visibles de tous ses membres, ainsi que les réponses (présent, peut-être, absent). Un rdv d'un autre groupe auquel vous avez répondu « présent » vous rend « occupé » ailleurs — jamais plus : ni titre, ni lieu, ni lien avec l'autre groupe.</p>
   <p>Cette règle est appliquée par le serveur, pas par l'application : ce qui vous est masqué ne quitte jamais la base de données.</p>
   <p><strong>Assistants IA.</strong> Un assistant IA qu'un membre a branché sur Agora voit ce que l'application montre à ce membre, ni plus ni moins. Si vous partagez en « Détail » avec un groupe, vos titres et lieux peuvent donc parvenir à l'assistant d'un autre membre, et à l'entreprise qui le fournit. Pour l'éviter, choisissez « Occupé » pour ce groupe.</p>
+  <p><strong>Proches.</strong> Un membre de vos groupes peut relier l'un de ses proches à vous, sans que vous en soyez averti. Il n'y gagne rien de plus que ce que vos groupes lui montrent déjà : votre nom, recopié tant que vous partagez un groupe, et votre agenda tel que vous le partagez dans ces groupes. Le nom recopié reste chez lui s'il quitte vos groupes ou si vous supprimez votre compte, comme ce qu'il a noté lui-même.</p>
 
   <h2>Où c'est hébergé</h2>
   <p>Sur un serveur loué chez <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Allemagne), situé à Nuremberg. Vos données ne quittent pas l'Union européenne, sauf vers les tiers décrits ci-dessous.</p>
@@ -106,7 +107,7 @@
 
   <h2>Supprimer votre compte</h2>
   <p>Dans l'application : <strong>Moi → Supprimer mon compte</strong>. La même action est disponible depuis la version web, sans installer quoi que ce soit. La suppression est immédiate et définitive. Pas à pas, et sans l'application : <a href="./suppression.html">supprimer votre compte</a>.</p>
-  <p>Partent avec le compte : profil, agendas personnels, rdv et occurrences, liens iCal, appartenances aux groupes, invitations créées, réponses aux rdv, identités de connexion, sessions et autorisations données à des assistants IA.</p>
+  <p>Partent avec le compte : profil, agendas personnels, rdv et occurrences, liens iCal, appartenances aux groupes, invitations créées, réponses aux rdv, identités de connexion, sessions et autorisations données à des assistants IA. Si un membre vous avait relié à l'un de ses proches, le lien disparaît ; le nom qu'il y avait reste le sien.</p>
   <div class="encart">
     <strong>Ce qui reste, et pourquoi.</strong> Les rdv que vous avez <em>proposés à un groupe</em> lui appartiennent : ils restent, sans auteur, <strong>avec leur texte libre</strong> — un titre ou une description peut donc encore vous nommer. L'application vous les montre au moment de la suppression et propose de les effacer d'abord : c'est le dernier moment où c'est possible. Les groupes dont vous étiez propriétaire sont transmis à un autre membre ; un groupe sans autre membre est supprimé avec son agenda. Les sauvegardes déjà faites expirent d'elles-mêmes sous 30 jours.
   </div>
@@ -160,7 +161,7 @@
     <tr><th>Data</th><th>Why</th></tr>
     <tr><td>Email address, password (never in clear text: it is hashed)</td><td>Create the account, sign in, send confirmation codes</td></tr>
     <tr><td>Display name, time zone, language, profile picture if you provide one</td><td>Name you in your groups and show times in your own hours</td></tr>
-    <tr><td>Your calendars and events: title, description, location, times, recurrence, visibility level; and the calendars you keep for close ones (their days off, their birthday, or their schedule imported by iCal link), visible to you only — and to the AI assistant you may have connected</td><td>That is the content of the app</td></tr>
+    <tr><td>Your calendars and events: title, description, location, times, recurrence, visibility level; and the calendars you keep for close ones (their work hours and time off, their birthday, or their schedule imported by iCal link), visible to you only — and to the AI assistant you may have connected. A close one can be linked to a member of your groups: only you know about the link, and the close one's name then follows that member's</td><td>That is the content of the app</td></tr>
     <tr><td>Your groups: membership, role, chosen sharing level, invitations you create, answers to proposed events, and, if an admin twinned it with a group in the Arpente app, that group's code (visible to members)</td><td>Make shared calendars work, and let members join the twin group too</td></tr>
     <tr><td>The iCal links you import, and the events they contain</td><td>Re-read the remote calendar every 30 minutes</td></tr>
     <tr><td>If you sign in with Google or Discord, or link one of them to your account (Me → Connections): your account ID with that provider, and the name and email address it passes on</td><td>Create your account and sign you back in, without a password</td></tr>
@@ -191,6 +192,7 @@
   <p>Events proposed <em>to a group</em> are visible to all its members, along with the answers (going, maybe, not going). An event in another group that you answered "going" makes you "busy" elsewhere — never more: no title, no location, no link to the other group.</p>
   <p>This rule is enforced by the server, not by the app: what is hidden from you never leaves the database.</p>
   <p><strong>AI assistants.</strong> An AI assistant that a member connected to Agora sees what the app shows that member, no more, no less. If you share "Detail" with a group, your titles and places can therefore reach another member's assistant, and the company that provides it. To avoid this, choose "Busy" for that group.</p>
+  <p><strong>Close ones.</strong> A member of your groups can link one of their close ones to you, without you being notified. They gain nothing beyond what your groups already show them: your name, copied while you share a group, and your calendar as you share it in those groups. The copied name stays with them if they leave your groups or if you delete your account, like what they noted themselves.</p>
 
   <h2>Where it is hosted</h2>
   <p>On a server rented from <strong>Hetzner Online GmbH</strong> (Industriestr. 25, 91710 Gunzenhausen, Germany), located in Nuremberg. Your data does not leave the European Union, except towards the third parties listed below.</p>
@@ -221,7 +223,7 @@
 
   <h2>Deleting your account</h2>
   <p>In the app: <strong>Me → Delete my account</strong>. The same action is available from the web version, with nothing to install. Deletion is immediate and final. Step by step, and without the app: <a href="./suppression.html">delete your account</a>.</p>
-  <p>Deleted with the account: profile, personal calendars, events and occurrences, iCal links, group memberships, invitations you created, answers to events, sign-in identities, sessions and authorizations given to AI assistants.</p>
+  <p>Deleted with the account: profile, personal calendars, events and occurrences, iCal links, group memberships, invitations you created, answers to events, sign-in identities, sessions and authorizations given to AI assistants. If a member had linked you to one of their close ones, the link goes away; the name they had stays theirs.</p>
   <div class="encart">
     <strong>What remains, and why.</strong> Events you <em>proposed to a group</em> belong to it: they stay, without an author, <strong>with their free text</strong> — a title or description may therefore still name you. The app shows them to you when you delete your account and offers to erase them first: that is the last moment it is possible. Groups you owned are handed to another member; a group with no other member is deleted along with its calendar. Backups already taken expire by themselves within 30 days.
   </div>

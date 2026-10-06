@@ -1557,6 +1557,62 @@ class AppLocalizationsFr extends AppLocalizations {
       'La fin doit suivre le premier jour travaillé.';
 
   @override
+  String get contactLinkTitle => 'Membre de tes groupes';
+
+  @override
+  String get contactLinkedHint =>
+      'Son nom suit son profil, et ce que ce membre partage dans tes groupes s\'affiche ici.';
+
+  @override
+  String get contactNotLinkedHint =>
+      'Relie ce proche à un membre de tes groupes pour voir ce que ce membre y partage.';
+
+  @override
+  String get contactLinkButton => 'Relier';
+
+  @override
+  String get contactUnlinkButton => 'Délier';
+
+  @override
+  String get contactPickMemberTitle => 'Relier à un membre';
+
+  @override
+  String get contactPickMemberEmpty => 'Aucun membre de tes groupes à relier.';
+
+  @override
+  String get contactLinkedSaved => 'Proche relié.';
+
+  @override
+  String get contactUnlinkedSaved => 'Lien retiré.';
+
+  @override
+  String get contactSharedTitle => 'Dans tes groupes, 7 prochains jours';
+
+  @override
+  String get contactSharedEmpty => 'Rien de partagé ces 7 prochains jours.';
+
+  @override
+  String get calendarNameFollowsProfile =>
+      'Son nom suit celui de son profil Agora.';
+
+  @override
+  String get memberAddContact => 'Ajouter à mes proches';
+
+  @override
+  String get memberOpenContact => 'Voir sa page de proche';
+
+  @override
+  String get memberIsContact => 'dans tes proches';
+
+  @override
+  String get errorNotCoMember =>
+      'Cette personne ne partage plus de groupe avec toi.';
+
+  @override
+  String get errorContactAlreadyLinked =>
+      'Cette personne est déjà reliée à un autre de tes proches.';
+
+  @override
   String contactImportedName(String name) {
     return 'Planning de $name';
   }

@@ -6,7 +6,9 @@
 /// appelle le service.
 ///
 /// Pour un agenda importé, il montre aussi l'état de la synchro et propose
-/// de la relancer — jamais le lien, que l'app ne connaît pas.
+/// de la relancer — jamais le lien, que l'app ne connaît pas. Le nom d'un
+/// proche relié à un membre ne se change pas à la main : il suit le profil
+/// du membre (en base), et une saisie serait écrasée au prochain changement.
 library;
 
 import 'package:agora/src/common_widgets/submit_button.dart';
@@ -131,10 +133,14 @@ class _CalendarEditorScreenState extends State<CalendarEditorScreen> {
                 key: CalendarKeys.calendarName,
                 controller: _name,
                 autofocus: existing == null,
+                enabled: !(existing?.isLinkedToMember ?? false),
                 decoration: InputDecoration(
                   labelText: _isContact
                       ? l10n.contactNameLabel
                       : l10n.calendarNameLabel,
+                  helperText: (existing?.isLinkedToMember ?? false)
+                      ? l10n.calendarNameFollowsProfile
+                      : null,
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: (value) {

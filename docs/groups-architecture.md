@@ -93,7 +93,12 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
   créneau ». La barre de titre ne garde que Membres et le menu.
 - **Membres** : « Inviter » en tête, puis chaque membre avec rôle et partage, et les actions
   que son rôle permet (propriétaire : admin, transmettre, exclure un membre ; admin : exclure un
-  membre ; membre : rien). Le serveur revérifie tout.
+  membre ; membre : rien). Le serveur revérifie tout. À côté, pour chacun et quel que soit son
+  rôle, un bouton **proche** : « Ajouter à mes proches » (`create_member_contact`, un proche relié
+  à ce membre et à son nom), ou la page du proche s'il l'est déjà (la ligne dit alors « dans tes
+  proches »). Le lien n'est qu'à soi — voir
+  [`calendar-architecture.md`](./calendar-architecture.md) §Les agendas de chacun (« Proche relié
+  à un membre »).
 - **Actualiser reste un bouton** de la barre d'agenda : tirer vers le bas ne convient pas à une
   grille horaire (il faudrait d'abord remonter à minuit) ni à la vue mois, qui ne défile pas.
 - **Dans l'onglet Social**, chaque groupe montre son prochain rdv des 31 prochains jours

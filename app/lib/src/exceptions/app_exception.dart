@@ -167,6 +167,18 @@ final class TwinAlreadyLinkedException extends AppException {
     : super('twin-exists', 'This group already has a twin in that app');
 }
 
+/// Le proche ne se relie qu'à quelqu'un de ses groupes.
+final class NotCoMemberException extends AppException {
+  const NotCoMemberException()
+    : super('not-a-co-member', 'No shared group with that person');
+}
+
+/// Ce membre est déjà le proche d'un autre agenda.
+final class ContactAlreadyLinkedException extends AppException {
+  const ContactAlreadyLinkedException()
+    : super('contact-already-linked', 'Member already linked to a contact');
+}
+
 // --- Discord ------------------------------------------------------------------
 
 /// Ce compte Discord est déjà relié à un autre compte Agora.

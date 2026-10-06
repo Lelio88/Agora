@@ -8,6 +8,9 @@
 /// - masquer un agenda est un upsert sur (utilisateur, agenda) ;
 /// - l'import passe par la RPC `add_ics_calendar` : le lien part dans une
 ///   table que personne ne relit, pas même son propriétaire ;
+/// - relier un proche à un membre passe par `link_contact` et
+///   `create_member_contact` : la colonne `contact_user_id` ne s'écrit pas
+///   directement, et le serveur vérifie que le membre partage un groupe ;
 /// - créer un agenda ne demande pas la ligne en retour (`RETURNING`) : la
 ///   règle de lecture, `private.can_read_calendar(id)`, relit la table, où
 ///   la ligne tout juste insérée n'est pas encore visible — le serveur
@@ -35,7 +38,7 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
         .from('calendars')
         .select(
           'id, name, color, visibility, kind, group_id, last_synced_at, '
-          'sync_error, contact, calendar_preferences(hidden)',
+          'sync_error, contact, contact_user_id, calendar_preferences(hidden)',
         )
         .order('created_at', ascending: true);
     return rows.map(_toCalendar).toList(growable: false);
@@ -131,6 +134,22 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
         .isFilter('series_id', null),
   );
 
+  @override
+  Future<void> linkContact(String calendarId, String? userId) => guardPostgrest(
+    () => _client.rpc<void>(
+      'link_contact',
+      params: {'p_calendar_id': calendarId, 'p_user_id': userId},
+    ),
+  );
+
+  @override
+  Future<String> createMemberContact(String userId) => guardPostgrest(
+    () async => await _client.rpc<String>(
+      'create_member_contact',
+      params: {'p_user_id': userId},
+    ),
+  );
+
   /// Ce qui se crée et se modifie : jamais `contact`, que la base refuse de
   /// modifier ; l'agenda d'un proche reste invisible (contrainte en base).
   static Map<String, dynamic> _toRow(CalendarDraft draft) => {
@@ -152,6 +171,7 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
       visibility: EventVisibility.fromCode(row['visibility'] as String?),
       groupId: row['group_id'] as String?,
       isContact: row['contact'] as bool? ?? false,
+      contactUserId: row['contact_user_id'] as String?,
       hidden: preferences.any((p) => p['hidden'] == true),
       lastSyncedAt: switch (row['last_synced_at']) {
         final String at => DateTime.parse(at),

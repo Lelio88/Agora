@@ -41,4 +41,14 @@ abstract interface class CalendarsRepository {
   /// Nombre de rdv de l'agenda (une série compte pour un), pour prévenir
   /// avant de le supprimer.
   Future<int> countEvents(String calendarId);
+
+  /// Relie l'agenda du proche [calendarId] au membre [userId] de ses
+  /// groupes (`null` : délie) ; son nom devient celui du membre. Hors de
+  /// ses groupes : `NotCoMemberException` ; déjà le proche d'un autre
+  /// agenda : `ContactAlreadyLinkedException`.
+  Future<void> linkContact(String calendarId, String? userId);
+
+  /// Le proche du membre [userId] de ses groupes : l'existant, ou un agenda
+  /// de proche neuf à son nom. Rend son identifiant.
+  Future<String> createMemberContact(String userId);
 }

@@ -14,6 +14,7 @@ import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
 import 'package:agora/src/features/groups/domain/groups_repository.dart';
+import 'package:agora/src/features/groups/domain/member_agenda.dart';
 import 'package:agora/src/features/groups/domain/twin.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -74,6 +75,78 @@ final groupAgendaProvider = FutureProvider.autoDispose
           .watch(groupsRepositoryProvider)
           .fetchGroupAgenda(query.groupId, query.from, query.to),
     );
+
+/// Les membres de tous mes groupes, une fois chacun, sans moi, par nom :
+/// ceux à qui un proche peut être relié.
+final coMembersProvider = FutureProvider.autoDispose<List<GroupMember>>((
+  ref,
+) async {
+  final groups = await ref.watch(myGroupsProvider.future);
+  final lists = await Future.wait([
+    for (final group in groups)
+      ref.watch(groupMembersProvider(group.id).future),
+  ]);
+  final byId = <String, GroupMember>{
+    for (final members in lists)
+      for (final member in members)
+        if (!member.isMe) member.userId: member,
+  };
+  return byId.values.toList()
+    ..sort((a, b) => a.displayName.compareTo(b.displayName));
+});
+
+/// Ce que le membre [MemberAgendaQuery.userId] partage dans mes groupes, sur
+/// une plage.
+final class MemberAgendaQuery {
+  const MemberAgendaQuery({
+    required this.userId,
+    required this.from,
+    required this.to,
+  });
+
+  final String userId;
+  final DateTime from;
+  final DateTime to;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MemberAgendaQuery &&
+      other.userId == userId &&
+      other.from == from &&
+      other.to == to;
+
+  @override
+  int get hashCode => Object.hash(userId, from, to);
+}
+
+/// Les créneaux d'un membre dans les groupes que j'ai en commun avec lui,
+/// réunis ([memberSharedAgenda]) : chacun passe par `group_agenda()`, la
+/// règle de vie privée reste en base.
+final memberAgendaProvider = FutureProvider.autoDispose
+    .family<List<GroupAgendaItem>, MemberAgendaQuery>((ref, query) async {
+      final groups = await ref.watch(myGroupsProvider.future);
+      final members = await Future.wait([
+        for (final group in groups)
+          ref.watch(groupMembersProvider(group.id).future),
+      ]);
+      final common = [
+        for (final (index, group) in groups.indexed)
+          if (members[index].any((m) => m.userId == query.userId)) group.id,
+      ];
+      final agendas = await Future.wait([
+        for (final groupId in common)
+          ref.watch(
+            groupAgendaProvider(
+              GroupAgendaQuery(
+                groupId: groupId,
+                from: query.from,
+                to: query.to,
+              ),
+            ).future,
+          ),
+      ]);
+      return memberSharedAgenda(query.userId, agendas);
+    });
 
 /// Jumeaux d'un groupe dans d'autres apps (Arpente).
 final groupTwinsProvider = FutureProvider.autoDispose

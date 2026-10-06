@@ -9,7 +9,9 @@ import 'fake_calendar_repository.dart';
 
 /// Faux [CalendarsRepository] en mémoire. Par défaut, l'utilisateur a son
 /// seul agenda d'inscription, celui du faux dépôt d'agenda. Comme le
-/// serveur, il refuse de supprimer le dernier agenda natif.
+/// serveur, il refuse de supprimer le dernier agenda natif, ne relie un
+/// proche qu'à un co-membre ([coMembers]), un seul proche par membre, et
+/// donne au proche relié le nom du membre.
 class FakeCalendarsRepository implements CalendarsRepository {
   FakeCalendarsRepository([List<UserCalendar>? calendars])
     : _calendars = [
@@ -33,6 +35,10 @@ class FakeCalendarsRepository implements CalendarsRepository {
 
   /// Nombre de rdv annoncé avant une suppression, par agenda.
   final eventCounts = <String, int>{};
+
+  /// Les co-membres de l'utilisateur et leur nom : les seuls qu'un proche
+  /// peut désigner.
+  final coMembers = <String, String>{};
   AppException? nextError;
   int _nextId = 1;
 
@@ -137,8 +143,63 @@ class FakeCalendarsRepository implements CalendarsRepository {
       lastSyncedAt: old.lastSyncedAt,
       syncError: old.syncError,
       isContact: old.isContact,
+      contactUserId: old.contactUserId,
     );
   }
+
+  @override
+  Future<void> linkContact(String calendarId, String? userId) async {
+    _record('linkContact');
+    final index = _indexOf(calendarId);
+    final old = _calendars[index];
+    if (!old.isContact) throw const CalendarNotFoundException();
+    final name = userId == null ? old.name : coMembers[userId];
+    if (name == null) throw const NotCoMemberException();
+    if (userId != null &&
+        _calendars.any((c) => c.contactUserId == userId && c.id != old.id)) {
+      throw const ContactAlreadyLinkedException();
+    }
+    _calendars[index] = _withLink(old, userId, name);
+  }
+
+  @override
+  Future<String> createMemberContact(String userId) async {
+    _record('createMemberContact');
+    final name = coMembers[userId];
+    if (name == null) throw const NotCoMemberException();
+    final existing = _calendars.where((c) => c.contactUserId == userId);
+    if (existing.isNotEmpty) return existing.first.id;
+    final id = 'cal-new-${_nextId++}';
+    _calendars.add(
+      UserCalendar(
+        id: id,
+        name: name,
+        kind: CalendarKind.native,
+        visibility: EventVisibility.invisible,
+        isContact: true,
+        contactUserId: userId,
+      ),
+    );
+    return id;
+  }
+
+  static UserCalendar _withLink(
+    UserCalendar old,
+    String? userId,
+    String name,
+  ) => UserCalendar(
+    id: old.id,
+    name: name,
+    kind: old.kind,
+    colorHex: old.colorHex,
+    visibility: old.visibility,
+    groupId: old.groupId,
+    hidden: old.hidden,
+    lastSyncedAt: old.lastSyncedAt,
+    syncError: old.syncError,
+    isContact: old.isContact,
+    contactUserId: userId,
+  );
 
   @override
   Future<void> deleteCalendar(String calendarId) async {

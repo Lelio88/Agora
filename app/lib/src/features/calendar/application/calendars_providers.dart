@@ -88,6 +88,17 @@ final class CalendarsService {
   Future<int> countEvents(String calendarId) =>
       _repository.countEvents(calendarId);
 
+  /// Relie le proche [calendarId] au membre [userId] (`null` : délie).
+  Future<void> linkContact(String calendarId, String? userId) =>
+      _then(_repository.linkContact(calendarId, userId));
+
+  /// Le proche du membre [userId] (créé s'il n'existe pas) ; son id.
+  Future<String> createMemberContact(String userId) async {
+    final id = await _repository.createMemberContact(userId);
+    _onChanged();
+    return id;
+  }
+
   Future<void> _then(Future<void> action) async {
     await action;
     _onChanged();

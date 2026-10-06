@@ -2731,6 +2731,108 @@ abstract class AppLocalizations {
   /// **'La fin doit suivre le premier jour travaillé.'**
   String get validationWorkUntil;
 
+  /// Page d'un proche : titre de la ligne qui le relie à un membre de ses groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membre de tes groupes'**
+  String get contactLinkTitle;
+
+  /// Page d'un proche relié à un membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Son nom suit son profil, et ce que ce membre partage dans tes groupes s\'affiche ici.'**
+  String get contactLinkedHint;
+
+  /// Page d'un proche qui n'est relié à aucun membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relie ce proche à un membre de tes groupes pour voir ce que ce membre y partage.'**
+  String get contactNotLinkedHint;
+
+  /// Bouton qui ouvre le choix du membre à relier au proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier'**
+  String get contactLinkButton;
+
+  /// Bouton qui retire le lien entre le proche et le membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délier'**
+  String get contactUnlinkButton;
+
+  /// Titre de la liste des membres à relier au proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relier à un membre'**
+  String get contactPickMemberTitle;
+
+  /// Liste des membres à relier : vide (pas de groupe, ou tous déjà reliés).
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun membre de tes groupes à relier.'**
+  String get contactPickMemberEmpty;
+
+  /// Confirmation : le proche est relié à un membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proche relié.'**
+  String get contactLinkedSaved;
+
+  /// Confirmation : le proche n'est plus relié à un membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien retiré.'**
+  String get contactUnlinkedSaved;
+
+  /// Page d'un proche relié : ce que le membre partage dans les groupes communs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans tes groupes, 7 prochains jours'**
+  String get contactSharedTitle;
+
+  /// Page d'un proche relié : le membre ne partage rien sur la période.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien de partagé ces 7 prochains jours.'**
+  String get contactSharedEmpty;
+
+  /// Éditeur d'un proche relié à un membre : le nom ne se change pas à la main.
+  ///
+  /// In fr, this message translates to:
+  /// **'Son nom suit celui de son profil Agora.'**
+  String get calendarNameFollowsProfile;
+
+  /// Liste des membres : bouton qui crée le proche de ce membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter à mes proches'**
+  String get memberAddContact;
+
+  /// Liste des membres : bouton qui ouvre la page du proche relié à ce membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir sa page de proche'**
+  String get memberOpenContact;
+
+  /// Liste des membres : ce membre est relié à l'un de mes proches (fin de la ligne d'état).
+  ///
+  /// In fr, this message translates to:
+  /// **'dans tes proches'**
+  String get memberIsContact;
+
+  /// Lien refusé : le membre ne partage plus aucun groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette personne ne partage plus de groupe avec toi.'**
+  String get errorNotCoMember;
+
+  /// Lien refusé : le membre est déjà relié à un autre proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette personne est déjà reliée à un autre de tes proches.'**
+  String get errorContactAlreadyLinked;
+
   /// Nom proposé pour le planning importé d'un proche.
   ///
   /// In fr, this message translates to:

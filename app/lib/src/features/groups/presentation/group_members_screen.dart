@@ -8,18 +8,28 @@
 ///   un simple membre ;
 /// - un admin exclut un simple membre ;
 /// - un simple membre n'a aucune action sur les autres.
+///
+/// Chacun, quel que soit son rôle, peut ajouter un autre membre à ses
+/// proches (bouton à côté du menu des rôles) : le proche naît relié à ce
+/// membre, à son nom. Un membre déjà relié à l'un de ses proches le dit
+/// (« dans tes proches »), et le même bouton ouvre la page de ce proche.
+/// Le lien n'est qu'à soi : le membre n'en sait rien.
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
 import 'package:agora/src/exceptions/app_exception_messages.dart';
+import 'package:agora/src/features/calendar/application/calendars_providers.dart';
+import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/groups/presentation/group_labels.dart';
 import 'package:agora/src/features/groups/presentation/invite_sheet.dart';
 import 'package:agora/src/localization/app_localizations.dart';
+import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 enum _MemberAction { makeAdmin, removeAdmin, transfer, remove }
 
@@ -40,6 +50,12 @@ class GroupMembersScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final group = ref.watch(myGroupProvider(groupId)).value;
     final members = ref.watch(groupMembersProvider(groupId));
+    // Mes proches reliés à un membre : identifiant du membre → du proche.
+    final contacts = <String, String>{
+      for (final calendar
+          in ref.watch(calendarsProvider).value ?? const <UserCalendar>[])
+        ?calendar.contactUserId: calendar.id,
+    };
     return Scaffold(
       key: GroupKeys.membersScreen,
       appBar: AppBar(title: Text(l10n.membersTitle)),
@@ -66,6 +82,9 @@ class GroupMembersScreen extends ConsumerWidget {
                 color: memberColor(rank, Theme.of(context).colorScheme),
                 actions: _actionsFor(group?.role, member),
                 onAction: (action) => _onAction(context, ref, member, action),
+                contactId: contacts[member.userId],
+                onContact: () =>
+                    _openContact(context, ref, member, contacts[member.userId]),
               ),
           ],
         ),
@@ -137,6 +156,37 @@ class GroupMembersScreen extends ConsumerWidget {
     }
   }
 
+  /// Ouvre la page du proche [contactId], ou crée d'abord le proche de
+  /// [member].
+  static Future<void> _openContact(
+    BuildContext context,
+    WidgetRef ref,
+    GroupMember member,
+    String? contactId,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    var id = contactId;
+    if (id == null) {
+      try {
+        id = await ref
+            .read(calendarsServiceProvider)
+            .createMemberContact(member.userId);
+      } on Exception catch (error) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(messageForError(error, l10n))),
+        );
+        return;
+      }
+      messenger.showSnackBar(SnackBar(content: Text(l10n.contactSaved)));
+    }
+    if (!context.mounted) return;
+    await context.pushNamed(
+      AppRoute.contact.name,
+      pathParameters: {'calendarId': id},
+    );
+  }
+
   static Future<void> _run(
     BuildContext context,
     Future<void> Function() action,
@@ -161,6 +211,8 @@ class _MemberTile extends StatelessWidget {
     required this.color,
     required this.actions,
     required this.onAction,
+    required this.contactId,
+    required this.onContact,
   });
 
   final GroupMember member;
@@ -168,44 +220,75 @@ class _MemberTile extends StatelessWidget {
   final List<_MemberAction> actions;
   final ValueChanged<_MemberAction> onAction;
 
+  /// Le proche relié à ce membre, s'il y en a un.
+  final String? contactId;
+  final VoidCallback onContact;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final name = member.isMe
         ? '${member.displayName} (${l10n.memberYou})'
         : member.displayName;
+    final isContact = contactId != null;
     return ListTile(
       key: GroupKeys.memberTile(member.userId),
       leading: CircleAvatar(backgroundColor: color, radius: 10),
       title: Text(name),
       subtitle: Text(
-        '${roleLabel(member.role, l10n)} · '
-        '${l10n.memberShares(shareLevelLabel(member.shareLevel, l10n))}',
+        [
+          roleLabel(member.role, l10n),
+          l10n.memberShares(shareLevelLabel(member.shareLevel, l10n)),
+          if (isContact) l10n.memberIsContact,
+        ].join(' · '),
       ),
-      trailing: actions.isEmpty
+      onTap: isContact ? onContact : null,
+      trailing: member.isMe
           ? null
-          : PopupMenuButton<_MemberAction>(
-              key: GroupKeys.memberMenu(member.userId),
-              onSelected: onAction,
-              itemBuilder: (context) => [
-                for (final action in actions)
-                  PopupMenuItem(
-                    key: switch (action) {
-                      _MemberAction.makeAdmin => GroupKeys.makeAdmin,
-                      _MemberAction.removeAdmin => GroupKeys.removeAdmin,
-                      _MemberAction.transfer => GroupKeys.transfer,
-                      _MemberAction.remove => GroupKeys.remove,
-                    },
-                    value: action,
-                    child: Text(switch (action) {
-                      _MemberAction.makeAdmin => l10n.makeAdmin,
-                      _MemberAction.removeAdmin => l10n.removeAdmin,
-                      _MemberAction.transfer => l10n.transferGroup,
-                      _MemberAction.remove => l10n.removeMember,
-                    }),
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  key: GroupKeys.memberContact(member.userId),
+                  tooltip: isContact
+                      ? l10n.memberOpenContact
+                      : l10n.memberAddContact,
+                  icon: Icon(
+                    isContact
+                        ? Icons.contact_page
+                        : Icons.contact_page_outlined,
+                    color: isContact
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
+                  onPressed: onContact,
+                ),
+                if (actions.isNotEmpty) _menu(l10n),
               ],
             ),
     );
   }
+
+  Widget _menu(AppLocalizations l10n) => PopupMenuButton<_MemberAction>(
+    key: GroupKeys.memberMenu(member.userId),
+    onSelected: onAction,
+    itemBuilder: (context) => [
+      for (final action in actions)
+        PopupMenuItem(
+          key: switch (action) {
+            _MemberAction.makeAdmin => GroupKeys.makeAdmin,
+            _MemberAction.removeAdmin => GroupKeys.removeAdmin,
+            _MemberAction.transfer => GroupKeys.transfer,
+            _MemberAction.remove => GroupKeys.remove,
+          },
+          value: action,
+          child: Text(switch (action) {
+            _MemberAction.makeAdmin => l10n.makeAdmin,
+            _MemberAction.removeAdmin => l10n.removeAdmin,
+            _MemberAction.transfer => l10n.transferGroup,
+            _MemberAction.remove => l10n.removeMember,
+          }),
+        ),
+    ],
+  );
 }

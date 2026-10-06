@@ -11,7 +11,9 @@
 /// Un agenda de proche ([isContact]) est celui que l'utilisateur tient pour
 /// quelqu'un d'autre — ses repos, son anniversaire. Il est à lui seul :
 /// toujours invisible pour les groupes, jamais compté comme ses créneaux
-/// pris, jamais son agenda par défaut. Le marquage ne s'enlève pas.
+/// pris, jamais son agenda par défaut. Le marquage ne s'enlève pas. Il peut
+/// désigner un membre de ses groupes ([contactUserId]) : son nom suit alors
+/// celui du membre (en base), et sa page montre ce que ce membre partage.
 ///
 /// Un agenda importé ([CalendarKind.ics]) est en lecture seule : le worker
 /// le relit depuis son lien toutes les 30 minutes. L'app n'en connaît que
@@ -63,6 +65,7 @@ final class UserCalendar {
     this.lastSyncedAt,
     this.syncError,
     this.isContact = false,
+    this.contactUserId,
   });
 
   final String id;
@@ -87,6 +90,11 @@ final class UserCalendar {
   /// L'agenda d'un proche, tenu pour lui seul.
   final bool isContact;
 
+  /// Le membre de groupe que ce proche désigne, s'il est relié.
+  final String? contactUserId;
+
+  bool get isLinkedToMember => contactUserId != null;
+
   bool get isPersonal => groupId == null;
 
   bool get isImported => kind == CalendarKind.ics;
@@ -106,6 +114,7 @@ final class UserCalendar {
     lastSyncedAt: lastSyncedAt,
     syncError: syncError,
     isContact: isContact,
+    contactUserId: contactUserId,
   );
 }
 

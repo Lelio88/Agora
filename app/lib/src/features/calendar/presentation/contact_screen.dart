@@ -30,6 +30,7 @@ import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_actions.dart';
 import 'package:agora/src/features/calendar/presentation/contact_event_editor.dart';
+import 'package:agora/src/features/calendar/presentation/contact_member_section.dart';
 import 'package:agora/src/features/calendar/presentation/event_actions.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
@@ -155,6 +156,7 @@ class _ContactPage extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 88),
           children: [
             _PrivacyNote(calendar: calendar),
+            ContactMemberLink(calendar: calendar),
             _NowSection(items: list),
             if (canWrite)
               _Shortcuts(
@@ -194,6 +196,8 @@ class _ContactPage extends ConsumerWidget {
                     )
                   : null,
             ),
+            if (calendar.contactUserId case final userId?)
+              ContactSharedAgenda(userId: userId),
           ],
         ),
       ),

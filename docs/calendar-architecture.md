@@ -120,6 +120,18 @@ Migration : `20260921220000_calendar_management.sql`.
   n'a ni raccourci ni ajout). Ces lectures passent par `agendaProvider`, pas l'agenda visible :
   masquer un proche de sa vue ne fait pas oublier son anniversaire. L'éditeur de rdv n'offre
   pas de réglage de visibilité dans l'agenda d'un proche.
+- **Proche relié à un membre** (`20261008120000_contact_member.sql`, test
+  `contact_member_test.sql`) : `calendars.contact_user_id` désigne un co-membre de groupe. Il se
+  pose depuis la page du proche (« Relier », parmi `coMembersProvider` moins les membres déjà
+  reliés) ou depuis la liste des membres d'un groupe (« Ajouter à mes proches » :
+  `create_member_contact` rend le proche existant ou en crée un à son nom). Relié, le proche
+  prend le nom du membre et le suit **en base** (trigger sur `profiles`) tant qu'ils partagent un
+  groupe : l'app, l'assistant et la liste des proches lisent le même `calendars.name`, et
+  l'éditeur d'agenda ne laisse pas le changer à la main. Sa page montre ce que ce membre partage
+  dans les groupes communs, sept jours (`ContactSharedAgenda`, `memberAgendaProvider` :
+  `group_agenda()` groupe par groupe, réunis par `memberSharedAgenda`). Le lien n'appartient
+  qu'au propriétaire (RLS des agendas) : le membre n'en sait rien. Il ne change rien à la vie
+  privée des rdv du proche, toujours hors des vues de groupe.
 - **Masquer un agenda dans SA vue** : `public.calendar_preferences (user_id, calendar_id,
   hidden)`, une ligne par personne et par agenda (prête pour les agendas de groupe). C'est de
   l'**affichage**, pas de la vie privée : rien ne change pour les groupes. L'app filtre
@@ -263,6 +275,7 @@ Migration : `20260921220000_calendar_management.sql`.
 | `supabase/migrations/20260921194052_replace_occurrence.sql` | `replace_occurrence` |
 | `supabase/migrations/20260921220000_calendar_management.sql` | agendas multiples : déplacement entre agendas, `delete_calendar`, `calendar_preferences` |
 | `supabase/migrations/20260921220100_update_series.sql` | `update_series` ; `my_agenda` (règle de la série sur une occurrence modifiée) |
+| `supabase/migrations/20261007120000_contact_calendars.sql` · `20261008120000_contact_member.sql` | agendas de proches ; lien d'un proche à un co-membre (`link_contact`, `create_member_contact`, nom suivi) |
 | `supabase/tests/agenda_test.sql` | tests pgTAP : lecture, exceptions, triggers, agenda de groupe, publication temps réel, droits du worker |
 | `supabase/tests/calendars_test.sql` · `series_move_test.sql` | agendas multiples ; décalage d'une série (fuseau, heure d'été, journée entière) |
 | `worker/recurrence/expand.go` · `service.go` · `pgstore.go` | dépliage, orchestration, Postgres |
