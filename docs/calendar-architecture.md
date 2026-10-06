@@ -171,7 +171,12 @@ Migration : `20260921220000_calendar_management.sql`.
   (« lun. », `agendaComponents`).
 - **Vue mois d'un téléphone** (moins de 600 px, agenda perso) : une **pastille** par rdv (barre de
   la couleur de son agenda, sans texte) et, dessous, la liste du jour choisi ; toucher un jour le
-  choisit au lieu de créer un rdv. Des titres tronqués à trois lettres ne se lisaient pas.
+  choisit au lieu de créer un rdv. Des titres tronqués à trois lettres ne se lisaient pas. Une
+  ligne du mois ne fait qu'une soixantaine de dp : le numéro du jour y passe à 28 dp, sans la
+  zone tactile de 48 dp qu'un bouton garde même désactivé, sinon une seule pastille tenait et la
+  suivante devenait « +1 ». Ces thèmes enveloppent l'agenda en permanence (vides hors du mois
+  d'un téléphone) : les poser seulement à l'entrée dans la vue recréait kalender, dont les
+  écouteurs visaient alors un widget détaché.
 - **Un appui sur un de mes rdv ouvre sa fiche de lecture** (`event_sheet.dart`) : quand, où (avec
   « Y aller »), répétition, agenda, ce qu'en voient les groupes (« Pour toi seul » pour un
   proche), puis Modifier et Supprimer, qui passent par `event_actions.dart`. Le planning importé

@@ -161,6 +161,26 @@ void main() {
     robot.expectText('Rien de noté ce jour-là.');
   });
 
+  testWidgets('on a real phone, going to the month and back keeps working', (
+    tester,
+  ) async {
+    // Un 1080 × 1920 à 420 ppp : 411 × 731 dp. Le thème du mois, posé
+    // seulement en vue mois, recréait kalender au changement de vue.
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      screenSize: const Size(411, 731),
+      calendar: FakeCalendarRepository()..seed(_event('Piscine')),
+    );
+
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.month);
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.week);
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.month);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(CalendarKeys.monthDayList), findsOneWidget);
+  });
+
   testWidgets('shown calendars cover mine, my close ones and my groups', (
     tester,
   ) async {

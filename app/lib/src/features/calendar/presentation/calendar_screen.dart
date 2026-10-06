@@ -298,38 +298,42 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             flex: 3,
             child: AsyncValueWidget<List<AgendaItem>>(
               value: agenda,
-              data: (_) => KalenderView(
-                eventsController: _eventsController,
-                kalenderController: _kalenderController,
-                viewConfiguration: agendaViewConfiguration(context, _view),
-                components: agendaComponents(context),
-                locale: Localizations.localeOf(context),
-                callbacks: KalenderCallbacks(
-                  onEventTapped: (event) {
-                    if (event is! AgendaEvent) return;
-                    _openItem(event.item, event.calendar);
-                  },
-                  onEventChanged: _moveEvent,
-                  onTapped: _onSlotTapped,
-                ),
-                // Les journées entières vivent dans l'en-tête : sans ses
-                // propres tuiles, kalender les dessine sans titre.
-                header: KalenderHeader(
-                  multiDayTileComponents: _tileComponents,
-                  interaction: _interaction,
-                ),
-                body: KalenderBody(
-                  multiDayTileComponents: _tileComponents,
-                  monthTileComponents: isPhoneMonth
-                      ? _barComponents
-                      : _tileComponents,
-                  monthBodyConfiguration: isPhoneMonth
-                      ? const MonthBodyConfiguration(tileHeight: _barHeight)
-                      : null,
-                  scheduleTileComponents: const ScheduleTileComponents(
-                    tileBuilder: _buildTile,
+              data: (_) => _phoneMonthTheme(
+                context,
+                enabled: isPhoneMonth,
+                child: KalenderView(
+                  eventsController: _eventsController,
+                  kalenderController: _kalenderController,
+                  viewConfiguration: agendaViewConfiguration(context, _view),
+                  components: agendaComponents(context),
+                  locale: Localizations.localeOf(context),
+                  callbacks: KalenderCallbacks(
+                    onEventTapped: (event) {
+                      if (event is! AgendaEvent) return;
+                      _openItem(event.item, event.calendar);
+                    },
+                    onEventChanged: _moveEvent,
+                    onTapped: _onSlotTapped,
                   ),
-                  interaction: _interaction,
+                  // Les journées entières vivent dans l'en-tête : sans ses
+                  // propres tuiles, kalender les dessine sans titre.
+                  header: KalenderHeader(
+                    multiDayTileComponents: _tileComponents,
+                    interaction: _interaction,
+                  ),
+                  body: KalenderBody(
+                    multiDayTileComponents: _tileComponents,
+                    monthTileComponents: isPhoneMonth
+                        ? _barComponents
+                        : _tileComponents,
+                    monthBodyConfiguration: isPhoneMonth
+                        ? const MonthBodyConfiguration(tileHeight: _barHeight)
+                        : null,
+                    scheduleTileComponents: const ScheduleTileComponents(
+                      tileBuilder: _buildTile,
+                    ),
+                    interaction: _interaction,
+                  ),
                 ),
               ),
             ),
@@ -430,6 +434,41 @@ const _tileComponents = TileComponents(tileBuilder: _buildTile);
 
 /// Hauteur d'une pastille de la vue mois d'un téléphone.
 const _barHeight = 7.0;
+
+/// Sur un téléphone, une ligne du mois ne fait qu'une soixantaine de dp, et
+/// le numéro du jour, à sa taille par défaut, en prenait l'essentiel : une
+/// seule pastille tenait, la suivante devenait « +1 ». Un numéro de 28 dp,
+/// sans la zone tactile de 48 dp qu'un bouton garde même désactivé (le
+/// numéro ne se touche pas), en laisse tenir plusieurs.
+///
+/// Les thèmes enveloppent toujours l'agenda, inchangés hors du mois d'un
+/// téléphone : les ajouter seulement en changeant de vue recréerait
+/// kalender, dont les écouteurs viseraient alors un widget détaché.
+Widget _phoneMonthTheme(
+  BuildContext context, {
+  required bool enabled,
+  required Widget child,
+}) {
+  final theme = Theme.of(context);
+  return Theme(
+    data: enabled
+        ? theme.copyWith(
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          )
+        : theme,
+    child: KalenderTheme(
+      data: enabled ? _phoneMonthThemeData : const KalenderThemeData(),
+      child: child,
+    ),
+  );
+}
+
+const _phoneMonthThemeData = KalenderThemeData(
+  monthDayHeaderStyle: MonthDayHeaderStyle(
+    buttonSize: Size(28, 28),
+    margin: EdgeInsets.only(top: 2),
+  ),
+);
 
 const _barComponents = TileComponents(tileBuilder: _buildBar);
 
