@@ -59,7 +59,7 @@ void main() {
 
     expect(robot.auth.calls, contains('resendSignUpCode'));
     robot.expectScreen(AuthKeys.verifyEmailScreen);
-    robot.expectText('Saisissez le code à 6 chiffres envoyé à zoe@test.local.');
+    robot.expectText('Saisis le code à 6 chiffres envoyé à zoe@test.local.');
   });
 
   testWidgets('sign-up sends name, language and device time zone', (
@@ -99,7 +99,7 @@ void main() {
     robot.expectScreen(AuthKeys.verifyEmailScreen);
     robot.expectText(
       'Cette adresse a déjà un compte ? Aucun code n’arrivera : '
-      'connectez-vous, ou passez par « Mot de passe oublié ».',
+      'connecte-toi, ou passe par « Mot de passe oublié ».',
     );
     await robot.tap(AuthKeys.forgotPasswordLink);
     robot.expectScreen(AuthKeys.forgotPasswordScreen);

@@ -107,7 +107,7 @@ abstract class AppLocalizations {
   /// Accroche de l'écran de connexion et de l'accueil.
   ///
   /// In fr, this message translates to:
-  /// **'Vos agendas, ensemble.'**
+  /// **'Tes agendas, ensemble.'**
   String get homeTagline;
 
   /// Salutation de l'accueil, avec le nom affiché du profil.
@@ -221,13 +221,13 @@ abstract class AppLocalizations {
   /// Explication sous le titre de la confirmation d'adresse. Ne pas affirmer qu'un code est parti : pour une adresse déjà inscrite, rien n'est envoyé, et l'écran ne doit pas le révéler.
   ///
   /// In fr, this message translates to:
-  /// **'Saisissez le code à 6 chiffres envoyé à {email}.'**
+  /// **'Saisis le code à 6 chiffres envoyé à {email}.'**
   String verifyEmailInstructions(String email);
 
   /// Indication affichée à tous sur l'écran du code d'inscription : l'inscription répond pareil qu'une adresse ait un compte ou non, c'est ce texte qui oriente le titulaire sans rien révéler.
   ///
   /// In fr, this message translates to:
-  /// **'Cette adresse a déjà un compte ? Aucun code n’arrivera : connectez-vous, ou passez par « Mot de passe oublié ».'**
+  /// **'Cette adresse a déjà un compte ? Aucun code n’arrivera : connecte-toi, ou passe par « Mot de passe oublié ».'**
   String get verifyEmailExistingAccountHint;
 
   /// Bouton qui valide le code de confirmation.
@@ -784,7 +784,7 @@ abstract class AppLocalizations {
   /// Refus de supprimer le dernier agenda de l'utilisateur.
   ///
   /// In fr, this message translates to:
-  /// **'Gardez au moins un agenda : c\'est là que se rangent vos nouveaux rendez-vous.'**
+  /// **'Garde au moins un agenda : c\'est là que se rangent tes nouveaux rendez-vous.'**
   String get errorLastCalendar;
 
   /// L'agenda a été supprimé entre-temps, ou n'appartient pas à l'utilisateur.
@@ -874,7 +874,7 @@ abstract class AppLocalizations {
   /// Explique pourquoi le dernier agenda n'a pas de bouton de suppression.
   ///
   /// In fr, this message translates to:
-  /// **'Votre seul agenda ne peut pas être supprimé.'**
+  /// **'Ton seul agenda ne peut pas être supprimé.'**
   String get lastCalendarHint;
 
   /// Choix de l'agenda où ranger un rendez-vous.
@@ -910,7 +910,7 @@ abstract class AppLocalizations {
   /// Action sur un groupe dont on n'est pas membre.
   ///
   /// In fr, this message translates to:
-  /// **'Vous ne faites pas partie de ce groupe.'**
+  /// **'Tu ne fais pas partie de ce groupe.'**
   String get errorNotGroupMember;
 
   /// Action réservée au propriétaire du groupe.
@@ -940,7 +940,7 @@ abstract class AppLocalizations {
   /// Liste des groupes vide.
   ///
   /// In fr, this message translates to:
-  /// **'Aucun groupe pour l\'instant. Créez-en un, ou rejoignez celui d\'un proche avec son code.'**
+  /// **'Aucun groupe pour l\'instant. Crées-en un, ou rejoins celui d\'un proche avec son code.'**
   String get noGroups;
 
   /// Bouton de création d'un groupe.
@@ -976,7 +976,7 @@ abstract class AppLocalizations {
   /// Sous-titre d'un groupe : ce que l'utilisateur y partage.
   ///
   /// In fr, this message translates to:
-  /// **'Vous partagez : {level}'**
+  /// **'Tu partages : {level}'**
   String groupMyShare(String level);
 
   /// Titre du formulaire de création d'un groupe.
@@ -1048,7 +1048,7 @@ abstract class AppLocalizations {
   /// Question du niveau de partage, posée en rejoignant.
   ///
   /// In fr, this message translates to:
-  /// **'Que verront les autres membres de votre agenda ?'**
+  /// **'Que verront les autres membres de ton agenda ?'**
   String get joinShareQuestion;
 
   /// Niveau de partage : les détails des rdv.
@@ -1072,7 +1072,7 @@ abstract class AppLocalizations {
   /// Précision sous le choix du partage.
   ///
   /// In fr, this message translates to:
-  /// **'Vous pourrez changer ce choix à tout moment dans le groupe. Vos agendas et rendez-vous masqués restent masqués.'**
+  /// **'Tu pourras changer ce choix à tout moment dans le groupe. Tes agendas et rendez-vous masqués restent masqués.'**
   String get shareHint;
 
   /// Bouton pour rejoindre le groupe.
@@ -1084,7 +1084,7 @@ abstract class AppLocalizations {
   /// L'invitation vise un groupe dont on est membre.
   ///
   /// In fr, this message translates to:
-  /// **'Vous faites déjà partie de ce groupe.'**
+  /// **'Tu fais déjà partie de ce groupe.'**
   String get alreadyMember;
 
   /// Bouton qui ouvre le groupe.
@@ -1114,7 +1114,7 @@ abstract class AppLocalizations {
   /// Désigne l'utilisateur dans la liste des membres.
   ///
   /// In fr, this message translates to:
-  /// **'Vous'**
+  /// **'Toi'**
   String get memberYou;
 
   /// Créneau d'un membre qui ne partage pas le détail.
@@ -1156,19 +1156,19 @@ abstract class AppLocalizations {
   /// Conséquence du départ d'un groupe.
   ///
   /// In fr, this message translates to:
-  /// **'Vous ne verrez plus l\'agenda du groupe, et le groupe ne verra plus le vôtre.'**
+  /// **'Tu ne verras plus l\'agenda du groupe, et le groupe ne verra plus le tien.'**
   String get leaveGroupBody;
 
   /// Confirmation après avoir quitté un groupe.
   ///
   /// In fr, this message translates to:
-  /// **'Vous avez quitté le groupe.'**
+  /// **'Tu as quitté le groupe.'**
   String get leftGroup;
 
   /// Le propriétaire ne quitte pas sans transmettre.
   ///
   /// In fr, this message translates to:
-  /// **'Transmettez d\'abord le groupe à un autre membre pour pouvoir le quitter.'**
+  /// **'Transmets d\'abord le groupe à un autre membre pour pouvoir le quitter.'**
   String get ownerMustTransfer;
 
   /// Entrée de menu : supprimer le groupe.
@@ -1240,7 +1240,7 @@ abstract class AppLocalizations {
   /// Conséquence de la transmission du groupe.
   ///
   /// In fr, this message translates to:
-  /// **'{name} en deviendra propriétaire ; vous resterez admin.'**
+  /// **'{name} en deviendra propriétaire ; tu resteras admin.'**
   String transferBody(String name);
 
   /// Action : exclure un membre.
@@ -1336,7 +1336,7 @@ abstract class AppLocalizations {
   /// Nombre maximal d'agendas importés atteint.
   ///
   /// In fr, this message translates to:
-  /// **'Vous avez déjà importé 10 agendas : supprimez-en un pour en ajouter un autre.'**
+  /// **'Tu as déjà importé 10 agendas : supprimes-en un pour en ajouter un autre.'**
   String get errorTooManyFeeds;
 
   /// Titre de l'écran d'import et de l'entrée qui l'ouvre dans « Mes agendas ».
@@ -1366,13 +1366,13 @@ abstract class AppLocalizations {
   /// Rassure sur le lien d'import, qui est un secret.
   ///
   /// In fr, this message translates to:
-  /// **'Ce lien ouvre tout votre agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à vos groupes.'**
+  /// **'Ce lien ouvre tout ton agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à tes groupes.'**
   String get importUrlPrivacy;
 
   /// Erreur de saisie du lien d'import.
   ///
   /// In fr, this message translates to:
-  /// **'Collez un lien qui commence par https:// ou webcal://, sans espace.'**
+  /// **'Colle un lien qui commence par https:// ou webcal://, sans espace.'**
   String get validationFeedUrl;
 
   /// Titre de l'aide qui explique où trouver le lien iCal.
@@ -1384,19 +1384,19 @@ abstract class AppLocalizations {
   /// Où trouver le lien iCal dans Google Agenda.
   ///
   /// In fr, this message translates to:
-  /// **'Sur ordinateur : Paramètres → votre agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».'**
+  /// **'Sur ordinateur : Paramètres → ton agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».'**
   String get importHelpGoogle;
 
   /// Où trouver le lien iCal dans Outlook.
   ///
   /// In fr, this message translates to:
-  /// **'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisissez l\'agenda, puis copiez le lien ICS.'**
+  /// **'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisis l\'agenda, puis copie le lien ICS.'**
   String get importHelpOutlook;
 
   /// Où trouver le lien iCal dans Apple Calendrier (iCloud).
   ///
   /// In fr, this message translates to:
-  /// **'App Calendrier → partager l\'agenda → cochez « Calendrier public » → copiez le lien webcal://.'**
+  /// **'App Calendrier → partager l\'agenda → coche « Calendrier public » → copie le lien webcal://.'**
   String get importHelpApple;
 
   /// Fréquence de relecture d'un agenda importé, et lecture seule.
@@ -1504,7 +1504,7 @@ abstract class AppLocalizations {
   /// Explique sur la fiche d'un rdv importé ce qu'on peut y faire.
   ///
   /// In fr, this message translates to:
-  /// **'Rendez-vous importé : modifiez-le dans l\'agenda d\'origine. Vous choisissez ici ce qu\'en voient vos groupes.'**
+  /// **'Rendez-vous importé : modifie-le dans l\'agenda d\'origine. Tu choisis ici ce qu\'en voient tes groupes.'**
   String get importedEventReadOnly;
 
   /// Le réglage de visibilité d'une occurrence importée vaut pour la série.
@@ -1594,13 +1594,13 @@ abstract class AppLocalizations {
   /// Précise qu'on répond occurrence par occurrence.
   ///
   /// In fr, this message translates to:
-  /// **'Rendez-vous répété : votre réponse vaut pour cette date.'**
+  /// **'Rendez-vous répété : ta réponse vaut pour cette date.'**
   String get occurrenceResponseNote;
 
   /// Auteur d'un rendez-vous de groupe quand c'est l'utilisateur.
   ///
   /// In fr, this message translates to:
-  /// **'Proposé par vous'**
+  /// **'Proposé par toi'**
   String get proposedByMe;
 
   /// Bouton de l'agenda d'un groupe : chercher un créneau commun.

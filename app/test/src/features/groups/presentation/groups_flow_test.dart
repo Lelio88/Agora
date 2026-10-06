@@ -257,7 +257,7 @@ void main() {
 
     robot.expectScreen(GroupKeys.listScreen);
     expect(find.byKey(GroupKeys.groupTile('g-coloc')), findsNothing);
-    robot.expectText('Vous avez quitté le groupe.');
+    robot.expectText('Tu as quitté le groupe.');
   });
 
   testWidgets('the owner must hand the group over before leaving', (
@@ -273,7 +273,7 @@ void main() {
     await robot.tap(GroupKeys.leave);
 
     robot.expectText(
-      'Transmettez d\'abord le groupe à un autre membre pour pouvoir le quitter.',
+      'Transmets d\'abord le groupe à un autre membre pour pouvoir le quitter.',
     );
     expect(groups.calls, isNot(contains('leaveGroup')));
   });

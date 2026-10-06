@@ -106,7 +106,7 @@ void main() {
     await _fillImport(robot, link: 'http://calendar.example.com/a.ics');
 
     robot.expectText(
-      'Collez un lien qui commence par https:// ou webcal://, sans espace.',
+      'Colle un lien qui commence par https:// ou webcal://, sans espace.',
     );
     expect(robot.calendars.calls, isNot(contains('importCalendar')));
   });
@@ -124,7 +124,7 @@ void main() {
     await robot.tap(CalendarKeys.importSave);
 
     robot.expectText(
-      'Vous avez déjà importé 10 agendas : supprimez-en un pour en ajouter '
+      'Tu as déjà importé 10 agendas : supprimes-en un pour en ajouter '
       'un autre.',
     );
   });

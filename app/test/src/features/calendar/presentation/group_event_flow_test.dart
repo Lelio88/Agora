@@ -132,7 +132,7 @@ void main() {
     robot.expectScreen(CalendarKeys.groupEventScreen);
     robot.expectText('Proposé par Léa');
     expect(find.byKey(CalendarKeys.groupEventEdit), findsNothing);
-    expect(_inSection(CalendarKeys.noResponseSection, 'Vous'), findsOne);
+    expect(_inSection(CalendarKeys.noResponseSection, 'Toi'), findsOne);
 
     await robot.tap(CalendarKeys.responseOption(ResponseStatus.yes));
 
@@ -141,7 +141,7 @@ void main() {
     });
     robot.expectText('Réponse enregistrée.');
     expect(
-      _inSection(CalendarKeys.responseSection(ResponseStatus.yes), 'Vous'),
+      _inSection(CalendarKeys.responseSection(ResponseStatus.yes), 'Toi'),
       findsOne,
     );
     expect(_inSection(CalendarKeys.noResponseSection, 'Léa, Max'), findsOne);
@@ -258,9 +258,7 @@ void main() {
     final robot = await _pump(tester, calendar: calendar);
 
     await robot.tapEvent('Entraînement');
-    robot.expectText(
-      'Rendez-vous répété : votre réponse vaut pour cette date.',
-    );
+    robot.expectText('Rendez-vous répété : ta réponse vaut pour cette date.');
     await robot.tap(CalendarKeys.responseOption(ResponseStatus.no));
 
     expect(calendar.responses.keys.single, ResponseKey('evt-training', first));

@@ -38,7 +38,7 @@ Topologie rapide :
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
 5. **Le worker est l'unique implémentation des RRULE** : l'app lit l'agenda par `my_agenda()`, jamais la ligne maîtresse d'une série. Il n'écrit les rdv importés que par `private.ics_apply`, jamais `events.visibility`, note un échec par un code connu (jamais le texte d'une erreur, qui contiendrait l'URL) et contrôle le SSRF sur l'adresse **résolue** à chaque connexion. `AGORA_ICS_ALLOW_PRIVATE_NETWORK` ne se pose qu'en local.
 6. **Couplage Flutter** : `presentation` n'importe jamais `data`, et seule la composition root branche les implémentations. Les erreurs sont des `AppException` scellées ; seul `AppLogger` journalise.
-7. **Deux langues** : toute chaîne d'interface naît dans `app_fr.arb` (avec sa description) et reçoit sa traduction dans `app_en.arb`, dans le même commit.
+7. **Deux langues** : toute chaîne d'interface naît dans `app_fr.arb` (avec sa description) et reçoit sa traduction dans `app_en.arb`, dans le même commit. **L'app tutoie** (écrans, e-mails, bot Discord, assistant) ; la fiche Play, le site et les pages légales vouvoient.
 
 ## V. Flux de Travail (Explore → Plan → Code → Verify)
 

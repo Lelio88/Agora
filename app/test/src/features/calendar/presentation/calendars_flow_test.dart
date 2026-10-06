@@ -132,7 +132,7 @@ void main() {
     await robot.tap(CalendarKeys.calendarTile(_personal.id));
 
     expect(find.byKey(CalendarKeys.calendarDelete), findsNothing);
-    robot.expectText('Votre seul agenda ne peut pas être supprimé.');
+    robot.expectText('Ton seul agenda ne peut pas être supprimé.');
   });
 
   testWidgets('the event editor files a new event in the chosen calendar', (

@@ -13,7 +13,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appTitle => 'Agora';
 
   @override
-  String get homeTagline => 'Vos agendas, ensemble.';
+  String get homeTagline => 'Tes agendas, ensemble.';
 
   @override
   String homeGreeting(String name) {
@@ -74,12 +74,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String verifyEmailInstructions(String email) {
-    return 'Saisissez le code à 6 chiffres envoyé à $email.';
+    return 'Saisis le code à 6 chiffres envoyé à $email.';
   }
 
   @override
   String get verifyEmailExistingAccountHint =>
-      'Cette adresse a déjà un compte ? Aucun code n’arrivera : connectez-vous, ou passez par « Mot de passe oublié ».';
+      'Cette adresse a déjà un compte ? Aucun code n’arrivera : connecte-toi, ou passe par « Mot de passe oublié ».';
 
   @override
   String get verifyButton => 'Valider';
@@ -383,7 +383,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorLastCalendar =>
-      'Gardez au moins un agenda : c\'est là que se rangent vos nouveaux rendez-vous.';
+      'Garde au moins un agenda : c\'est là que se rangent tes nouveaux rendez-vous.';
 
   @override
   String get errorCalendarNotFound => 'Cet agenda n\'existe plus.';
@@ -442,7 +442,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get calendarDeleted => 'Agenda supprimé.';
 
   @override
-  String get lastCalendarHint => 'Votre seul agenda ne peut pas être supprimé.';
+  String get lastCalendarHint => 'Ton seul agenda ne peut pas être supprimé.';
 
   @override
   String get eventCalendarLabel => 'Agenda';
@@ -463,7 +463,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce code d\'invitation n\'est pas valable : inconnu, expiré ou déjà utilisé.';
 
   @override
-  String get errorNotGroupMember => 'Vous ne faites pas partie de ce groupe.';
+  String get errorNotGroupMember => 'Tu ne fais pas partie de ce groupe.';
 
   @override
   String get errorNotGroupOwner =>
@@ -481,7 +481,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noGroups =>
-      'Aucun groupe pour l\'instant. Créez-en un, ou rejoignez celui d\'un proche avec son code.';
+      'Aucun groupe pour l\'instant. Crées-en un, ou rejoins celui d\'un proche avec son code.';
 
   @override
   String get newGroupButton => 'Nouveau groupe';
@@ -500,7 +500,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String groupMyShare(String level) {
-    return 'Vous partagez : $level';
+    return 'Tu partages : $level';
   }
 
   @override
@@ -548,7 +548,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get joinShareQuestion =>
-      'Que verront les autres membres de votre agenda ?';
+      'Que verront les autres membres de ton agenda ?';
 
   @override
   String get shareDetails => 'Tout : titres et lieux';
@@ -561,13 +561,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shareHint =>
-      'Vous pourrez changer ce choix à tout moment dans le groupe. Vos agendas et rendez-vous masqués restent masqués.';
+      'Tu pourras changer ce choix à tout moment dans le groupe. Tes agendas et rendez-vous masqués restent masqués.';
 
   @override
   String get joinButton => 'Rejoindre';
 
   @override
-  String get alreadyMember => 'Vous faites déjà partie de ce groupe.';
+  String get alreadyMember => 'Tu fais déjà partie de ce groupe.';
 
   @override
   String get openGroupButton => 'Ouvrir le groupe';
@@ -584,7 +584,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get inviteTooltip => 'Inviter';
 
   @override
-  String get memberYou => 'Vous';
+  String get memberYou => 'Toi';
 
   @override
   String get busyLabel => 'Occupé';
@@ -608,14 +608,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get leaveGroupBody =>
-      'Vous ne verrez plus l\'agenda du groupe, et le groupe ne verra plus le vôtre.';
+      'Tu ne verras plus l\'agenda du groupe, et le groupe ne verra plus le tien.';
 
   @override
-  String get leftGroup => 'Vous avez quitté le groupe.';
+  String get leftGroup => 'Tu as quitté le groupe.';
 
   @override
   String get ownerMustTransfer =>
-      'Transmettez d\'abord le groupe à un autre membre pour pouvoir le quitter.';
+      'Transmets d\'abord le groupe à un autre membre pour pouvoir le quitter.';
 
   @override
   String get deleteGroup => 'Supprimer le groupe';
@@ -659,7 +659,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String transferBody(String name) {
-    return '$name en deviendra propriétaire ; vous resterez admin.';
+    return '$name en deviendra propriétaire ; tu resteras admin.';
   }
 
   @override
@@ -716,7 +716,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorTooManyFeeds =>
-      'Vous avez déjà importé 10 agendas : supprimez-en un pour en ajouter un autre.';
+      'Tu as déjà importé 10 agendas : supprimes-en un pour en ajouter un autre.';
 
   @override
   String get importCalendarTitle => 'Importer un agenda';
@@ -732,26 +732,26 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get importUrlPrivacy =>
-      'Ce lien ouvre tout votre agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à vos groupes.';
+      'Ce lien ouvre tout ton agenda : il reste sur le serveur d\'Agora, qui ne le montre à personne, pas même à tes groupes.';
 
   @override
   String get validationFeedUrl =>
-      'Collez un lien qui commence par https:// ou webcal://, sans espace.';
+      'Colle un lien qui commence par https:// ou webcal://, sans espace.';
 
   @override
   String get importHelpTitle => 'Où trouver ce lien ?';
 
   @override
   String get importHelpGoogle =>
-      'Sur ordinateur : Paramètres → votre agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».';
+      'Sur ordinateur : Paramètres → ton agenda → Intégrer l\'agenda → « Adresse secrète au format iCal ».';
 
   @override
   String get importHelpOutlook =>
-      'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisissez l\'agenda, puis copiez le lien ICS.';
+      'Paramètres → Calendrier → Calendriers partagés → Publier un calendrier → choisis l\'agenda, puis copie le lien ICS.';
 
   @override
   String get importHelpApple =>
-      'App Calendrier → partager l\'agenda → cochez « Calendrier public » → copiez le lien webcal://.';
+      'App Calendrier → partager l\'agenda → coche « Calendrier public » → copie le lien webcal://.';
 
   @override
   String get importHelpRefresh =>
@@ -817,7 +817,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get importedEventReadOnly =>
-      'Rendez-vous importé : modifiez-le dans l\'agenda d\'origine. Vous choisissez ici ce qu\'en voient vos groupes.';
+      'Rendez-vous importé : modifie-le dans l\'agenda d\'origine. Tu choisis ici ce qu\'en voient tes groupes.';
 
   @override
   String get importedEventSeriesNote => 'S\'applique à toute la série.';
@@ -867,10 +867,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get occurrenceResponseNote =>
-      'Rendez-vous répété : votre réponse vaut pour cette date.';
+      'Rendez-vous répété : ta réponse vaut pour cette date.';
 
   @override
-  String get proposedByMe => 'Proposé par vous';
+  String get proposedByMe => 'Proposé par toi';
 
   @override
   String get findSlotTooltip => 'Trouver un créneau';
