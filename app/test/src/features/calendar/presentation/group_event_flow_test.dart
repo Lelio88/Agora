@@ -213,6 +213,47 @@ void main() {
     robot.expectText('Rendez-vous proposé au groupe.');
   });
 
+  testWidgets('a change to my agendas keeps the proposal being typed', (
+    tester,
+  ) async {
+    final robot = await _pump(tester, calendar: FakeCalendarRepository());
+
+    await robot.openGroup(_groupId);
+    await robot.tap(GroupKeys.proposeEvent);
+    await robot.enter(CalendarKeys.title, 'Apéro');
+    // Un agenda change ailleurs : le temps réel relit la liste, le temps
+    // d'un aller-retour réseau.
+    robot.calendars
+      ..fetchLatency = const Duration(milliseconds: 300)
+      ..pushFromServer(
+        const UserCalendar(
+          id: 'cal-foot',
+          name: 'Nouveau nom',
+          kind: CalendarKind.native,
+          groupId: _groupId,
+        ),
+      );
+    // Une image pendant l'aller-retour, puis sa fin : un seul saut de temps
+    // ne dessinerait pas l'état intermédiaire.
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 400));
+    await robot.settle();
+
+    robot.expectScreen(CalendarKeys.editor);
+    expect(
+      tester
+          .widget<EditableText>(
+            find.descendant(
+              of: find.byKey(CalendarKeys.title),
+              matching: find.byType(EditableText),
+            ),
+          )
+          .controller
+          .text,
+      'Apéro',
+    );
+  });
+
   testWidgets('a group event in my agenda opens its card, not the editor', (
     tester,
   ) async {

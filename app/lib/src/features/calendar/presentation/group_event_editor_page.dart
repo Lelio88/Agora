@@ -2,9 +2,12 @@
 /// l'agenda du groupe. Ouvert par la route `/groups/:groupId/events/new`
 /// (depuis l'agenda du groupe) ; rend `true` une fois le rdv créé.
 ///
-/// Choix non évident : l'écran du groupe (feature groupes) ne connaît ni
-/// l'éditeur ni le service de l'agenda ; il ouvre cette page par son nom de
-/// route, et la page fait tout, jusqu'à l'enregistrement.
+/// Choix non évidents :
+/// - l'écran du groupe (feature groupes) ne connaît ni l'éditeur ni le
+///   service de l'agenda ; il ouvre cette page par son nom de route, et la
+///   page fait tout, jusqu'à l'enregistrement ;
+/// - la liste des agendas se relit à chaque changement en temps réel : seule
+///   la première lecture montre l'attente, sans quoi la saisie serait jetée.
 library;
 
 import 'package:agora/src/exceptions/app_exception_messages.dart';
@@ -41,7 +44,10 @@ class GroupEventEditorPage extends ConsumerWidget {
         ref.watch(currentProfileProvider).value?.timezone ?? 'Europe/Paris';
     return ref
         .watch(calendarsProvider)
+        // Une relecture (temps réel) garde l'éditeur : remplacer celui-ci
+        // par l'attente jetterait la saisie.
         .when(
+          skipLoadingOnReload: true,
           loading: () =>
               const Scaffold(body: Center(child: CircularProgressIndicator())),
           error: (error, _) => Scaffold(
