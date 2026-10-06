@@ -1,6 +1,5 @@
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
-import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
@@ -63,8 +62,7 @@ void main() {
     await robot.goBack();
     await robot.tap(CalendarKeys.contactTile(_peushu.id));
     await robot.tap(CalendarKeys.contactWorkHours);
-    await robot.chooseRepeat(Frequency.weekly);
-    expect(find.byKey(CalendarKeys.repeatInterval), findsOneWidget);
+    expect(find.byKey(CalendarKeys.workFrom), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

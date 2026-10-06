@@ -91,56 +91,169 @@ void main() {
     expect(find.byKey(CalendarKeys.contactBirthday), findsOneWidget);
   });
 
-  testWidgets('the birthday shortcut creates a yearly all-day date', (
-    tester,
-  ) async {
+  testWidgets('the birthday form asks only a title and a date', (tester) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendars: _withPeushu());
 
     await robot.openContact(_peushu.id);
     await robot.tap(CalendarKeys.contactBirthday);
-    // L'éditeur arrive prérempli : il ne reste qu'à choisir la date.
     expect(
       find.widgetWithText(TextFormField, 'Anniversaire de Peushu'),
       findsOneWidget,
     );
+    // Un anniversaire dure la journée et revient chaque année : rien à
+    // régler de plus, ni lieu ni notes.
+    for (final hidden in [
+      CalendarKeys.allDay,
+      CalendarKeys.repeat,
+      CalendarKeys.location,
+      CalendarKeys.description,
+      CalendarKeys.eventCalendar,
+    ]) {
+      expect(find.byKey(hidden), findsNothing);
+    }
+    expect(find.byKey(CalendarKeys.contactFormDate), findsOneWidget);
     await robot.tap(CalendarKeys.save);
 
     final created = robot.calendar.items.first;
     expect(created.calendarId, _peushu.id);
     expect(created.isAllDay, isTrue);
     expect(created.rrule, 'FREQ=YEARLY');
+    expect(created.end.difference(created.start), const Duration(days: 1));
   });
 
-  testWidgets('the work hours shortcut repeats on weekdays', (tester) async {
+  testWidgets('the work hours form picks days and hours, nothing more', (
+    tester,
+  ) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendars: _withPeushu());
 
     await robot.openContact(_peushu.id);
     await robot.tap(CalendarKeys.contactWorkHours);
+    // Ni rythme, ni notes, ni journée entière : les jours non cochés sont
+    // ses repos.
+    for (final hidden in [
+      CalendarKeys.allDay,
+      CalendarKeys.repeat,
+      CalendarKeys.repeatInterval,
+      CalendarKeys.description,
+    ]) {
+      expect(find.byKey(hidden), findsNothing);
+    }
+    expect(find.byKey(CalendarKeys.location), findsOneWidget);
+    expect(find.byKey(CalendarKeys.workUntil), findsOneWidget);
     // Le mercredi ne travaille pas : on le décoche.
     await robot.tap(CalendarKeys.repeatWeekday(DateTime.wednesday));
+    await robot.enter(CalendarKeys.location, 'Boulangerie');
     await robot.tap(CalendarKeys.save);
 
     final created = robot.calendar.items.first;
     expect(created.calendarId, _peushu.id);
     expect(created.title, 'Travail');
+    expect(created.location, 'Boulangerie');
     expect(created.isAllDay, isFalse);
     expect(created.rrule, 'FREQ=WEEKLY;BYDAY=MO,TU,TH,FR');
+    // La série commence un jour travaillé, de 9 h à 17 h.
+    final start = created.start.toLocal();
+    expect({
+      DateTime.monday,
+      DateTime.tuesday,
+      DateTime.thursday,
+      DateTime.friday,
+    }, contains(start.weekday));
+    expect((start.hour, created.end.toLocal().hour), (9, 17));
   });
 
-  testWidgets('the rest shortcut notes a day off', (tester) async {
+  testWidgets('work hours cannot end before their first day', (tester) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendars: _withPeushu());
 
     await robot.openContact(_peushu.id);
-    await robot.tap(CalendarKeys.contactRest);
+    await robot.tap(CalendarKeys.contactWorkHours);
+    // Fin le jour même (le sélecteur s'ouvre sur aujourd'hui)…
+    await robot.tap(CalendarKeys.workUntil);
+    await tester.tap(find.text('OK'));
+    await robot.settle();
+    // … mais aujourd'hui n'est pas travaillé : le premier jour vient après.
+    final today = DateTime.now().weekday;
+    if (robot.isWeekdayChosen(today)) {
+      await robot.tap(CalendarKeys.repeatWeekday(today));
+    }
+    await robot.tap(CalendarKeys.save);
+
+    expect(robot.calendar.items, isEmpty);
+    robot.expectText('La fin doit suivre le premier jour travaillé.');
+  });
+
+  testWidgets('the time off form notes one day or a period', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), calendars: _withPeushu());
+
+    await robot.openContact(_peushu.id);
+    await robot.tap(CalendarKeys.contactDayOff);
+    expect(find.byKey(CalendarKeys.contactFormDateTo), findsOneWidget);
+    expect(find.byKey(CalendarKeys.repeat), findsNothing);
     await robot.tap(CalendarKeys.save);
 
     final created = robot.calendar.items.single;
-    expect(created.title, 'Repos');
+    expect(created.title, 'Congé');
     expect(created.isAllDay, isTrue);
     expect(created.rrule, isNull);
+  });
+
+  testWidgets('a day without work hours reads as a rest day', (tester) async {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1, 9);
+    final calendar = FakeCalendarRepository()
+      ..seed(
+        AgendaItem(
+          eventId: 'evt-work',
+          seriesId: 'evt-work',
+          originalStart: tomorrow.toUtc(),
+          calendarId: _peushu.id,
+          title: 'Travail',
+          start: tomorrow.toUtc(),
+          end: tomorrow.add(const Duration(hours: 8)).toUtc(),
+          isAllDay: false,
+          timezone: 'Europe/Paris',
+          rrule: 'FREQ=WEEKLY',
+        ),
+      );
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      calendars: _withPeushu(),
+      calendar: calendar,
+    );
+
+    await robot.openContact(_peushu.id);
+
+    // Suivi de « Ensuite : Travail… » dans la même ligne.
+    expect(find.textContaining("Repos aujourd'hui."), findsOneWidget);
+  });
+
+  testWidgets('a birthday opens its own form and moves the whole series', (
+    tester,
+  ) async {
+    final birthday = _birthdayIn(3);
+    final calendar = FakeCalendarRepository()..seed(birthday);
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      calendars: _withPeushu(),
+      calendar: calendar,
+    );
+
+    await robot.openContact(_peushu.id);
+    await robot.tap(CalendarKeys.contactEvent(birthday.instanceKey));
+    expect(find.byKey(CalendarKeys.allDay), findsNothing);
+    await robot.enter(CalendarKeys.title, 'Anniv de Peushu');
+    await robot.tap(CalendarKeys.save);
+
+    // Pas de « cette occurrence ou toute la série » : c'est sa date.
+    expect(find.byKey(CalendarKeys.scopeSeries), findsNothing);
+    expect(calendar.writes, ['updateSeries']);
+    expect(calendar.lastSeriesUpdate?.draft.title, 'Anniv de Peushu');
   });
 
   testWidgets("a close one's page shows what is noted next", (tester) async {

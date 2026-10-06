@@ -1,15 +1,19 @@
 /// Page d'un proche (onglet Social → un proche) : ce qui est noté pour lui
 /// en ce moment, des raccourcis pour noter vite son anniversaire, ses
-/// horaires de travail, un repos ou importer son planning, et ses rdv des
+/// horaires de travail, un congé ou importer son planning, et ses rdv des
 /// prochains jours.
 ///
 /// Choix non évidents :
-/// - un raccourci ouvre l'éditeur de rdv **prérempli** (titre, journée
-///   entière, répétition, jours de semaine) : c'est un rdv ordinaire, que
-///   l'on ajuste avant de l'enregistrer, et l'éditeur reste le seul endroit
-///   qui sache créer un rdv ;
-/// - « en ce moment » dit ce qui est noté, pas si le proche est libre : un
-///   « Repos » le rend justement disponible ;
+/// - un raccourci ouvre le **formulaire court** de sa sorte de rdv
+///   (`ContactEventEditor`) : un anniversaire ne demande qu'une date, des
+///   horaires de travail que les jours et les heures. « Ajouter » garde
+///   l'éditeur complet, pour tout le reste ;
+/// - les repos ne se notent pas : un jour sans horaires de travail en est
+///   un, et « en ce moment » le dit ; un congé l'emporte sur les horaires
+///   des jours qu'il couvre, ici comme dans la liste
+///   (`withoutWorkOnDaysOff`) ;
+/// - « en ce moment » dit ce qui est noté (et le repos qui s'en déduit),
+///   pas si le proche est libre ;
 /// - le planning importé d'un proche est un agenda à part (lecture seule) :
 ///   « Importer son planning » le crée à côté de celui-ci, et la page d'un
 ///   agenda importé n'offre ni raccourci ni ajout.
@@ -22,10 +26,10 @@ import 'package:agora/src/features/calendar/application/calendars_providers.dart
 import 'package:agora/src/features/calendar/application/upcoming_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/contact_agenda.dart';
-import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_actions.dart';
+import 'package:agora/src/features/calendar/presentation/contact_event_editor.dart';
 import 'package:agora/src/features/calendar/presentation/event_actions.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
@@ -35,17 +39,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
-/// Horaires proposés par le raccourci « Horaires de travail ».
-const _workStart = 9;
-const _workEnd = 17;
-const _workDays = {
-  DateTime.monday,
-  DateTime.tuesday,
-  DateTime.wednesday,
-  DateTime.thursday,
-  DateTime.friday,
-};
 
 class ContactScreen extends ConsumerWidget {
   const ContactScreen({required this.calendarId, super.key});
@@ -79,49 +72,50 @@ class _ContactPage extends ConsumerWidget {
       if (c.isWritable) c,
   ];
 
-  Future<void> _addEvent(
-    BuildContext context,
-    WidgetRef ref, {
-    String? title,
-    bool allDay = false,
-    DateTime? start,
-    DateTime? end,
-    RecurrenceRule? recurrence,
-  }) async {
-    final timezone =
-        ref.read(currentProfileProvider).value?.timezone ?? 'Europe/Paris';
+  String _timezone(WidgetRef ref) =>
+      ref.read(currentProfileProvider).value?.timezone ?? 'Europe/Paris';
+
+  /// « Ajouter » : l'éditeur complet, pour ce qui n'a pas de raccourci.
+  Future<void> _addEvent(BuildContext context, WidgetRef ref) async {
     final result = await EventEditorScreen.show(
       context,
       calendarId: calendar.id,
-      timezone: timezone,
+      timezone: _timezone(ref),
       calendars: _writable(ref),
-      initialStart: start,
-      initialEnd: end,
-      initialTitle: title,
-      initialAllDay: allDay,
-      initialRecurrence: recurrence,
     );
+    if (!context.mounted) return;
+    await _create(context, ref, result);
+  }
+
+  /// Un raccourci : le formulaire court de [kind].
+  Future<void> _addShortcut(
+    BuildContext context,
+    WidgetRef ref,
+    ContactEventKind kind, {
+    required String title,
+  }) async {
+    final result = await ContactEventEditor.show(
+      context,
+      kind: kind,
+      calendarId: calendar.id,
+      timezone: _timezone(ref),
+      initialTitle: title,
+    );
+    if (!context.mounted) return;
+    await _create(context, ref, result);
+  }
+
+  Future<void> _create(
+    BuildContext context,
+    WidgetRef ref,
+    EditorResult? result,
+  ) async {
     if (result is! EditorSaved || !context.mounted) return;
     await runAction(
       context,
       () => ref.read(calendarServiceProvider).create(result.draft),
       AppLocalizations.of(context).eventSaved,
     );
-  }
-
-  /// Aujourd'hui à minuit (local) : le jour proposé par les raccourcis.
-  static DateTime _today() {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
-
-  /// Le premier jour travaillé à partir d'aujourd'hui.
-  static DateTime _nextWorkDay() {
-    var day = _today();
-    while (!_workDays.contains(day.weekday)) {
-      day = DateTime(day.year, day.month, day.day + 1);
-    }
-    return day;
   }
 
   Future<void> _edit(BuildContext context, WidgetRef ref) async {
@@ -134,7 +128,6 @@ class _ContactPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final items = ref.watch(contactAgendaProvider(calendar.id));
     final canWrite = calendar.isWritable;
-    final day = _nextWorkDay();
     return Scaffold(
       key: CalendarKeys.contactScreen,
       appBar: AppBar(
@@ -157,7 +150,7 @@ class _ContactPage extends ConsumerWidget {
             )
           : null,
       body: AsyncValueWidget<List<AgendaItem>>(
-        value: items,
+        value: items.whenData(withoutWorkOnDaysOff),
         data: (list) => ListView(
           padding: const EdgeInsets.only(bottom: 88),
           children: [
@@ -165,31 +158,23 @@ class _ContactPage extends ConsumerWidget {
             _NowSection(items: list),
             if (canWrite)
               _Shortcuts(
-                onBirthday: () => _addEvent(
+                onBirthday: () => _addShortcut(
                   context,
                   ref,
+                  ContactEventKind.birthday,
                   title: l10n.birthdayEventTitle(calendar.name),
-                  allDay: true,
-                  start: _today(),
-                  recurrence: const RecurrenceRule(frequency: Frequency.yearly),
                 ),
-                onWorkHours: () => _addEvent(
+                onWorkHours: () => _addShortcut(
                   context,
                   ref,
+                  ContactEventKind.workHours,
                   title: l10n.workEventTitle,
-                  start: day.add(const Duration(hours: _workStart)),
-                  end: day.add(const Duration(hours: _workEnd)),
-                  recurrence: const RecurrenceRule(
-                    frequency: Frequency.weekly,
-                    weekdays: _workDays,
-                  ),
                 ),
-                onRest: () => _addEvent(
+                onDayOff: () => _addShortcut(
                   context,
                   ref,
-                  title: l10n.restEventTitle,
-                  allDay: true,
-                  start: _today(),
+                  ContactEventKind.dayOff,
+                  title: l10n.dayOffEventTitle,
                 ),
                 onImport: () => importCalendar(
                   context,
@@ -260,14 +245,14 @@ class _NowSection extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     final time = DateFormat.Hm(locale);
     final moment = contactMoment(items, now: DateTime.now());
-    final now = moment.current.isEmpty
-        ? l10n.contactNothingNow
-        : [
-            for (final item in moment.current)
-              item.isAllDay
-                  ? item.title
-                  : l10n.contactUntil(item.title, time.format(item.localEnd)),
-          ].join('\n');
+    final lines = [
+      if (moment.isRestDay) l10n.contactRestToday,
+      for (final item in moment.current)
+        item.isAllDay
+            ? item.title
+            : l10n.contactUntil(item.title, time.format(item.localEnd)),
+    ];
+    final now = lines.isEmpty ? l10n.contactNothingNow : lines.join('\n');
     final next = moment.next;
     return ListTile(
       leading: const Icon(Icons.schedule),
@@ -281,18 +266,18 @@ class _NowSection extends StatelessWidget {
   }
 }
 
-/// Les raccourcis : un appui ouvre l'éditeur prérempli.
+/// Les raccourcis : un appui ouvre le formulaire court prérempli.
 class _Shortcuts extends StatelessWidget {
   const _Shortcuts({
     required this.onBirthday,
     required this.onWorkHours,
-    required this.onRest,
+    required this.onDayOff,
     required this.onImport,
   });
 
   final VoidCallback onBirthday;
   final VoidCallback onWorkHours;
-  final VoidCallback onRest;
+  final VoidCallback onDayOff;
   final VoidCallback onImport;
 
   @override
@@ -332,10 +317,10 @@ class _Shortcuts extends StatelessWidget {
                 onWorkHours,
               ),
               chip(
-                CalendarKeys.contactRest,
+                CalendarKeys.contactDayOff,
                 Icons.beach_access_outlined,
-                l10n.shortcutRest,
-                onRest,
+                l10n.shortcutDayOff,
+                onDayOff,
               ),
               chip(
                 CalendarKeys.contactImport,

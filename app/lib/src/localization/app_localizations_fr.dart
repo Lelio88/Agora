@@ -1497,9 +1497,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shortcutWorkHours => 'Horaires de travail';
 
   @override
-  String get shortcutRest => 'Jour de repos';
-
-  @override
   String get shortcutImport => 'Importer son planning';
 
   @override
@@ -1511,7 +1508,53 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workEventTitle => 'Travail';
 
   @override
-  String get restEventTitle => 'Repos';
+  String get shortcutDayOff => 'Congé';
+
+  @override
+  String get dayOffEventTitle => 'Congé';
+
+  @override
+  String get contactRestToday => 'Repos aujourd\'hui.';
+
+  @override
+  String get contactFormDateLabel => 'Date';
+
+  @override
+  String get dayOffFromLabel => 'Du';
+
+  @override
+  String get dayOffToLabel => 'Au';
+
+  @override
+  String get workDaysLabel => 'Jours travaillés';
+
+  @override
+  String get workFromLabel => 'De';
+
+  @override
+  String get workToLabel => 'À';
+
+  @override
+  String workEndsNextDay(String time) {
+    return '$time (le lendemain)';
+  }
+
+  @override
+  String get workStartsOnLabel => 'À partir du';
+
+  @override
+  String get workUntilLabel => 'Jusqu\'au';
+
+  @override
+  String get workUntilNone => 'Pas de date de fin';
+
+  @override
+  String get validationWorkHours =>
+      'L\'heure de fin doit différer de celle du début.';
+
+  @override
+  String get validationWorkUntil =>
+      'La fin doit suivre le premier jour travaillé.';
 
   @override
   String contactImportedName(String name) {

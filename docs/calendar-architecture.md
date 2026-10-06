@@ -99,19 +99,27 @@ Migration : `20260921220000_calendar_management.sql`.
   l'assistant. `my_agenda` les rend, et l'assistant les reçoit marqués `proche`. Pas de lien avec
   un compte Agora : rattacher par adresse révélerait qu'une adresse est inscrite.
 - **Proches dans l'app** : l'onglet Social les liste (`ContactsSection`) sous « À venir » — les
-  dates à retenir des 31 prochains jours (`upcomingAnniversariesProvider`). Une date à retenir
-  est un rdv **journée entière répété chaque année** dans l'agenda d'un proche
-  (`contact_agenda.dart`), sans marquage de plus en base. « Ajouter un proche » crée l'agenda
+  dates à retenir des 31 prochains jours (`upcomingAnniversariesProvider`). Trois sortes de rdv
+  d'un proche se reconnaissent à leur forme (`contact_agenda.dart`), sans marquage de plus en
+  base : une **date à retenir** est une journée entière répétée chaque année, des **horaires de
+  travail** un rdv horaire répété chaque semaine, un **congé** une journée (ou une période)
+  entière qui n'est pas une date à retenir. « Ajouter un proche » crée l'agenda
   (`createCalendar` rend son identifiant) puis ouvre sa page (`/contacts/:calendarId`,
-  `ContactScreen`) : ce qui y est noté en ce moment (`contactMoment` — ce qui est noté, pas
-  « libre » : un « Repos » rend justement disponible), ses rdv à venir, et quatre raccourcis.
-  Anniversaire, Horaires de travail (lun.–ven., 9 h–17 h) et Jour de repos ouvrent l'éditeur de
-  rdv **prérempli** (titre, journée entière, règle) : un rdv ordinaire, ajusté avant d'être
-  enregistré. « Importer son planning » ouvre l'import iCal en mode proche : le planning importé
-  est un agenda de proche à part, en lecture seule (sa page n'a ni raccourci ni ajout). Ces
-  lectures passent par `agendaProvider`, pas l'agenda visible : masquer un proche de sa vue ne
-  fait pas oublier son anniversaire. L'éditeur de rdv n'offre pas de réglage de visibilité dans
-  l'agenda d'un proche.
+  `ContactScreen`) : ce qui y est noté en ce moment (`contactMoment`), ses rdv à venir, et
+  quatre raccourcis. Anniversaire, Horaires de travail et Congé ouvrent un **formulaire court**
+  (`ContactEventEditor`) : un titre et une date ; les jours, les heures (une fin avant le début
+  finit le lendemain), le lieu, le premier et le dernier jour ; une période. Les **repos ne se
+  notent pas** : un jour sans horaires de travail, quand le proche en a d'autres jours, est un
+  repos (`ContactMoment.isRestDay`), et un congé l'emporte sur les horaires des jours qu'il
+  couvre (`withoutWorkOnDaysOff`, sur la page seulement : l'agenda montre ce qui est noté). Un
+  rdv reconnu s'ouvre dans son formulaire court d'où qu'on l'ouvre (`event_actions.dart`) et se
+  modifie en entier, sans la question de portée — sauf s'il porte plus que le formulaire ne
+  montre (`contactFormFor` : des notes, un rythme, une règle avancée), qui garde l'éditeur
+  complet. « Ajouter » ouvre l'éditeur complet. « Importer son planning » ouvre l'import iCal en
+  mode proche : le planning importé est un agenda de proche à part, en lecture seule (sa page
+  n'a ni raccourci ni ajout). Ces lectures passent par `agendaProvider`, pas l'agenda visible :
+  masquer un proche de sa vue ne fait pas oublier son anniversaire. L'éditeur de rdv n'offre
+  pas de réglage de visibilité dans l'agenda d'un proche.
 - **Masquer un agenda dans SA vue** : `public.calendar_preferences (user_id, calendar_id,
   hidden)`, une ligne par personne et par agenda (prête pour les agendas de groupe). C'est de
   l'**affichage**, pas de la vie privée : rien ne change pour les groupes. L'app filtre
@@ -262,4 +270,4 @@ Migration : `20260921220000_calendar_management.sql`.
 | `app/lib/src/features/calendar/domain/` | `AgendaItem`, `EventDraft`, `RecurrenceRule`, `EventVisibility`, `UserCalendar`, contrats des dépôts |
 | `app/lib/src/features/calendar/application/` | `agendaProvider`, `visibleAgendaProvider`, `CalendarService`, `EditTarget`, `calendarsProvider`, `CalendarsService` |
 | `app/lib/src/features/calendar/data/` | dépôts Supabase de l'agenda et des agendas, `guardPostgrest` (traduction des erreurs) |
-| `app/lib/src/features/calendar/presentation/` | `CalendarScreen` (kalender, glisser-déposer), `EventEditorScreen`, `CalendarsScreen`, `CalendarEditorScreen`, dialogue de portée, `CalendarKeys` |
+| `app/lib/src/features/calendar/presentation/` | `CalendarScreen` (kalender, glisser-déposer), `EventEditorScreen`, `ContactEventEditor` (formulaires courts d'un proche), `CalendarsScreen`, `CalendarEditorScreen`, dialogue de portée, `CalendarKeys` |

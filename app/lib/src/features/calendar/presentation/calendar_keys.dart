@@ -116,8 +116,18 @@ abstract final class CalendarKeys {
   static const contactAddEvent = ValueKey('contact.addEvent');
   static const contactBirthday = ValueKey('contact.shortcut.birthday');
   static const contactWorkHours = ValueKey('contact.shortcut.workHours');
-  static const contactRest = ValueKey('contact.shortcut.rest');
+  static const contactDayOff = ValueKey('contact.shortcut.dayOff');
   static const contactImport = ValueKey('contact.shortcut.import');
   static ValueKey<String> contactEvent(String instanceKey) =>
       ValueKey('contact.event.$instanceKey');
+
+  // Formulaires courts d'un proche (anniversaire, travail, congé).
+  static const contactForm = ValueKey('contact.form');
+  static const contactFormDate = ValueKey('contact.form.date');
+  static const contactFormDateTo = ValueKey('contact.form.dateTo');
+  static const workFrom = ValueKey('contact.form.workFrom');
+  static const workTo = ValueKey('contact.form.workTo');
+  static const workStartsOn = ValueKey('contact.form.startsOn');
+  static const workUntil = ValueKey('contact.form.until');
+  static const workUntilClear = ValueKey('contact.form.until.clear');
 }

@@ -2623,12 +2623,6 @@ abstract class AppLocalizations {
   /// **'Horaires de travail'**
   String get shortcutWorkHours;
 
-  /// Raccourci : noter un jour de repos d'un proche.
-  ///
-  /// In fr, this message translates to:
-  /// **'Jour de repos'**
-  String get shortcutRest;
-
   /// Raccourci : importer le planning d'un proche par son lien iCal.
   ///
   /// In fr, this message translates to:
@@ -2647,11 +2641,95 @@ abstract class AppLocalizations {
   /// **'Travail'**
   String get workEventTitle;
 
-  /// Titre proposé par le raccourci Jour de repos.
+  /// Raccourci de la page d'un proche : noter un congé (un jour ou une période) ; titre de son formulaire.
   ///
   /// In fr, this message translates to:
-  /// **'Repos'**
-  String get restEventTitle;
+  /// **'Congé'**
+  String get shortcutDayOff;
+
+  /// Titre proposé par le raccourci Congé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Congé'**
+  String get dayOffEventTitle;
+
+  /// Page d'un proche : il a des horaires de travail, mais aucun aujourd'hui (ni congé).
+  ///
+  /// In fr, this message translates to:
+  /// **'Repos aujourd\'hui.'**
+  String get contactRestToday;
+
+  /// Formulaire Anniversaire : sa date.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date'**
+  String get contactFormDateLabel;
+
+  /// Formulaire Congé : premier jour.
+  ///
+  /// In fr, this message translates to:
+  /// **'Du'**
+  String get dayOffFromLabel;
+
+  /// Formulaire Congé : dernier jour, inclus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Au'**
+  String get dayOffToLabel;
+
+  /// Formulaire Horaires de travail : les jours cochés ; les autres sont ses repos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jours travaillés'**
+  String get workDaysLabel;
+
+  /// Formulaire Horaires de travail : heure de début.
+  ///
+  /// In fr, this message translates to:
+  /// **'De'**
+  String get workFromLabel;
+
+  /// Formulaire Horaires de travail : heure de fin.
+  ///
+  /// In fr, this message translates to:
+  /// **'À'**
+  String get workToLabel;
+
+  /// Heure de fin d'un horaire de nuit, qui finit le jour suivant.
+  ///
+  /// In fr, this message translates to:
+  /// **'{time} (le lendemain)'**
+  String workEndsNextDay(String time);
+
+  /// Formulaire Horaires de travail : premier jour de la série.
+  ///
+  /// In fr, this message translates to:
+  /// **'À partir du'**
+  String get workStartsOnLabel;
+
+  /// Formulaire Horaires de travail : dernier jour de la série, s'il y en a un.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jusqu\'au'**
+  String get workUntilLabel;
+
+  /// Formulaire Horaires de travail : la série ne finit pas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas de date de fin'**
+  String get workUntilNone;
+
+  /// Formulaire Horaires de travail : début et fin à la même heure.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'heure de fin doit différer de celle du début.'**
+  String get validationWorkHours;
+
+  /// Formulaire Horaires de travail : la date de fin précède le premier jour coché.
+  ///
+  /// In fr, this message translates to:
+  /// **'La fin doit suivre le premier jour travaillé.'**
+  String get validationWorkUntil;
 
   /// Nom proposé pour le planning importé d'un proche.
   ///

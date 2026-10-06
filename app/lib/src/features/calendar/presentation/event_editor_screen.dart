@@ -35,6 +35,7 @@ import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
+import 'package:agora/src/features/calendar/presentation/weekday_chips.dart';
 import 'package:agora/src/features/directions/presentation/go_there_button.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -571,7 +572,7 @@ class _RepeatDetails extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 40),
-            child: _WeekdayChips(selected: _days, onToggle: _toggle),
+            child: WeekdayChips(selected: _days, onToggle: _toggle),
           ),
           PopupMenuButton<int>(
             key: CalendarKeys.repeatInterval,
@@ -615,43 +616,6 @@ class _RepeatDetails extends StatelessWidget {
                 ),
           onTap: () => _pickEnd(context),
         ),
-      ],
-    );
-  }
-}
-
-/// Les sept jours de la semaine, du lundi au dimanche, en initiales.
-class _WeekdayChips extends StatelessWidget {
-  const _WeekdayChips({required this.selected, required this.onToggle});
-
-  final Set<int> selected;
-  final ValueChanged<int> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context).toString();
-    final initial = DateFormat.EEEEE(locale);
-    final full = DateFormat.EEEE(locale);
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: [
-        for (
-          var weekday = DateTime.monday;
-          weekday <= DateTime.sunday;
-          weekday++
-        )
-          // Le 1er janvier 2024 est un lundi : son jour N tombe le N-ième
-          // jour de la semaine.
-          FilterChip(
-            key: CalendarKeys.repeatWeekday(weekday),
-            label: Text(initial.format(DateTime(2024, 1, weekday))),
-            tooltip: full.format(DateTime(2024, 1, weekday)),
-            showCheckmark: false,
-            visualDensity: VisualDensity.compact,
-            selected: selected.contains(weekday),
-            onSelected: (_) => onToggle(weekday),
-          ),
       ],
     );
   }

@@ -1486,9 +1486,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shortcutWorkHours => 'Work hours';
 
   @override
-  String get shortcutRest => 'Day off';
-
-  @override
   String get shortcutImport => 'Import their schedule';
 
   @override
@@ -1500,7 +1497,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workEventTitle => 'Work';
 
   @override
-  String get restEventTitle => 'Day off';
+  String get shortcutDayOff => 'Time off';
+
+  @override
+  String get dayOffEventTitle => 'Time off';
+
+  @override
+  String get contactRestToday => 'Not working today.';
+
+  @override
+  String get contactFormDateLabel => 'Date';
+
+  @override
+  String get dayOffFromLabel => 'From';
+
+  @override
+  String get dayOffToLabel => 'To';
+
+  @override
+  String get workDaysLabel => 'Working days';
+
+  @override
+  String get workFromLabel => 'From';
+
+  @override
+  String get workToLabel => 'To';
+
+  @override
+  String workEndsNextDay(String time) {
+    return '$time (next day)';
+  }
+
+  @override
+  String get workStartsOnLabel => 'Starting';
+
+  @override
+  String get workUntilLabel => 'Until';
+
+  @override
+  String get workUntilNone => 'No end date';
+
+  @override
+  String get validationWorkHours =>
+      'The end time must differ from the start time.';
+
+  @override
+  String get validationWorkUntil =>
+      'The end must come after the first working day.';
 
   @override
   String contactImportedName(String name) {

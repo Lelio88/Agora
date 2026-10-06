@@ -2,6 +2,14 @@
 /// groupe : ouvrir l'éditeur, poser la question « cette occurrence / toute
 /// la série », appeler le service et en afficher l'issue.
 ///
+/// Choix non évident : un rdv de l'agenda d'un proche que
+/// [contactFormFor] reconnaît (anniversaire, horaires de travail, congé)
+/// s'ouvre dans son formulaire court, d'où qu'on l'ouvre. Il se modifie
+/// alors en entier, sans la question de portée : on change la date d'un
+/// anniversaire ou ses horaires, pas une séance. Supprimer un anniversaire
+/// le supprime aussi en entier ; une journée de travail se supprime seule
+/// si on le choisit.
+///
 /// Invariant : la question de portée ne se pose qu'ici (et au glisser-
 /// déposer de l'agenda, qui passe par [askScope]).
 library;
@@ -9,7 +17,9 @@ library;
 import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/calendar/application/calendar_service.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
+import 'package:agora/src/features/calendar/domain/contact_agenda.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
+import 'package:agora/src/features/calendar/presentation/contact_event_editor.dart';
 import 'package:agora/src/features/calendar/presentation/event_editor_screen.dart';
 import 'package:agora/src/features/calendar/presentation/scope_dialog.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -24,24 +34,35 @@ Future<bool> editInstance(
   AgendaItem item, {
   required List<UserCalendar> calendars,
 }) async {
-  final result = await EventEditorScreen.show(
-    context,
-    calendarId: item.calendarId,
-    timezone: item.timezone,
-    calendars: calendars,
-    existing: item,
-  );
+  final contactForm = _contactForm(item, calendars);
+  final result = contactForm == null
+      ? await EventEditorScreen.show(
+          context,
+          calendarId: item.calendarId,
+          timezone: item.timezone,
+          calendars: calendars,
+          existing: item,
+        )
+      : await ContactEventEditor.show(
+          context,
+          kind: contactForm,
+          calendarId: item.calendarId,
+          timezone: item.timezone,
+          existing: item,
+        );
   if (result == null || !context.mounted) return false;
   switch (result) {
     case EditorSaved(:final draft):
-      final target = await askScope(
-        context,
-        item,
-        ScopeQuestion.edit,
-        // Une occurrence vit dans l'agenda de sa série : changer d'agenda
-        // ne peut viser que toute la série.
-        allowOccurrence: draft.calendarId == item.calendarId,
-      );
+      final target = contactForm != null
+          ? EditTarget.series(item)
+          : await askScope(
+              context,
+              item,
+              ScopeQuestion.edit,
+              // Une occurrence vit dans l'agenda de sa série : changer
+              // d'agenda ne peut viser que toute la série.
+              allowOccurrence: draft.calendarId == item.calendarId,
+            );
       if (target == null || !context.mounted) return false;
       return runAction(
         context,
@@ -51,18 +72,36 @@ Future<bool> editInstance(
         AppLocalizations.of(context).eventSaved,
       );
     case EditorDeleteRequested():
-      return deleteInstance(context, ref, item);
+      return deleteInstance(
+        context,
+        ref,
+        item,
+        wholeSeries: contactForm == ContactEventKind.birthday,
+      );
   }
 }
 
-/// Supprime [item] (après la question de portée pour une série) ; vrai si
-/// c'est fait.
+/// Le formulaire court de [item] s'il est dans l'agenda d'un proche où
+/// l'on écrit, sinon `null` (éditeur complet).
+ContactEventKind? _contactForm(AgendaItem item, List<UserCalendar> calendars) {
+  final calendar = calendars.where((c) => c.id == item.calendarId).firstOrNull;
+  if (calendar == null || !calendar.isContact || !calendar.isWritable) {
+    return null;
+  }
+  return contactFormFor(item);
+}
+
+/// Supprime [item] (après la question de portée pour une série, sauf
+/// [wholeSeries]) ; vrai si c'est fait.
 Future<bool> deleteInstance(
   BuildContext context,
   WidgetRef ref,
-  AgendaItem item,
-) async {
-  final target = await askScope(context, item, ScopeQuestion.delete);
+  AgendaItem item, {
+  bool wholeSeries = false,
+}) async {
+  final target = wholeSeries
+      ? EditTarget.series(item)
+      : await askScope(context, item, ScopeQuestion.delete);
   if (target == null || !context.mounted) return false;
   return runAction(
     context,
