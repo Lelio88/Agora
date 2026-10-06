@@ -308,6 +308,16 @@ Nouvelle navigation : Agenda, Social, Moi. Social réunit proches et groupes, av
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.8.1+13 (vue Mois corrigée)
+
+Français, envoyées sur `alpha` :
+
+```
+Vue Mois sur téléphone : les rendez-vous d'un même jour s'affichent tous en pastilles, au lieu d'un « +1 » dès le deuxième.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
