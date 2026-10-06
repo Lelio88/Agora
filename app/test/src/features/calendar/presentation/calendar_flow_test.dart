@@ -1,3 +1,4 @@
+import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
@@ -116,7 +117,7 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendar: calendar);
 
-    await robot.tapEvent('Yoga');
+    await robot.editEvent('Yoga');
     await robot.enter(CalendarKeys.title, 'Yoga (décalé)');
     await robot.tap(CalendarKeys.save);
     robot.expectText(
@@ -163,7 +164,7 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), calendar: calendar);
 
-    await robot.tapEvent('Congé');
+    await robot.editEvent('Congé');
     await robot.enter(CalendarKeys.title, 'Congé posé');
     await robot.tap(CalendarKeys.save);
 
@@ -289,7 +290,7 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), screenSize: _wideScreen);
 
-    await robot.tap(CalendarKeys.viewMonth);
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.month);
 
     final now = DateTime.now();
     final visible = tester
@@ -326,7 +327,7 @@ void main() {
       screenSize: _wideScreen,
     );
 
-    await robot.tap(CalendarKeys.viewSchedule);
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.schedule);
 
     expect(find.text('Dentiste'), findsWidgets);
   });
@@ -335,8 +336,11 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), locale: const Locale('en'));
 
-    expect(find.text('Week'), findsOneWidget);
+    expect(find.byTooltip('Change view'), findsOneWidget);
     expect(find.byTooltip('New event'), findsOneWidget);
+    await robot.tap(CalendarKeys.toolbar.viewMenu);
+    // Sur un téléphone, la « semaine » n'a que trois jours, et le dit.
+    expect(find.text('3 days'), findsOneWidget);
   });
 
   testWidgets('the agenda refreshes after an action even without realtime', (

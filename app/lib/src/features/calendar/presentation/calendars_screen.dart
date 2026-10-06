@@ -1,16 +1,14 @@
-/// « Mes agendas » : les agendas personnels, leur couleur et ce qu'en voient
-/// les groupes ; une case pour les montrer ou les masquer dans sa propre
-/// vue ; créer, importer par lien iCal, modifier, relancer la synchro,
-/// supprimer. Puis les agendas de proches (repos, anniversaires de
-/// quelqu'un d'autre, à soi seul), et les agendas de mes groupes (leurs
-/// rdv), à montrer ou masquer de la même façon ; un appui ouvre le groupe.
+/// « Mes agendas » (onglet Moi) : mes agendas à moi, leur couleur et ce
+/// qu'en voient les groupes ; créer, importer par lien iCal, modifier,
+/// relancer la synchro, supprimer.
 ///
 /// Choix non évidents :
+/// - l'écran gère, il n'affiche pas : montrer ou masquer un agenda dans sa
+///   vue se fait depuis l'agenda (« Agendas affichés »), les proches vivent
+///   dans l'onglet Social, les agendas de groupes avec leur groupe ;
 /// - l'état de synchro d'un agenda importé arrive en temps réel (la table
 ///   des agendas est publiée) ; tirer la liste vers le bas la relit quand
 ///   même, pour le cas où le temps réel manque ;
-/// - la case ne touche que l'affichage de l'utilisateur (préférence dans
-///   le compte), jamais ce que voient les groupes ;
 /// - supprimer un agenda annonce d'abord combien de rdv partent avec lui ;
 ///   le dernier agenda natif n'offre pas de bouton de suppression (le
 ///   serveur le refuse de toute façon) ; un agenda de proche n'en tient
@@ -18,20 +16,16 @@
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
+import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
-import 'package:agora/src/common_widgets/palette.dart';
-import 'package:agora/src/features/calendar/presentation/calendars_actions.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/calendar/presentation/calendars_actions.dart';
 import 'package:agora/src/features/calendar/presentation/feed_sync_labels.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
-import 'package:agora/src/features/groups/application/groups_providers.dart';
-import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/localization/app_localizations.dart';
-import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 class CalendarsScreen extends ConsumerWidget {
   const CalendarsScreen({super.key});
@@ -58,15 +52,6 @@ class CalendarsScreen extends ConsumerWidget {
           final personal = all
               .where((c) => c.isPersonal && !c.isContact)
               .toList();
-          final contacts = all.where((c) => c.isContact).toList();
-          final ofGroups = all.where((c) => !c.isPersonal).toList();
-          // Le nom du groupe plutôt que celui de son agenda, figé à sa
-          // création : un groupe renommé garde sinon son ancien nom ici.
-          final groupNames = <String, String>{
-            for (final group
-                in ref.watch(myGroupsProvider).value ?? const <MyGroup>[])
-              group.id: group.name,
-          };
           final nativeCount = personal
               .where((c) => c.kind == CalendarKind.native)
               .length;
@@ -86,56 +71,7 @@ class CalendarsScreen extends ConsumerWidget {
                           calendar.kind != CalendarKind.native ||
                           nativeCount > 1,
                     ),
-                    onShownChanged: (shown) => runCalendarAction(
-                      context,
-                      () => ref
-                          .read(calendarsServiceProvider)
-                          .setHidden(calendar.id, hidden: !shown),
-                    ),
                   ),
-                ListTile(
-                  key: CalendarKeys.contactCalendarsHeader,
-                  title: Text(
-                    l10n.contactCalendarsTitle,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                for (final calendar in contacts)
-                  _CalendarTile(
-                    calendar: calendar,
-                    onTap: () =>
-                        editCalendar(context, ref, calendar, canDelete: true),
-                    onShownChanged: (shown) => runCalendarAction(
-                      context,
-                      () => ref
-                          .read(calendarsServiceProvider)
-                          .setHidden(calendar.id, hidden: !shown),
-                    ),
-                  ),
-                if (ofGroups.isNotEmpty) ...[
-                  ListTile(
-                    key: CalendarKeys.groupCalendarsHeader,
-                    title: Text(
-                      l10n.groupCalendarsTitle,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  for (final calendar in ofGroups)
-                    _GroupCalendarTile(
-                      calendar: calendar,
-                      name: groupNames[calendar.groupId] ?? calendar.name,
-                      onTap: () => context.pushNamed(
-                        AppRoute.group.name,
-                        pathParameters: {'groupId': calendar.groupId!},
-                      ),
-                      onShownChanged: (shown) => runCalendarAction(
-                        context,
-                        () => ref
-                            .read(calendarsServiceProvider)
-                            .setHidden(calendar.id, hidden: !shown),
-                      ),
-                    ),
-                ],
                 const Divider(),
                 ListTile(
                   key: CalendarKeys.importCalendar,
@@ -154,15 +90,10 @@ class CalendarsScreen extends ConsumerWidget {
 }
 
 class _CalendarTile extends StatelessWidget {
-  const _CalendarTile({
-    required this.calendar,
-    required this.onTap,
-    required this.onShownChanged,
-  });
+  const _CalendarTile({required this.calendar, required this.onTap});
 
   final UserCalendar calendar;
   final VoidCallback onTap;
-  final ValueChanged<bool> onShownChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -172,11 +103,9 @@ class _CalendarTile extends StatelessWidget {
       Theme.of(context).colorScheme.primary,
     );
     final visibility = Text(
-      calendar.isContact
-          ? l10n.contactCalendarSubtitle
-          : l10n.calendarVisibilitySummary(
-              visibilityLabel(calendar.visibility, l10n),
-            ),
+      l10n.calendarVisibilitySummary(
+        visibilityLabel(calendar.visibility, l10n),
+      ),
     );
     return ListTile(
       key: CalendarKeys.calendarTile(calendar.id),
@@ -192,13 +121,7 @@ class _CalendarTile extends StatelessWidget {
               ],
             )
           : visibility,
-      trailing: Checkbox(
-        key: CalendarKeys.calendarShown(calendar.id),
-        value: !calendar.hidden,
-        activeColor: color,
-        semanticLabel: l10n.calendarShownTooltip,
-        onChanged: (value) => onShownChanged(value ?? true),
-      ),
+      trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
   }
@@ -235,43 +158,6 @@ class _SyncStatus extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Agenda d'un groupe : ses rdv se montrent ou se masquent dans ma vue.
-class _GroupCalendarTile extends StatelessWidget {
-  const _GroupCalendarTile({
-    required this.calendar,
-    required this.name,
-    required this.onTap,
-    required this.onShownChanged,
-  });
-
-  final UserCalendar calendar;
-  final String name;
-  final VoidCallback onTap;
-  final ValueChanged<bool> onShownChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final color = colorFromHex(
-      calendar.colorHex,
-      Theme.of(context).colorScheme.secondary,
-    );
-    return ListTile(
-      key: CalendarKeys.calendarTile(calendar.id),
-      leading: Icon(Icons.groups_outlined, color: color),
-      title: Text(name),
-      trailing: Checkbox(
-        key: CalendarKeys.calendarShown(calendar.id),
-        value: !calendar.hidden,
-        activeColor: color,
-        semanticLabel: l10n.calendarShownTooltip,
-        onChanged: (value) => onShownChanged(value ?? true),
-      ),
-      onTap: onTap,
     );
   }
 }

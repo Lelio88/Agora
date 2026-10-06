@@ -97,7 +97,8 @@ app ◄── temps réel sur calendars : état de synchro ; sync_calendar_now :
 
 ## Dans l'app (`features/calendar/`)
 
-- **Importer** (« Mes agendas » → « Importer un agenda ») : lien, nom, couleur, et où trouver le
+- **Importer** (Moi → « Mes agendas » → « Importer un agenda », ou la page d'un proche →
+  « Importer son planning ») : lien, nom, couleur, et où trouver le
   lien chez Google, Outlook et Apple. Le champ vérifie la forme (`https://` ou `webcal://`, sans
   espace ni identifiants, ≤ 2 048) ; le serveur fait foi (`invalid_feed_url`, `too_many_feeds`).
   Le lien part à `add_ics_calendar` et **l'app ne le revoit jamais** (ni le brouillon, dont

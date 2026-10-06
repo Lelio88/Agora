@@ -266,14 +266,13 @@ void main() {
     expect(calendar.responses.keys.single, ResponseKey('evt-training', first));
   });
 
-  testWidgets('my calendars list my groups under their current name', (
+  testWidgets('shown calendars list my groups under their current name', (
     tester,
   ) async {
     final robot = await _pump(tester);
 
-    await robot.openCalendars();
+    await robot.openShownCalendars();
 
-    robot.expectScreen(CalendarKeys.groupCalendarsHeader);
     robot.expectText('Foot');
     expect(find.text('Ancien nom'), findsNothing);
     await robot.tap(CalendarKeys.calendarShown(_groupCalendar.id));

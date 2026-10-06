@@ -4,7 +4,8 @@
 /// Les onglets vivent dans une `IndexedStack` : passer de l'un à l'autre
 /// garde la page, la vue et le défilement de l'agenda. Le profil est un
 /// onglet plutôt qu'une icône en haut à droite : on le trouve sans le
-/// chercher.
+/// chercher. L'agenda n'a pas de barre de titre : sa propre barre (période,
+/// navigation, vues) en tient lieu, et lui laisse sa hauteur.
 library;
 
 import 'package:agora/src/features/calendar/presentation/calendar_screen.dart';
@@ -35,16 +36,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       key: HomeKeys.screen,
-      appBar: AppBar(
-        title: Text(switch (_tab) {
-          0 => l10n.agendaTitle,
-          1 => l10n.navSocial,
-          _ => l10n.navMe,
-        }),
-      ),
+      appBar: switch (_tab) {
+        0 => null,
+        1 => AppBar(title: Text(l10n.navSocial)),
+        _ => AppBar(title: Text(l10n.navMe)),
+      },
       body: IndexedStack(
         index: _tab,
-        children: const [CalendarScreen(), SocialScreen(), ProfileScreen()],
+        children: const [
+          // Sans barre de titre, l'agenda se garde de la barre d'état.
+          SafeArea(bottom: false, child: CalendarScreen()),
+          SocialScreen(),
+          ProfileScreen(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,

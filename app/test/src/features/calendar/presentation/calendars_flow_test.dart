@@ -94,9 +94,10 @@ void main() {
     );
     expect(find.text('Réunion'), findsWidgets);
 
-    await robot.openCalendars();
+    await robot.openShownCalendars();
+    robot.expectText('Masquer un agenda ne change rien pour tes groupes.');
     await robot.tap(CalendarKeys.calendarShown(_work.id));
-    await robot.goBack();
+    await robot.dismissSheet();
 
     expect(find.text('Réunion'), findsNothing);
     expect(robot.calendars.calendars.last.hidden, isTrue);
@@ -173,7 +174,7 @@ void main() {
       calendars: FakeCalendarsRepository([_personal, _work]),
     );
 
-    await robot.tapEvent('Yoga');
+    await robot.editEvent('Yoga');
     await robot.chooseCalendar(_work.id);
     await robot.tap(CalendarKeys.save);
 

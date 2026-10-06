@@ -452,5 +452,12 @@
   "editNameTooltip": "Change your name",
   "timezoneMatchesDevice": "{zone}, this device's",
   "calendarsTileSubtitle": "Create, import, colours and sharing",
-  "assistantConnectTitle": "Connect an assistant"
+  "assistantConnectTitle": "Connect an assistant",
+  "viewThreeDays": "3 days",
+  "viewMenuTooltip": "Change view",
+  "shownCalendarsTooltip": "Shown calendars",
+  "shownCalendarsTitle": "Show in my agenda",
+  "shownCalendarsHint": "Hiding a calendar changes nothing for your groups.",
+  "eventEditButton": "Edit",
+  "dayEmpty": "Nothing on that day."
 }

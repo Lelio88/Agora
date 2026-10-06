@@ -12,10 +12,14 @@
 /// - kalender publie sa plage visible pendant sa propre construction : le
 ///   changement de plage, comme le nom de la période dans la barre, est
 ///   différé à la fin de l'image ;
-/// - la barre centre la navigation (`NavigationToolbar`, comme le titre
-///   d'une AppBar : centrée si elle tient, décalée sinon, jamais par-dessus
-///   les actions) ; sous [_wideToolbarWidth], les vues passent dessous, sur
-///   toute la largeur, plutôt que de défiler hors de l'écran.
+/// - sur un grand écran, la barre centre la navigation
+///   (`NavigationToolbar`, comme le titre d'une AppBar) entre les vues, à
+///   gauche, et les actions, à droite ; sous [_wideToolbarWidth] (un
+///   téléphone), elle tient sur **une ligne** — la période à gauche, puis
+///   aujourd'hui, précédent, suivant, le menu des vues et les actions — et
+///   tient lieu de barre de titre : l'agenda garde sa hauteur ;
+/// - sur un téléphone, la « semaine » ne montre que trois jours : elle
+///   s'appelle « 3 jours » ([agendaViewLabel]).
 library;
 
 import 'package:agora/src/localization/app_localizations.dart';
@@ -39,7 +43,45 @@ final class AgendaToolbarKeys {
   ValueKey<String> get month => ValueKey('$scope.viewMonth');
   ValueKey<String> get schedule => ValueKey('$scope.viewSchedule');
   ValueKey<String> get period => ValueKey('$scope.period');
+
+  /// Menu des vues d'un écran étroit.
+  ValueKey<String> get viewMenu => ValueKey('$scope.viewMenu');
 }
+
+/// Nom de [view] ; la semaine d'un écran étroit (moins de 600 px) n'a que
+/// trois jours, et le dit.
+String agendaViewLabel(
+  BuildContext context,
+  AgendaView view,
+  AppLocalizations l10n,
+) => switch (view) {
+  AgendaView.day => l10n.viewDay,
+  AgendaView.week when MediaQuery.sizeOf(context).width < _narrowWidth =>
+    l10n.viewThreeDays,
+  AgendaView.week => l10n.viewWeek,
+  AgendaView.month => l10n.viewMonth,
+  AgendaView.schedule => l10n.viewSchedule,
+};
+
+/// Largeur sous laquelle la semaine se réduit à trois jours.
+const _narrowWidth = 600.0;
+
+/// Composants kalender d'un agenda : sur un écran étroit, les jours de la
+/// semaine de la vue mois s'abrègent (« lun. ») — leurs noms entiers y
+/// étaient coupés. `null` : ceux de kalender.
+KalenderComponents? agendaComponents(BuildContext context) =>
+    MediaQuery.sizeOf(context).width < _narrowWidth ? _narrowComponents : null;
+
+const _narrowComponents = KalenderComponents(
+  monthComponents: MonthComponents(
+    headerComponents: MonthHeaderComponents(
+      weekDayHeaderStringBuilder: _shortWeekday,
+    ),
+  ),
+);
+
+String _shortWeekday(BuildContext context, DateTime date) =>
+    DateFormat.E(Localizations.localeOf(context).toString()).format(date);
 
 /// Au-delà, une plage « visible » n'est pas une page mais une vue entière.
 const maxVisibleRange = Duration(days: 62);
@@ -75,7 +117,7 @@ ViewConfiguration agendaViewConfiguration(
     initialTimeOfDay: const KalenderTime(hour: 7, minute: 0),
     dateResolver: keepTodayInView,
   ),
-  AgendaView.week when MediaQuery.sizeOf(context).width < 600 =>
+  AgendaView.week when MediaQuery.sizeOf(context).width < _narrowWidth =>
     MultiDayViewConfiguration.custom(
       numberOfDays: _narrowDays,
       displayRange: _rollingRange(),
@@ -180,11 +222,11 @@ final class VisibleRangeFollower {
 /// « étendue » des tailles de fenêtre de Material 3.
 const _wideToolbarWidth = 840.0;
 
-/// Navigation (précédent, aujourd'hui, suivant) au centre, nom de la période
-/// dessous, choix de la vue et [trailing] (actions propres à l'écran). Sur
-/// un écran large, les vues sont à gauche de la navigation et les actions à
-/// sa droite ; plus étroit, les vues passent sous la période, sur toute la
-/// largeur.
+/// Barre d'un agenda : la période montrée, la navigation (aujourd'hui,
+/// précédent, suivant), le choix de la vue et [trailing] (actions propres à
+/// l'écran). Sur un grand écran : les vues à gauche, la navigation au
+/// centre avec la période dessous, les actions à droite. Plus étroit : une
+/// seule ligne, la période à gauche et les vues dans un menu.
 class AgendaToolbar extends StatelessWidget {
   const AgendaToolbar({
     required this.view,
@@ -202,7 +244,85 @@ class AgendaToolbar extends StatelessWidget {
   final List<Widget> trailing;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => constraints.maxWidth >= _wideToolbarWidth
+        ? _wide(context)
+        : _narrow(context),
+  );
+
+  /// Une ligne : la période, puis aujourd'hui, précédent, suivant, le menu
+  /// des vues et les actions de l'écran.
+  Widget _narrow(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    const compact = VisualDensity.compact;
+    return SizedBox(
+      height: kToolbarHeight,
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          Expanded(
+            child: _PeriodLabel(
+              key: keys.period,
+              controller: controller,
+              view: view,
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          IconButton(
+            key: keys.today,
+            visualDensity: compact,
+            tooltip: l10n.todayButton,
+            icon: const Icon(Icons.today_outlined),
+            onPressed: () => controller.animateToDate(DateTime.now()),
+          ),
+          IconButton(
+            visualDensity: compact,
+            tooltip: l10n.previousPeriod,
+            icon: const Icon(Icons.chevron_left),
+            onPressed: controller.animateToPreviousPage,
+          ),
+          IconButton(
+            visualDensity: compact,
+            tooltip: l10n.nextPeriod,
+            icon: const Icon(Icons.chevron_right),
+            onPressed: controller.animateToNextPage,
+          ),
+          PopupMenuButton<AgendaView>(
+            key: keys.viewMenu,
+            tooltip: l10n.viewMenuTooltip,
+            icon: Icon(_viewIcon(view)),
+            onSelected: onViewChanged,
+            itemBuilder: (context) => [
+              for (final (value, key) in [
+                (AgendaView.day, keys.day),
+                (AgendaView.week, keys.week),
+                (AgendaView.month, keys.month),
+                (AgendaView.schedule, keys.schedule),
+              ])
+                CheckedPopupMenuItem(
+                  key: key,
+                  value: value,
+                  checked: value == view,
+                  child: Text(agendaViewLabel(context, value, l10n)),
+                ),
+            ],
+          ),
+          ...trailing,
+          const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+
+  static IconData _viewIcon(AgendaView view) => switch (view) {
+    AgendaView.day => Icons.view_day_outlined,
+    AgendaView.week => Icons.view_week_outlined,
+    AgendaView.month => Icons.calendar_view_month_outlined,
+    AgendaView.schedule => Icons.view_agenda_outlined,
+  };
+
+  Widget _wide(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final navigation = Row(
       mainAxisSize: MainAxisSize.min,
@@ -226,46 +346,28 @@ class AgendaToolbar extends StatelessWidget {
     );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= _wideToolbarWidth;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: kMinInteractiveDimension,
-                child: NavigationToolbar(
-                  leading: isWide
-                      ? Center(
-                          widthFactor: 1,
-                          child: _viewSelector(l10n, fillWidth: false),
-                        )
-                      : null,
-                  middle: FittedBox(fit: BoxFit.scaleDown, child: navigation),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: trailing,
-                  ),
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: kMinInteractiveDimension,
+            child: NavigationToolbar(
+              leading: Center(
+                widthFactor: 1,
+                child: _viewSelector(context, l10n),
               ),
-              _PeriodLabel(
-                key: keys.period,
-                controller: controller,
-                view: view,
-              ),
-              if (!isWide) ...[
-                const SizedBox(height: 4),
-                _viewSelector(l10n, fillWidth: true),
-              ],
-            ],
-          );
-        },
+              middle: FittedBox(fit: BoxFit.scaleDown, child: navigation),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: trailing),
+            ),
+          ),
+          _PeriodLabel(key: keys.period, controller: controller, view: view),
+        ],
       ),
     );
   }
 
-  /// Choix de la vue ; [fillWidth] : segments égaux sur toute la largeur.
-  Widget _viewSelector(AppLocalizations l10n, {required bool fillWidth}) {
+  /// Choix de la vue d'un grand écran : des segments.
+  Widget _viewSelector(BuildContext context, AppLocalizations l10n) {
     ButtonSegment<AgendaView> segment(
       AgendaView value,
       String label,
@@ -279,14 +381,14 @@ class AgendaToolbar extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
     );
+    String label(AgendaView value) => agendaViewLabel(context, value, l10n);
     return SegmentedButton<AgendaView>(
       showSelectedIcon: false,
-      expandedInsets: fillWidth ? EdgeInsets.zero : null,
       segments: [
-        segment(AgendaView.day, l10n.viewDay, keys.day),
-        segment(AgendaView.week, l10n.viewWeek, keys.week),
-        segment(AgendaView.month, l10n.viewMonth, keys.month),
-        segment(AgendaView.schedule, l10n.viewSchedule, keys.schedule),
+        segment(AgendaView.day, label(AgendaView.day), keys.day),
+        segment(AgendaView.week, label(AgendaView.week), keys.week),
+        segment(AgendaView.month, label(AgendaView.month), keys.month),
+        segment(AgendaView.schedule, label(AgendaView.schedule), keys.schedule),
       ],
       selected: {view},
       onSelectionChanged: (selection) => onViewChanged(selection.first),
@@ -296,10 +398,20 @@ class AgendaToolbar extends StatelessWidget {
 
 /// Nom de la période que montre la page de kalender.
 class _PeriodLabel extends StatefulWidget {
-  const _PeriodLabel({required this.controller, required this.view, super.key});
+  const _PeriodLabel({
+    required this.controller,
+    required this.view,
+    this.textAlign = TextAlign.center,
+    this.style,
+    super.key,
+  });
 
   final KalenderController controller;
   final AgendaView view;
+  final TextAlign textAlign;
+
+  /// Style du libellé ; `titleSmall` par défaut.
+  final TextStyle? style;
 
   @override
   State<_PeriodLabel> createState() => _PeriodLabelState();
@@ -353,10 +465,10 @@ class _PeriodLabelState extends State<_PeriodLabel> {
               end: range.end,
               l10n: AppLocalizations.of(context),
             ),
-      textAlign: TextAlign.center,
+      textAlign: widget.textAlign,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.titleSmall,
+      style: widget.style ?? Theme.of(context).textTheme.titleSmall,
     );
   }
 }

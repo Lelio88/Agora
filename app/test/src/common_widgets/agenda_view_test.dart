@@ -136,17 +136,24 @@ void main() {
     final views = find.byType(SegmentedButton<AgendaView>);
 
     testWidgets(
-      'on a phone, the navigation is centred above views spanning the width',
+      'on a phone, one line: the period first, then the controls and views',
       (tester) async {
         await pumpToolbar(tester, width: 400);
 
+        final period = rectOf(tester, find.byKey(_keys.period));
         final today = rectOf(tester, find.byKey(_keys.today));
-        final segmented = rectOf(tester, views);
-        expect(today.center.dx, moreOrLessEquals(200, epsilon: 1));
-        expect(segmented.top, greaterThanOrEqualTo(today.bottom));
-        expect(segmented.width, greaterThan(400 - 32));
-        expect(rectOf(tester, find.byKey(_actionKey)).right, lessThan(400));
-        expect(find.byType(SingleChildScrollView), findsNothing);
+        final menu = rectOf(tester, find.byKey(_keys.viewMenu));
+        final action = rectOf(tester, find.byKey(_actionKey));
+        expect(views, findsNothing);
+        expect(period.right, lessThanOrEqualTo(today.left));
+        expect(today.center.dy, moreOrLessEquals(period.center.dy, epsilon: 1));
+        expect(menu.center.dy, moreOrLessEquals(today.center.dy, epsilon: 1));
+        expect(action.left, greaterThanOrEqualTo(menu.right));
+        expect(action.right, lessThan(400));
+        expect(
+          rectOf(tester, find.byType(AgendaToolbar)).height,
+          kToolbarHeight,
+        );
       },
     );
 
@@ -156,7 +163,10 @@ void main() {
       await pumpToolbar(tester, width: 320);
 
       expect(tester.takeException(), isNull);
-      expect(rectOf(tester, views).right, lessThanOrEqualTo(320));
+      expect(
+        rectOf(tester, find.byKey(_actionKey)).right,
+        lessThanOrEqualTo(320),
+      );
     });
 
     // La police des tests donne 1 em à chaque glyphe : les libellés y sont
@@ -205,10 +215,9 @@ void main() {
         ),
         findsOneWidget,
       );
+      // Sur un téléphone, la période ouvre la ligne, à gauche.
       final period = rectOf(tester, find.byKey(_keys.period));
-      final today = rectOf(tester, find.byKey(_keys.today));
-      expect(period.center.dx, moreOrLessEquals(200, epsilon: 1));
-      expect(period.top, greaterThanOrEqualTo(today.bottom));
+      expect(period.left, moreOrLessEquals(16, epsilon: 1));
     });
   });
 }

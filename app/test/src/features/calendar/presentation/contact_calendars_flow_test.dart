@@ -67,13 +67,17 @@ void main() {
     );
 
     await robot.openCalendars();
+    // « Mes agendas » ne liste que les miens : Léa est dans Social.
+    expect(find.byKey(CalendarKeys.calendarTile(_lea.id)), findsNothing);
     await robot.tap(CalendarKeys.calendarTile(_personal.id));
     expect(find.byKey(CalendarKeys.calendarDelete), findsNothing);
     // L'éditeur s'ouvre en plein écran : il se ferme par sa croix.
     await tester.tap(find.byType(CloseButton));
     await robot.settle();
+    await robot.goBack();
 
-    await robot.tap(CalendarKeys.calendarTile(_lea.id));
+    await robot.openContact(_lea.id);
+    await robot.tap(CalendarKeys.contactEdit);
     expect(find.byKey(CalendarKeys.calendarDelete), findsOneWidget);
     expect(find.byKey(CalendarKeys.calendarVisibility), findsNothing);
   });

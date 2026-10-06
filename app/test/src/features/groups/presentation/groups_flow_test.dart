@@ -1,3 +1,4 @@
+import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/groups/domain/group.dart';
 import 'package:agora/src/features/groups/domain/group_agenda_item.dart';
@@ -172,7 +173,7 @@ void main() {
     await robot.pumpApp(auth: _signedIn(), groups: groups);
 
     await robot.openGroup('g-coloc');
-    await robot.tap(GroupKeys.toolbar.month);
+    await robot.chooseView(GroupKeys.toolbar, AgendaView.month);
     await robot.tap(GroupKeys.toolbar.today);
 
     robot.expectScreen(GroupKeys.groupScreen);

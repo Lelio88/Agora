@@ -18,6 +18,7 @@ import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
+import 'package:agora/src/common_widgets/agenda_view.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/home/presentation/social_screen.dart';
@@ -291,8 +292,44 @@ class AgoraRobot {
     await settle();
   }
 
-  /// Ouvre « Mes agendas » depuis la barre de l'agenda.
-  Future<void> openCalendars() => tap(CalendarKeys.manageCalendars);
+  /// Ouvre « Mes agendas » depuis l'onglet « Moi ».
+  Future<void> openCalendars() async {
+    await tap(HomeKeys.meTab);
+    await tap(ProfileKeys.calendars);
+  }
+
+  /// Ouvre la feuille « Agendas affichés » de la barre de l'agenda.
+  Future<void> openShownCalendars() async {
+    await tap(HomeKeys.agendaTab);
+    await tap(CalendarKeys.shownCalendars);
+  }
+
+  /// Referme une feuille du bas en touchant au-dessus d'elle.
+  Future<void> dismissSheet() async {
+    await tester.tapAt(const Offset(20, 20));
+    await settle();
+  }
+
+  /// Choisit la vue [view] d'une barre d'agenda : ses segments sur un grand
+  /// écran, son menu sur un écran étroit.
+  Future<void> chooseView(AgendaToolbarKeys keys, AgendaView view) async {
+    final key = switch (view) {
+      AgendaView.day => keys.day,
+      AgendaView.week => keys.week,
+      AgendaView.month => keys.month,
+      AgendaView.schedule => keys.schedule,
+    };
+    if (find.byKey(keys.viewMenu).evaluate().isEmpty) return tap(key);
+    await tap(keys.viewMenu);
+    await tester.tap(find.byKey(key).last);
+    await settle();
+  }
+
+  /// Ouvre la fiche du rdv [title], puis son éditeur.
+  Future<void> editEvent(String title) async {
+    await tapEvent(title);
+    await tap(CalendarKeys.eventEdit);
+  }
 
   /// Choisit l'agenda [calendarId] dans le menu de l'éditeur de rdv.
   Future<void> chooseCalendar(String calendarId) async {

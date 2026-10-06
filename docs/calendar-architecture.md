@@ -159,13 +159,24 @@ Migration : `20260921220000_calendar_management.sql`.
   montrait jamais jeudi–dimanche. Toutes les vues se calent sur aujourd'hui quand on y arrive
   depuis une plage qui le contient (`keepTodayInView`) : kalender reprenait le début de la plage
   quittée, et un 1er du mois, le mois et le planning ouvraient le mois précédent.
-- **Barre d'agenda** (`AgendaToolbar`, partagée avec l'agenda d'un groupe) : « ‹ Aujourd'hui › »
-  au centre (`NavigationToolbar` : centrée si elle tient, décalée sinon, jamais par-dessus les
-  actions), et dessous le nom de la période affichée (`agendaPeriodLabel` : « 5 – 11 octobre
-  2026 », « 28 sept. – 4 oct. 2026 », « Octobre 2026 » ; la grille d'un mois, qui déborde sur
-  ses voisins, porte le nom du mois de son milieu). À partir de 840 px de large, les vues sont à
-  gauche et les actions à droite, sur la même ligne ; en dessous, les vues passent sous la
-  période, sur toute la largeur.
+- **Barre d'agenda** (`AgendaToolbar`, partagée avec l'agenda d'un groupe) : le nom de la
+  période affichée (`agendaPeriodLabel` : « 5 – 11 octobre 2026 », « 28 sept. – 4 oct. 2026 »,
+  « Octobre 2026 » ; la grille d'un mois, qui déborde sur ses voisins, porte le nom du mois de
+  son milieu), la navigation et le choix de la vue. Sous 840 px (téléphone), **une seule ligne**
+  de la hauteur d'une barre de titre — la période à gauche, puis aujourd'hui, précédent,
+  suivant, le menu des vues et les actions de l'écran — et l'onglet Agenda n'a pas d'autre barre
+  de titre : la grille garde sa hauteur. Au-delà, les vues en segments à gauche, « ‹ Aujourd'hui
+  › » au centre (`NavigationToolbar`), les actions à droite, la période dessous. Sous 600 px, la
+  « semaine » s'appelle « 3 jours » (`agendaViewLabel`), et la vue mois abrège les jours
+  (« lun. », `agendaComponents`).
+- **Vue mois d'un téléphone** (moins de 600 px, agenda perso) : une **pastille** par rdv (barre de
+  la couleur de son agenda, sans texte) et, dessous, la liste du jour choisi ; toucher un jour le
+  choisit au lieu de créer un rdv. Des titres tronqués à trois lettres ne se lisaient pas.
+- **Un appui sur un de mes rdv ouvre sa fiche de lecture** (`event_sheet.dart`) : quand, où (avec
+  « Y aller »), répétition, agenda, ce qu'en voient les groupes (« Pour toi seul » pour un
+  proche), puis Modifier et Supprimer, qui passent par `event_actions.dart`. Le planning importé
+  d'un proche s'y lit seulement ; un autre rdv importé ouvre la fiche qui règle sa visibilité.
+  Un rdv de proche porte une petite silhouette sur sa tuile.
 - **Tests d'écran** : le robot annonce un écran de taille nulle, donc la mise en page de
   téléphone ; `pumpApp(screenSize: …)` pose un vrai écran (semaine complète au-delà de 600 px).
   Sans écran posé, la surface fait 800 × 800 px : sous la barre d'agenda, c'est ce qui laisse à
@@ -220,9 +231,13 @@ Migration : `20260921220000_calendar_management.sql`.
 - **Visibilité** d'un rdv ou d'un agenda pour les groupes : hérite, occupé ou invisible — jamais
   « détails » (contrainte serveur : ils ne peuvent que restreindre). `VisibilityField` sert aux
   deux éditeurs.
-- **« Mes agendas »** (`CalendarsScreen`, bouton de la barre d'agenda) : liste des agendas
-  personnels avec leur masquage, case d'affichage, création et modification
-  (`CalendarEditorScreen`, qui renvoie un résultat comme l'éditeur de rdv). La suppression
+- **« Agendas affichés »** (`shown_calendars_sheet.dart`, bouton de la barre d'agenda) : une case
+  par agenda — les miens, ceux des proches, ceux des groupes sous leur nom actuel — pour le
+  montrer ou le masquer dans sa vue ; la feuille rappelle que rien ne change pour les groupes.
+- **« Mes agendas »** (`CalendarsScreen`, onglet Moi) : mes agendas à moi (ni proches ni
+  groupes), ce qu'en voient les groupes, création, import et modification
+  (`CalendarEditorScreen`, qui renvoie un résultat comme l'éditeur de rdv ; les actions sont
+  partagées avec l'onglet Social dans `calendars_actions.dart`). La suppression
   annonce le nombre de rdv perdus (une série compte pour un) ; le dernier agenda natif n'a pas
   de bouton de suppression. Les tuiles prennent la couleur de leur agenda, texte clair ou
   foncé selon la luminance. L'éditeur de rdv propose l'agenda à partir de deux agendas.

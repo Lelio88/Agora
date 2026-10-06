@@ -1568,4 +1568,26 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get assistantConnectTitle => 'Brancher un assistant';
+
+  @override
+  String get viewThreeDays => '3 jours';
+
+  @override
+  String get viewMenuTooltip => 'Changer de vue';
+
+  @override
+  String get shownCalendarsTooltip => 'Agendas affichés';
+
+  @override
+  String get shownCalendarsTitle => 'Afficher dans mon agenda';
+
+  @override
+  String get shownCalendarsHint =>
+      'Masquer un agenda ne change rien pour tes groupes.';
+
+  @override
+  String get eventEditButton => 'Modifier';
+
+  @override
+  String get dayEmpty => 'Rien de noté ce jour-là.';
 }

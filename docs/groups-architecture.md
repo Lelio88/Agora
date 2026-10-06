@@ -133,8 +133,8 @@ Dans l'app (feature **agenda**, car ce sont des rdv : éditeur, portée, service
   comme depuis l'agenda perso.
 - **Agenda perso** : les rdv de mes groupes y figurent (la RLS les rend lisibles), non
   déplaçables ; un appui ouvre leur fiche. Présent ou peut-être : une icône sur la tuile ; absent :
-  tuile estompée et barrée, sans disparaître. « Mes agendas » liste les agendas de mes groupes
-  (sous le nom actuel du groupe) avec la même case « afficher ».
+  tuile estompée et barrée, sans disparaître. « Agendas affichés » (barre de l'agenda) liste les
+  agendas de mes groupes (sous le nom actuel du groupe) avec la même case « afficher ».
 - **Couplage** : l'écran du groupe (feature groupes) n'importe rien de la feature agenda ; il ouvre
   ses écrans par nom de route et relit son agenda au retour. La fiche lit membres et rôle par
   l'application de la feature groupes.

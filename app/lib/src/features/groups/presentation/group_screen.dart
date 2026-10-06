@@ -207,6 +207,7 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
                   eventsController: _eventsController,
                   kalenderController: _kalenderController,
                   viewConfiguration: agendaViewConfiguration(context, _view),
+                  components: agendaComponents(context),
                   locale: Localizations.localeOf(context),
                   callbacks: KalenderCallbacks(
                     onEventTapped: (event) {

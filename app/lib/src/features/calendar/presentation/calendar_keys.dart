@@ -17,7 +17,13 @@ abstract final class CalendarKeys {
   static final viewWeek = toolbar.week;
   static final viewMonth = toolbar.month;
   static final viewSchedule = toolbar.schedule;
-  static const manageCalendars = ValueKey('calendar.manageCalendars');
+  static const shownCalendars = ValueKey('calendar.shownCalendars');
+  static const shownCalendarsSheet = ValueKey('calendar.shownCalendars.sheet');
+  static const monthDayList = ValueKey('calendar.month.dayList');
+  static ValueKey<String> monthDayItem(String instanceKey) =>
+      ValueKey('calendar.month.day.$instanceKey');
+  static const eventSheet = ValueKey('calendar.eventSheet');
+  static const eventEdit = ValueKey('calendar.eventSheet.edit');
 
   static const editor = ValueKey('calendar.editor');
   static const title = ValueKey('calendar.editor.title');
@@ -35,8 +41,6 @@ abstract final class CalendarKeys {
 
   static const calendarsScreen = ValueKey('calendars.screen');
   static const newCalendar = ValueKey('calendars.new');
-  static const newContactCalendar = ValueKey('calendars.newContact');
-  static const contactCalendarsHeader = ValueKey('calendars.contacts');
   static const calendarEditor = ValueKey('calendars.editor');
   static const calendarName = ValueKey('calendars.editor.name');
   static const calendarVisibility = ValueKey('calendars.editor.visibility');
@@ -64,7 +68,6 @@ abstract final class CalendarKeys {
   static const groupEventDelete = ValueKey('calendar.groupEvent.delete');
   static const myResponse = ValueKey('calendar.groupEvent.myResponse');
   static const noResponseSection = ValueKey('calendar.groupEvent.noResponse');
-  static const groupCalendarsHeader = ValueKey('calendars.groupsHeader');
 
   /// Bouton d'une réponse sur la fiche d'un rdv de groupe.
   static ValueKey<String> responseOption(ResponseStatus status) =>

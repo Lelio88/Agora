@@ -1556,4 +1556,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assistantConnectTitle => 'Connect an assistant';
+
+  @override
+  String get viewThreeDays => '3 days';
+
+  @override
+  String get viewMenuTooltip => 'Change view';
+
+  @override
+  String get shownCalendarsTooltip => 'Shown calendars';
+
+  @override
+  String get shownCalendarsTitle => 'Show in my agenda';
+
+  @override
+  String get shownCalendarsHint =>
+      'Hiding a calendar changes nothing for your groups.';
+
+  @override
+  String get eventEditButton => 'Edit';
+
+  @override
+  String get dayEmpty => 'Nothing on that day.';
 }

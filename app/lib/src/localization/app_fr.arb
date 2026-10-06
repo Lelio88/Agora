@@ -920,5 +920,19 @@
   "calendarsTileSubtitle": "Créer, importer, couleurs et partage",
   "@calendarsTileSubtitle": {"description": "Onglet Moi : sous-titre de la ligne « Mes agendas »."},
   "assistantConnectTitle": "Brancher un assistant",
-  "@assistantConnectTitle": {"description": "Écran Assistant IA : section repliable qui explique comment brancher un assistant."}
+  "@assistantConnectTitle": {"description": "Écran Assistant IA : section repliable qui explique comment brancher un assistant."},
+  "viewThreeDays": "3 jours",
+  "@viewThreeDays": {"description": "Vue d'agenda : trois jours glissants (la « semaine » d'un téléphone)."},
+  "viewMenuTooltip": "Changer de vue",
+  "@viewMenuTooltip": {"description": "Agenda : bouton qui choisit la vue (jour, 3 jours, mois, planning)."},
+  "shownCalendarsTooltip": "Agendas affichés",
+  "@shownCalendarsTooltip": {"description": "Agenda : bouton qui choisit les agendas montrés dans sa vue."},
+  "shownCalendarsTitle": "Afficher dans mon agenda",
+  "@shownCalendarsTitle": {"description": "Titre du choix des agendas montrés dans sa vue."},
+  "shownCalendarsHint": "Masquer un agenda ne change rien pour tes groupes.",
+  "@shownCalendarsHint": {"description": "Précision du choix des agendas montrés : c'est de l'affichage, pas du partage."},
+  "eventEditButton": "Modifier",
+  "@eventEditButton": {"description": "Fiche d'un rdv : ouvrir l'éditeur."},
+  "dayEmpty": "Rien de noté ce jour-là.",
+  "@dayEmpty": {"description": "Vue mois d'un téléphone : le jour touché n'a aucun rdv."}
 }

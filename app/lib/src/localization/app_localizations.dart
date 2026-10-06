@@ -2748,6 +2748,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Brancher un assistant'**
   String get assistantConnectTitle;
+
+  /// Vue d'agenda : trois jours glissants (la « semaine » d'un téléphone).
+  ///
+  /// In fr, this message translates to:
+  /// **'3 jours'**
+  String get viewThreeDays;
+
+  /// Agenda : bouton qui choisit la vue (jour, 3 jours, mois, planning).
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer de vue'**
+  String get viewMenuTooltip;
+
+  /// Agenda : bouton qui choisit les agendas montrés dans sa vue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agendas affichés'**
+  String get shownCalendarsTooltip;
+
+  /// Titre du choix des agendas montrés dans sa vue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher dans mon agenda'**
+  String get shownCalendarsTitle;
+
+  /// Précision du choix des agendas montrés : c'est de l'affichage, pas du partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Masquer un agenda ne change rien pour tes groupes.'**
+  String get shownCalendarsHint;
+
+  /// Fiche d'un rdv : ouvrir l'éditeur.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get eventEditButton;
+
+  /// Vue mois d'un téléphone : le jour touché n'a aucun rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien de noté ce jour-là.'**
+  String get dayEmpty;
 }
 
 class _AppLocalizationsDelegate
