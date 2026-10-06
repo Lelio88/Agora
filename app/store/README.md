@@ -27,7 +27,7 @@ fiche.
 Huit captures, dans l'ordre de la fiche : `01-agenda` (vue Planning),
 `02-groupe` (Coloc), `03-social` (onglet Social : anniversaire à venir, proche,
 groupes), `04-creneaux` (Trouver un créneau), `05-rdv` (la Raclette et ses
-réponses), `06-import` (Moi → Mes agendas), `07-proche` (la page de Hugo),
+réponses), `06-import` (Moi → Mes agendas → Importer un agenda, clavier fermé), `07-proche` (la page de Hugo),
 `08-mois` (vue Mois : pastilles et liste du jour).
 
 ```bash
@@ -314,6 +314,16 @@ Français, envoyées sur `alpha` :
 
 ```
 Vue Mois sur téléphone : les rendez-vous d'un même jour s'affichent tous en pastilles, au lieu d'un « +1 » dès le deuxième.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
+### Notes de version — 0.8.2+14 (tutoiement partout)
+
+Français, envoyées sur `alpha` :
+
+```
+L'application vous tutoie désormais partout : les quelques écrans qui vous vouvoyaient encore sont harmonisés.
 
 Vos retours : heianenterpriseyt@gmail.com
 ```
