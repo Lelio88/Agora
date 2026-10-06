@@ -188,6 +188,54 @@ void main() {
     expect(find.byKey(GroupKeys.twinMenu), findsNothing);
   });
 
+  testWidgets('joining a DewDrop circle is announced as a request', (
+    tester,
+  ) async {
+    final groups = FakeGroupsRepository()
+      ..seedGroup('g-1', 'Coloc', myRole: GroupRole.member);
+    groups.twins['g-1'] = [
+      const GroupTwin(
+        app: TwinApp.arpente,
+        inviteCode: 'JUMXZ222',
+        remoteCode: 'ABC234',
+      ),
+      const GroupTwin(
+        app: TwinApp.dewdrop,
+        inviteCode: 'JUMXZ333',
+        remoteCode: 'WXYZ2345',
+      ),
+    ];
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), groups: groups);
+
+    await robot.openGroup('g-1');
+    robot.expectText('Ce groupe existe aussi dans DewDrop.');
+    robot.expectText('Demander à rejoindre');
+    await robot.tap(GroupKeys.twinJoin(TwinApp.dewdrop));
+
+    expect(
+      robot.links.opened.last.toString(),
+      'https://dewdrop.heianenterprise.com/rejoindre.html#code=WXYZ2345',
+    );
+  });
+
+  testWidgets('an admin twins a group with DewDrop too', (tester) async {
+    final groups = FakeGroupsRepository()
+      ..seedGroup('g-1', 'Coloc', myRole: GroupRole.admin);
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), groups: groups);
+
+    await robot.openGroup('g-1');
+    await robot.tap(GroupKeys.menu);
+    await robot.tap(GroupKeys.twinMenu);
+    await robot.tap(GroupKeys.twinStart(TwinApp.dewdrop));
+
+    final request = robot.links.opened.single;
+    expect(request.origin, 'https://dewdrop.heianenterprise.com');
+    expect(_fragment(request)['nom'], 'Coloc');
+    expect(groups.twins['g-1']!.single.app, TwinApp.dewdrop);
+  });
+
   testWidgets('a second link replaces the first one on screen', (tester) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn());

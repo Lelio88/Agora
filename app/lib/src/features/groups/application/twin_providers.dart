@@ -1,5 +1,5 @@
-/// Jumelage d'un groupe avec un groupe d'une autre app (Arpente) : lancer,
-/// répondre, compléter, défaire. Le protocole et ses liens sont dans
+/// Jumelage d'un groupe avec un groupe d'une autre app (Arpente, DewDrop) :
+/// lancer, répondre, compléter, défaire. Le protocole et ses liens sont dans
 /// `domain/twin.dart`.
 ///
 /// Choix non évidents :
@@ -7,7 +7,7 @@
 ///   mémoire seulement. Une réponse n'est acceptée que si elle répond à une
 ///   demande partie d'ici : même jeton, même invitation. Sans cette règle, un
 ///   membre qui connaît une invitation du groupe pourrait forger une réponse
-///   et faire rattacher un groupe Arpente à lui. Une app fermée entre-temps
+///   et faire rattacher un groupe distant à lui. Une app fermée entre-temps
 ///   fait relancer le jumelage, qui reprend la même invitation ;
 /// - un lien de jumelage ouvert déconnecté est retenu ([PendingTwin]) le
 ///   temps de la connexion, comme une invitation ;

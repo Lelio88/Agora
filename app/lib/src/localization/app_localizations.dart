@@ -2473,6 +2473,48 @@ abstract class AppLocalizations {
   /// **'Impossible d\'ouvrir {app}. Le jumelage est enregistré ici ; relance-le depuis le menu du groupe pour finir.'**
   String twinOpenFailed(String app);
 
+  /// Bandeau d'un groupe jumelé avec un cercle DewDrop : le code envoie une demande au créateur du cercle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demander à rejoindre'**
+  String get twinRequestJoinButton;
+
+  /// Jumelage avec une app où rejoindre est une demande (DewDrop).
+  ///
+  /// In fr, this message translates to:
+  /// **'Un jumeau est un groupe d\'une autre app. Ses membres y voient « Rejoindre aussi dans Agora », et ceux d\'ici « Demander à rejoindre dans {app} » : le créateur du cercle {app} accepte ou refuse chaque demande.'**
+  String twinExplainRequest(String app);
+
+  /// En tête de l'éditeur ouvert par un rdv préparé dans une autre app (lien #/event).
+  ///
+  /// In fr, this message translates to:
+  /// **'Préparé dans {app} : vérifie le rdv avant de l\'enregistrer.'**
+  String eventLinkFrom(String app);
+
+  /// Rdv venu d'une autre app pour un groupe dont la personne n'est pas membre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu n\'es pas encore dans le groupe « {group} » : rejoins-le, puis rouvre le lien depuis {app} pour lui proposer le rdv.'**
+  String eventLinkNotMember(String group, String app);
+
+  /// Rdv venu d'une autre app : ouvrir l'adhésion au groupe jumeau.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre le groupe'**
+  String get eventLinkJoinButton;
+
+  /// Lien #/event illisible (date, durée, titre ou app inconnus).
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien de rdv n\'est pas valable. Rouvre-le depuis l\'app qui l\'a préparé.'**
+  String get eventLinkInvalid;
+
+  /// Éditeur de rdv : aide sous le choix d'agenda quand un agenda de groupe est choisi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposé au groupe : ses membres le voient et y répondent.'**
+  String get eventProposedToGroup;
+
   /// Erreur : le groupe choisi a déjà un jumeau complet dans l'autre app.
   ///
   /// In fr, this message translates to:

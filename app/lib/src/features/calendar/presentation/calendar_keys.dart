@@ -35,6 +35,8 @@ abstract final class CalendarKeys {
   static const eventCalendar = ValueKey('calendar.editor.calendar');
   static const save = ValueKey('calendar.editor.save');
   static const delete = ValueKey('calendar.editor.delete');
+  static const eventLinkInvalid = ValueKey('calendar.eventLink.invalid');
+  static const eventLinkJoin = ValueKey('calendar.eventLink.join');
 
   static const scopeOccurrence = ValueKey('calendar.scope.occurrence');
   static const scopeSeries = ValueKey('calendar.scope.series');

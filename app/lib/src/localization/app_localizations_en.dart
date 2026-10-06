@@ -1394,6 +1394,35 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get twinRequestJoinButton => 'Ask to join';
+
+  @override
+  String twinExplainRequest(String app) {
+    return 'A twin is a group in another app. Its members see “Join in Agora too”, and members here see “Ask to join in $app”: the creator of the $app circle accepts or declines each request.';
+  }
+
+  @override
+  String eventLinkFrom(String app) {
+    return 'Prepared in $app: check the event before saving it.';
+  }
+
+  @override
+  String eventLinkNotMember(String group, String app) {
+    return 'You\'re not in the group “$group” yet: join it, then open the link again from $app to propose the event.';
+  }
+
+  @override
+  String get eventLinkJoinButton => 'Join the group';
+
+  @override
+  String get eventLinkInvalid =>
+      'This event link isn\'t valid. Open it again from the app that prepared it.';
+
+  @override
+  String get eventProposedToGroup =>
+      'Proposed to the group: its members see it and reply.';
+
+  @override
   String get errorTwinExists =>
       'This group is already twinned with another group in that app. Unlink it first from the group menu.';
 

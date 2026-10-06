@@ -86,7 +86,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `groups` | nom, description | `create_group()` ; admins pour renommer |
 | `group_members` | rôle (`owner`/`admin`/`member`) **et `share_level`**, le partage choisi pour ce groupe | `create_group()`, `join_group()` ; chacun règle son `share_level` |
 | `group_invites` | code de 8 caractères, expiration (nulle pour l'invitation d'un jumeau), nombre d'usages | `create_invite()` (tout membre) ; `twin_group()` |
-| `group_twins` | jumeau du groupe dans une autre app (Arpente) : son code d'entrée (nul = en attente) et l'invitation donnée à l'autre app | `twin_group()` (admins) ; défait avec son invitation — voir [`groups-architecture.md`](./groups-architecture.md) §Jumelage |
+| `group_twins` | jumeau du groupe dans une autre app (Arpente, DewDrop ; un par app) : son code d'entrée (nul = en attente) et l'invitation donnée à l'autre app | `twin_group()` (admins) ; défait avec son invitation — voir [`groups-architecture.md`](./groups-architecture.md) §Jumelage |
 | `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; `contact` (l'agenda d'un proche, à soi seul) et `contact_user_id` (le co-membre que ce proche désigne, lien connu du seul propriétaire) ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; `link_contact()`, `create_member_contact()` ; suppression par `delete_calendar()` |
 | `calendar_preferences` | affichage **par personne** : agenda masqué dans sa propre vue (pas de la vie privée) | l'utilisateur |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |

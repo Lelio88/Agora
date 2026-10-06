@@ -13,7 +13,9 @@
 ///   à l'écran de consentement, et passe avant une invitation : l'assistant
 ///   attend, et sa demande expire en dix minutes ;
 /// - un lien de jumelage ouvert déconnecté ([pendingTwin]) ramène à son écran,
-///   après une demande d'assistant et une invitation.
+///   après une demande d'assistant et une invitation ;
+/// - un lien de rdv venu d'une autre app ([pendingEvent]) ramène de même à
+///   son écran, en dernier.
 library;
 
 /// Écrans réservés aux visiteurs non connectés.
@@ -33,6 +35,7 @@ String? authRedirect({
   String? pendingInvite,
   String? pendingConsent,
   String? pendingTwin,
+  String? pendingEvent,
 }) {
   final isGuestOnly = guestOnlyLocations.contains(location);
   if (!isSignedIn && !isGuestOnly && !openLocations.contains(location)) {
@@ -52,6 +55,9 @@ String? authRedirect({
   if (isSignedIn && pendingTwin != null && (isGuestOnly || location == '/')) {
     return pendingTwin;
   }
+  if (isSignedIn && pendingEvent != null && (isGuestOnly || location == '/')) {
+    return pendingEvent;
+  }
   if (isSignedIn && isGuestOnly) return '/';
   return null;
 }
@@ -66,23 +72,28 @@ String? inviteCodeInLocation(String location) =>
 /// Emplacement de l'écran de jumelage (paramètres dans la requête).
 const twinPath = '/twin';
 
+/// Emplacement de l'écran d'un rdv venu d'une autre app (paramètres dans la
+/// requête).
+const eventLinkPath = '/event';
+
 /// Route d'un lien ouvert dans l'app Android (App Link), ou `null`.
 ///
 /// Le web route « par dièse » : une invitation est
 /// `https://agora.heianenterprise.com/#/join/CODE`, un lien de jumelage
 /// `…/#/twin?de=…`. Android ne filtre pas sur le fragment, l'App Link vise
 /// donc la racine, et le routeur reçoit `/` avec le fragment : c'est ce
-/// fragment qu'il faut suivre. Seuls une invitation et un lien de jumelage
-/// sont suivis : un autre fragment reste sans effet. Les paramètres d'un
-/// jumelage ne sont pas jugés ici : son écran les valide.
+/// fragment qu'il faut suivre. Seuls une invitation, un lien de jumelage et
+/// un lien de rdv sont suivis : un autre fragment reste sans effet. Leurs
+/// paramètres ne sont pas jugés ici : leur écran les valide.
 String? appLinkRoute(Uri uri) {
   if (uri.path != '/' && uri.path.isNotEmpty) return null;
   final code = inviteCodeInLocation(uri.fragment);
   if (code != null) return '/join/$code';
   final inner = Uri.tryParse(uri.fragment);
-  if (inner == null || inner.path != twinPath) return null;
+  if (inner == null) return null;
+  if (inner.path != twinPath && inner.path != eventLinkPath) return null;
   return Uri(
-    path: twinPath,
+    path: inner.path,
     query: inner.query.isEmpty ? null : inner.query,
   ).toString();
 }

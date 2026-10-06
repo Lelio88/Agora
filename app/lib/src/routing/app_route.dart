@@ -13,6 +13,7 @@ enum AppRoute {
   join,
   joinByCode,
   twin,
+  eventLink,
   assistant,
   consent,
   signIn,

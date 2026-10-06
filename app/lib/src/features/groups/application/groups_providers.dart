@@ -148,7 +148,7 @@ final memberAgendaProvider = FutureProvider.autoDispose
       return memberSharedAgenda(query.userId, agendas);
     });
 
-/// Jumeaux d'un groupe dans d'autres apps (Arpente).
+/// Jumeaux d'un groupe dans d'autres apps (Arpente, DewDrop), un par app.
 final groupTwinsProvider = FutureProvider.autoDispose
     .family<List<GroupTwin>, String>(
       (ref, groupId) => ref.watch(groupsRepositoryProvider).fetchTwins(groupId),

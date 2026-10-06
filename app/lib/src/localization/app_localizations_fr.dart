@@ -1405,6 +1405,35 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get twinRequestJoinButton => 'Demander à rejoindre';
+
+  @override
+  String twinExplainRequest(String app) {
+    return 'Un jumeau est un groupe d\'une autre app. Ses membres y voient « Rejoindre aussi dans Agora », et ceux d\'ici « Demander à rejoindre dans $app » : le créateur du cercle $app accepte ou refuse chaque demande.';
+  }
+
+  @override
+  String eventLinkFrom(String app) {
+    return 'Préparé dans $app : vérifie le rdv avant de l\'enregistrer.';
+  }
+
+  @override
+  String eventLinkNotMember(String group, String app) {
+    return 'Tu n\'es pas encore dans le groupe « $group » : rejoins-le, puis rouvre le lien depuis $app pour lui proposer le rdv.';
+  }
+
+  @override
+  String get eventLinkJoinButton => 'Rejoindre le groupe';
+
+  @override
+  String get eventLinkInvalid =>
+      'Ce lien de rdv n\'est pas valable. Rouvre-le depuis l\'app qui l\'a préparé.';
+
+  @override
+  String get eventProposedToGroup =>
+      'Proposé au groupe : ses membres le voient et y répondent.';
+
+  @override
   String get errorTwinExists =>
       'Ce groupe est déjà jumelé avec un autre groupe de cette app. Défais d\'abord ce jumelage depuis le menu du groupe.';
 

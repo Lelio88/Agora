@@ -12,8 +12,9 @@
 /// feature agenda, que l'écran du groupe ouvre par leur seul nom de route. Un lien d'invitation ouvert
 /// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion, comme une
 /// demande d'accès d'un assistant IA ([PendingConsent], lue aussi dans
-/// l'adresse de la page au démarrage : voir `assistant_providers.dart`) et
-/// un lien de jumelage venu d'une autre app ([PendingTwin]).
+/// l'adresse de la page au démarrage : voir `assistant_providers.dart`), un
+/// lien de jumelage venu d'une autre app ([PendingTwin]) et un rdv préparé
+/// dans une autre app ([PendingEventLink]).
 library;
 
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
@@ -25,7 +26,9 @@ import 'package:agora/src/features/auth/presentation/reset_password_screen.dart'
 import 'package:agora/src/features/auth/presentation/sign_in_screen.dart';
 import 'package:agora/src/features/auth/presentation/sign_up_screen.dart';
 import 'package:agora/src/features/auth/presentation/verify_email_screen.dart';
+import 'package:agora/src/features/calendar/application/event_link_providers.dart';
 import 'package:agora/src/features/calendar/presentation/contact_screen.dart';
+import 'package:agora/src/features/calendar/presentation/event_link_page.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_editor_page.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_screen.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
@@ -47,6 +50,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final pendingInvite = ref.watch(pendingInviteProvider);
   final pendingConsent = ref.watch(pendingConsentProvider);
   final pendingTwin = ref.watch(pendingTwinProvider);
+  final pendingEvent = ref.watch(pendingEventLinkProvider);
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
@@ -61,6 +65,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (!isSignedIn && location == twinPath) {
         pendingTwin.location = state.uri.toString();
       }
+      if (!isSignedIn && location == eventLinkPath) {
+        pendingEvent.location = state.uri.toString();
+      }
       if (!isSignedIn && location == consentPath) {
         if (consentRequestIn(state.uri) case final id?) {
           pendingConsent.authorizationId = id;
@@ -72,6 +79,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         pendingInvite: pendingInvite.code,
         pendingConsent: pendingConsent.authorizationId,
         pendingTwin: pendingTwin.location,
+        pendingEvent: pendingEvent.location,
       );
     },
     routes: [
@@ -146,6 +154,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => TwinGroupScreen(
               key: ValueKey(state.uri.toString()),
               params: state.uri.queryParameters,
+            ),
+          ),
+          // Rdv préparé dans une autre app : ses paramètres sont validés par
+          // la page (domain/event_link.dart).
+          GoRoute(
+            path: eventLinkPath.substring(1),
+            name: AppRoute.eventLink.name,
+            pageBuilder: (context, state) => MaterialPage<void>(
+              key: state.pageKey,
+              fullscreenDialog: true,
+              child: EventLinkPage(
+                key: ValueKey(state.uri.toString()),
+                params: state.uri.queryParameters,
+              ),
             ),
           ),
         ],

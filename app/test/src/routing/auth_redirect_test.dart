@@ -173,6 +173,20 @@ void main() {
       expect(appLinkRoute(Uri.parse('/#/twin/x?de=arpente')), isNull);
       expect(appLinkRoute(Uri.parse('/groups/g#/twin?de=arpente')), isNull);
     });
+
+    test('turns a rdv link opened in the app into its screen', () {
+      // Arpente prépare un rdv : « #/event?de=…&titre=…&debut=… ».
+      expect(
+        appLinkRoute(
+          Uri.parse(
+            'https://agora.heianenterprise.com/'
+            '#/event?de=arpente&titre=Sortie&debut=2026-10-10T12:00:00Z&duree=90',
+          ),
+        ),
+        '/event?de=arpente&titre=Sortie&debut=2026-10-10T12:00:00Z&duree=90',
+      );
+      expect(appLinkRoute(Uri.parse('/#/events?de=arpente')), isNull);
+    });
   });
 
   group('pending twin link', () {
@@ -217,6 +231,44 @@ void main() {
           reason: location,
         );
       }
+    });
+  });
+
+  group('pending rdv link', () {
+    const event = '/event?de=arpente&titre=Sortie&duree=90';
+
+    test('once signed in, the visitor is brought back to the rdv link', () {
+      for (final location in ['/', '/sign-in']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingEvent: event,
+          ),
+          event,
+          reason: location,
+        );
+      }
+    });
+
+    test('a twin link comes first, and other screens are left alone', () {
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingTwin: '/twin?de=arpente',
+          pendingEvent: event,
+        ),
+        '/twin?de=arpente',
+      );
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/profile',
+          pendingEvent: event,
+        ),
+        isNull,
+      );
     });
   });
 }

@@ -40,6 +40,10 @@ class FakeCalendarsRepository implements CalendarsRepository {
   /// peut désigner.
   final coMembers = <String, String>{};
   AppException? nextError;
+
+  /// Délai d'une lecture des agendas, comme un aller-retour réseau : sans
+  /// lui, une relecture aboutit avant la frame suivante.
+  Duration fetchLatency = Duration.zero;
   int _nextId = 1;
 
   List<UserCalendar> get calendars => List.unmodifiable(_calendars);
@@ -76,6 +80,7 @@ class FakeCalendarsRepository implements CalendarsRepository {
   @override
   Future<List<UserCalendar>> fetchCalendars() async {
     _record('fetchCalendars');
+    if (fetchLatency > Duration.zero) await Future<void>.delayed(fetchLatency);
     return List.unmodifiable(_calendars);
   }
 

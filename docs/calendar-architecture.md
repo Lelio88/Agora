@@ -267,6 +267,31 @@ Migration : `20260921220000_calendar_management.sql`.
   de bouton de suppression. Les tuiles prennent la couleur de leur agenda, texte clair ou
   foncé selon la luminance. L'éditeur de rdv propose l'agenda à partir de deux agendas.
 
+## Un rdv préparé dans une autre app
+
+Arpente (« Mettre dans Agora », la sortie d'un parcours de groupe) ouvre Agora sur
+`#/event?de=…&titre=…&debut=…&duree=…&lieu=…&description=…&groupe=…` : le protocole commun
+(`docs/liens-inter-apps.md` du dépôt méta, §Ajouter un rdv dans Agora). Le lien va dans un seul
+sens et ne fait que préremplir l'éditeur habituel.
+
+- **Lecture** (`domain/event_link.dart`, pur) : expéditeur dans une liste fermée, titre, début
+  **avec décalage** (une heure nue serait lue dans le fuseau de l'appareil), durée de 5 à 1440
+  minutes — sinon le lien est refusé en entier, et un écran le dit. Les textes sont nettoyés
+  (contrôle et mise en forme retirés, longueurs du protocole ; la description garde ses retours
+  à la ligne).
+- **Destination** (`presentation/event_link_page.dart`) : l'éditeur propose mes agendas qui
+  s'écrivent (sans ceux des proches) et ceux de mes groupes. Choisir un agenda de groupe propose
+  le rdv au groupe (l'aide sous le choix le dit) ; la création passe par le même
+  `CalendarService.create` que l'agenda et la proposition de groupe.
+- **`groupe`** est l'invitation du groupe Agora jumeau du groupe Arpente : `invite_preview` dit
+  si la personne en est membre. Membre : l'agenda du groupe est présélectionné. Sinon, son
+  agenda l'est, et le bandeau propose de rejoindre le groupe d'abord. Un aperçu en échec
+  (jumelage défait) se tait. Le code n'est ni gardé ni recopié dans le rdv, que Discord et les
+  assistants lisent.
+- **Routage** : l'App Link de la racine suit aussi `#/event` (`appLinkRoute`) ; ouvert
+  déconnecté, le lien est retenu (`PendingEventLink`) et repris après la connexion, après une
+  invitation et un lien de jumelage.
+
 ## Fichiers
 
 | Fichier | Rôle |
@@ -284,3 +309,4 @@ Migration : `20260921220000_calendar_management.sql`.
 | `app/lib/src/features/calendar/application/` | `agendaProvider`, `visibleAgendaProvider`, `CalendarService`, `EditTarget`, `calendarsProvider`, `CalendarsService` |
 | `app/lib/src/features/calendar/data/` | dépôts Supabase de l'agenda et des agendas, `guardPostgrest` (traduction des erreurs) |
 | `app/lib/src/features/calendar/presentation/` | `CalendarScreen` (kalender, glisser-déposer), `EventEditorScreen`, `ContactEventEditor` (formulaires courts d'un proche), `CalendarsScreen`, `CalendarEditorScreen`, dialogue de portée, `CalendarKeys` |
+| `app/lib/src/features/calendar/domain/event_link.dart` · `application/event_link_providers.dart` · `presentation/event_link_page.dart` | rdv préparé dans une autre app : lecture du lien (pur), lien retenu le temps de la connexion, éditeur prérempli ; tests `event_link_test.dart`, `event_link_flow_test.dart` |

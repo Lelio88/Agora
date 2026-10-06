@@ -1,5 +1,5 @@
 /// Jumelage d'un groupe Agora avec un groupe d'une autre app du conteneur
-/// (Arpente) : les apps jumelles, le jumeau d'un groupe, et les liens du
+/// (Arpente, DewDrop) : les apps jumelles, le jumeau d'un groupe, et les liens du
 /// protocole commun (`docs/liens-inter-apps.md` du dépôt méta).
 ///
 /// Les deux apps ne se parlent pas : elles s'ouvrent l'une l'autre par des
@@ -14,7 +14,9 @@
 ///   reconstruites depuis la base fixe de l'app jumelle. Un lien forgé ne
 ///   peut donc envoyer personne vers un autre site ;
 /// - le nom proposé est du texte : caractères de contrôle et de mise en
-///   forme (dont l'inversion bidirectionnelle) retirés, 60 caractères au plus.
+///   forme (dont l'inversion bidirectionnelle) retirés, 60 caractères au plus ;
+/// - rejoindre un cercle DewDrop n'est qu'une demande, que son créateur
+///   accepte ou refuse ([TwinApp.joinIsRequest]) : l'interface le dit.
 ///
 /// Invariant : [parseTwinLink] rend `null` pour tout lien qu'une app ne doit
 /// pas suivre — jamais un lien à moitié valide.
@@ -39,6 +41,13 @@ enum TwinApp {
     codeLength: 6,
     twinPage: 'https://arpente.heianenterprise.com/jumeler.html',
     joinPage: 'https://arpente.heianenterprise.com/rejoindre.html',
+  ),
+  dewdrop(
+    displayName: 'DewDrop',
+    codeLength: 8,
+    twinPage: 'https://dewdrop.heianenterprise.com/jumeler.html',
+    joinPage: 'https://dewdrop.heianenterprise.com/rejoindre.html',
+    joinIsRequest: true,
   );
 
   const TwinApp({
@@ -46,6 +55,7 @@ enum TwinApp {
     required this.codeLength,
     required this.twinPage,
     required this.joinPage,
+    this.joinIsRequest = false,
   });
 
   /// Nom de l'app, une marque : le même dans toutes les langues.
@@ -59,6 +69,10 @@ enum TwinApp {
 
   /// Page de l'app qui fait rejoindre un groupe par son code.
   final String joinPage;
+
+  /// Le code n'ouvre pas le groupe : il envoie une demande que son créateur
+  /// accepte ou refuse (DewDrop).
+  final bool joinIsRequest;
 
   /// La valeur de `de` qui désigne cette app, ou `null`.
   static TwinApp? fromCode(String? code) =>

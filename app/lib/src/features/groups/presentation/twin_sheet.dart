@@ -10,7 +10,9 @@
 /// - l'adresse de l'autre app est reconstruite depuis sa base fixe et le
 ///   code validé (`TwinApp.joinUri`), jamais lue d'un lien reçu ;
 /// - défaire supprime l'invitation donnée à l'autre app ; la confirmation
-///   dit que l'autre app garde son bouton jusqu'à ce qu'on l'y retire.
+///   dit que l'autre app garde son bouton jusqu'à ce qu'on l'y retire ;
+/// - rejoindre un cercle DewDrop n'est qu'une demande à son créateur
+///   ([TwinApp.joinIsRequest]) : le bouton et l'explication le disent.
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
@@ -47,7 +49,11 @@ class TwinBanner extends ConsumerWidget {
               trailing: TextButton(
                 key: GroupKeys.twinJoin(twin.app),
                 onPressed: () => _join(context, ref, twin.app, code),
-                child: Text(l10n.twinJoinButton),
+                child: Text(
+                  twin.app.joinIsRequest
+                      ? l10n.twinRequestJoinButton
+                      : l10n.twinJoinButton,
+                ),
               ),
             ),
       ],
@@ -96,25 +102,33 @@ class _TwinSheetState extends ConsumerState<_TwinSheet> {
         padding: const EdgeInsets.all(16),
         child: AsyncValueWidget<List<GroupTwin>>(
           value: ref.watch(groupTwinsProvider(widget.group.id)),
-          data: (twins) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l10n.twinTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              for (final app in TwinApp.values) ...[
-                const SizedBox(height: 8),
-                Text(l10n.twinExplain(app.displayName)),
-                const SizedBox(height: 16),
-                ..._actions(
-                  app,
-                  twins.where((t) => t.app == app).firstOrNull,
-                  l10n,
+          // Deux apps jumelles : sur un petit téléphone, la feuille défile.
+          data: (twins) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.twinTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
+                for (final app in TwinApp.values) ...[
+                  if (app != TwinApp.values.first) const Divider(height: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    app.joinIsRequest
+                        ? l10n.twinExplainRequest(app.displayName)
+                        : l10n.twinExplain(app.displayName),
+                  ),
+                  const SizedBox(height: 16),
+                  ..._actions(
+                    app,
+                    twins.where((t) => t.app == app).firstOrNull,
+                    l10n,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

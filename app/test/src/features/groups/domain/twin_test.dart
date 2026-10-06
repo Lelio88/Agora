@@ -38,7 +38,12 @@ void main() {
     });
 
     final invalid = <String, Map<String, String>>{
-      'unknown app': {'de': 'dewdrop', 'code': 'ABC234', 'etat': _state},
+      'unknown app': {'de': 'lumis', 'code': 'ABC234', 'etat': _state},
+      'DewDrop code too short': {
+        'de': 'dewdrop',
+        'code': 'ABC234',
+        'etat': _state,
+      },
       'no app': {'code': 'ABC234', 'etat': _state},
       'Arpente code too long': {
         'de': 'arpente',
@@ -139,6 +144,44 @@ void main() {
       expect(
         TwinApp.arpente.joinUri('ABC234').toString(),
         'https://arpente.heianenterprise.com/rejoindre.html#code=ABC234',
+      );
+    });
+  });
+
+  group('DewDrop', () {
+    test('reads a request from DewDrop: a circle code has 8 characters', () {
+      final link = parseTwinLink({
+        'de': 'dewdrop',
+        'code': 'abcd2345',
+        'nom': 'Les copains',
+        'etat': _state,
+      });
+
+      expect(link, isA<TwinRequest>());
+      expect(link!.app, TwinApp.dewdrop);
+      expect(link.remoteCode, 'ABCD2345');
+    });
+
+    test('joining a DewDrop circle is a request to its creator', () {
+      expect(TwinApp.dewdrop.joinIsRequest, isTrue);
+      expect(TwinApp.arpente.joinIsRequest, isFalse);
+    });
+
+    test('links point to DewDrop pages, parameters in the fragment', () {
+      final uri = twinRequestUri(
+        TwinApp.dewdrop,
+        inviteCode: 'WXYZ2345',
+        name: 'Les copains',
+        state: _state,
+      );
+
+      expect(uri.origin, 'https://dewdrop.heianenterprise.com');
+      expect(uri.path, '/jumeler.html');
+      expect(uri.query, isEmpty);
+      expect(Uri.splitQueryString(uri.fragment)['de'], 'agora');
+      expect(
+        TwinApp.dewdrop.joinUri('ABCD2345').toString(),
+        'https://dewdrop.heianenterprise.com/rejoindre.html#code=ABCD2345',
       );
     });
   });

@@ -14,7 +14,9 @@
 /// Une création peut arriver préremplie (titre, journée entière, règle) :
 /// ce sont les raccourcis de la page d'un proche (anniversaire, horaires de
 /// travail, repos), qui restent ainsi un rdv ordinaire, modifiable avant
-/// d'être enregistré.
+/// d'être enregistré. Un rdv préparé dans une autre app (lien `#/event`)
+/// arrive de même avec son lieu, sa description et un bandeau ([notice]),
+/// et peut aller dans un agenda de groupe : il est alors proposé au groupe.
 ///
 /// Une répétition hebdomadaire choisit ses jours ; sans choix, elle suit le
 /// jour du rdv (pas de BYDAY), ce qui laisse les jours suivre un rdv déplacé.
@@ -68,6 +70,9 @@ class EventEditorScreen extends StatefulWidget {
     this.initialTitle,
     this.initialAllDay = false,
     this.initialRecurrence,
+    this.initialLocation,
+    this.initialDescription,
+    this.notice,
     this.onResult,
     super.key,
   });
@@ -99,6 +104,13 @@ class EventEditorScreen extends StatefulWidget {
 
   /// Répétition proposée à la création (raccourci).
   final RecurrenceRule? initialRecurrence;
+
+  /// Lieu et description proposés à la création (rdv venu d'une autre app).
+  final String? initialLocation;
+  final String? initialDescription;
+
+  /// Affiché en tête du formulaire : d'où vient un rdv prérempli.
+  final Widget? notice;
 
   /// Traite le résultat sans fermer l'éditeur ; vrai s'il a abouti, et
   /// l'éditeur se ferme alors en rendant `true`. Sans lui, l'éditeur se
@@ -143,9 +155,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   late final _title = TextEditingController(
     text: widget.existing?.title ?? widget.initialTitle,
   );
-  late final _location = TextEditingController(text: widget.existing?.location);
+  late final _location = TextEditingController(
+    text: widget.existing?.location ?? widget.initialLocation,
+  );
   late final _description = TextEditingController(
-    text: widget.existing?.description,
+    text: widget.existing?.description ?? widget.initialDescription,
   );
   late DateTime _start;
   late DateTime _end;
@@ -341,6 +355,10 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.notice case final notice?) ...[
+                notice,
+                const SizedBox(height: 8),
+              ],
               TextFormField(
                 key: CalendarKeys.title,
                 controller: _title,
@@ -359,6 +377,9 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 _CalendarField(
                   calendars: widget.calendars,
                   value: _calendarId,
+                  // Le choix mêle mon agenda et ceux de mes groupes : dire
+                  // ce qu'un agenda de groupe change.
+                  helper: _inGroupCalendar ? l10n.eventProposedToGroup : null,
                   onChanged: (id) => setState(() => _calendarId = id),
                 ),
               ],
@@ -626,10 +647,12 @@ class _CalendarField extends StatelessWidget {
     required this.calendars,
     required this.value,
     required this.onChanged,
+    this.helper,
   });
 
   final List<UserCalendar> calendars;
   final String value;
+  final String? helper;
   final ValueChanged<String> onChanged;
 
   @override
@@ -642,6 +665,8 @@ class _CalendarField extends StatelessWidget {
       isExpanded: true,
       decoration: InputDecoration(
         labelText: AppLocalizations.of(context).eventCalendarLabel,
+        helperText: helper,
+        helperMaxLines: 2,
       ),
       items: [
         for (final calendar in calendars)
