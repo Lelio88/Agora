@@ -338,6 +338,20 @@ Proches : un anniversaire ne demande plus qu'une date, et des horaires de travai
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.10.0+16 (rdv venu d'Arpente, jumelage avec DewDrop)
+
+Français, envoyées sur `alpha` :
+
+```
+Un parcours préparé dans Arpente s'ouvre dans Agora : vérifiez le rendez-vous, puis rangez-le dans votre agenda ou proposez-le au groupe jumeau.
+
+Un groupe se jumelle aussi avec un cercle DewDrop : ses membres y demandent à entrer.
+
+Corrigé : proposer un rendez-vous au groupe ne perd plus votre saisie quand un agenda change ailleurs.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
