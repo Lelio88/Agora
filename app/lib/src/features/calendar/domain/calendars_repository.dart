@@ -18,7 +18,8 @@ abstract interface class CalendarsRepository {
   /// qu'un `==` avale un tick.
   Stream<int> watchChanges();
 
-  Future<void> createCalendar(CalendarDraft draft);
+  /// Crée un agenda et rend son identifiant.
+  Future<String> createCalendar(CalendarDraft draft);
 
   /// Importe un agenda par son lien iCal ; le serveur le relit ensuite seul.
   /// Lien refusé : `InvalidFeedUrlException` ; trop d'agendas importés :

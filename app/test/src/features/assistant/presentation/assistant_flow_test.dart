@@ -3,6 +3,7 @@ import 'package:agora/src/features/assistant/domain/assistant.dart';
 import 'package:agora/src/features/assistant/presentation/assistant_keys.dart';
 import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
+import 'package:agora/src/features/groups/presentation/group_keys.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:flutter/services.dart';
@@ -121,8 +122,9 @@ void main() {
       await robot.tap(ConsentKeys.home);
       expect(find.byType(HomeScreen), findsOneWidget);
 
-      // La demande est oubliée : l'accueil n'y ramène plus.
-      await robot.openProfile();
+      // La demande est oubliée : naviguer (aller et retour) n'y ramène plus.
+      await robot.openSocialTab();
+      await robot.addFromSocial(GroupKeys.joinWithCode);
       await robot.goBack();
       expect(find.byKey(ConsentKeys.screen), findsNothing);
     });

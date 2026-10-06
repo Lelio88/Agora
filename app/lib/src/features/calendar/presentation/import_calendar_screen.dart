@@ -22,15 +22,22 @@ import 'package:flutter/material.dart';
 const _maxNameLength = 60;
 
 class ImportCalendarScreen extends StatefulWidget {
-  const ImportCalendarScreen({super.key});
+  const ImportCalendarScreen({this.forContact = false, this.name, super.key});
 
-  static Future<ImportedCalendarDraft?> show(BuildContext context) =>
-      Navigator.of(context).push<ImportedCalendarDraft>(
-        MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (_) => const ImportCalendarScreen(),
-        ),
-      );
+  /// Ouvert depuis la page d'un proche : son planning, nom proposé.
+  final bool forContact;
+  final String? name;
+
+  static Future<ImportedCalendarDraft?> show(
+    BuildContext context, {
+    bool forContact = false,
+    String? name,
+  }) => Navigator.of(context).push<ImportedCalendarDraft>(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => ImportCalendarScreen(forContact: forContact, name: name),
+    ),
+  );
 
   @override
   State<ImportCalendarScreen> createState() => _ImportCalendarScreenState();
@@ -38,12 +45,12 @@ class ImportCalendarScreen extends StatefulWidget {
 
 class _ImportCalendarScreenState extends State<ImportCalendarScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
+  late final _name = TextEditingController(text: widget.name);
   final _url = TextEditingController();
   String _colorHex = appPalette[1];
 
   /// Le planning d'un proche : importé dans un agenda de proche, à soi seul.
-  bool _forContact = false;
+  late bool _forContact = widget.forContact;
 
   @override
   void dispose() {

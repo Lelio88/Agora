@@ -18,7 +18,9 @@ import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/presentation/group_keys.dart';
+import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
+import 'package:agora/src/features/home/presentation/social_screen.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:agora/src/logging/app_logger.dart';
@@ -204,7 +206,8 @@ class AgoraRobot {
     await tap(AuthKeys.submit);
   }
 
-  Future<void> openProfile() => tap(HomeKeys.profileButton);
+  /// Ouvre l'onglet « Moi » (profil et réglages).
+  Future<void> openProfile() => tap(HomeKeys.meTab);
 
   Future<void> selectLanguage(String label) async {
     await tester.tap(
@@ -236,8 +239,35 @@ class AgoraRobot {
     await settle();
   }
 
-  /// Ouvre l'onglet « Groupes » de l'accueil.
-  Future<void> openGroupsTab() => tap(HomeKeys.groupsTab);
+  /// Ouvre l'onglet « Social » de l'accueil (proches et groupes).
+  Future<void> openSocialTab() => tap(HomeKeys.socialTab);
+
+  /// Les groupes vivent dans l'onglet « Social ».
+  Future<void> openGroupsTab() => openSocialTab();
+
+  /// Choisit [option] dans le bouton « Ajouter » de l'onglet Social.
+  Future<void> addFromSocial(Key option) async {
+    await tap(SocialKeys.add);
+    await tap(option);
+  }
+
+  /// Ouvre la page du proche [calendarId] depuis l'onglet Social.
+  Future<void> openContact(String calendarId) async {
+    await openSocialTab();
+    await tap(CalendarKeys.contactTile(calendarId));
+  }
+
+  /// Choisit la répétition [frequency] dans l'éditeur de rdv.
+  Future<void> chooseRepeat(Frequency? frequency) async {
+    await tap(CalendarKeys.repeat);
+    await tester.tap(find.byKey(CalendarKeys.repeatOption(frequency)).last);
+    await settle();
+  }
+
+  /// Le jour [weekday] est-il coché dans la répétition hebdomadaire ?
+  bool isWeekdayChosen(int weekday) => tester
+      .widget<FilterChip>(find.byKey(CalendarKeys.repeatWeekday(weekday)))
+      .selected;
 
   /// Ouvre le groupe [groupId] depuis l'onglet « Groupes ».
   Future<void> openGroup(String groupId) async {

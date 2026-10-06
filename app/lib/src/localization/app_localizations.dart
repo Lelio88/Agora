@@ -2520,6 +2520,192 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Visible de toi seul, jamais compté comme tes créneaux pris.'**
   String get importForContactHint;
+
+  /// Onglet de l'accueil : proches et groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Social'**
+  String get navSocial;
+
+  /// Onglet de l'accueil : profil et réglages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moi'**
+  String get navMe;
+
+  /// Social : bouton qui propose d'ajouter un proche, de créer ou de rejoindre un groupe.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter'**
+  String get socialAddButton;
+
+  /// Social : dates à retenir des proches dans les prochains jours.
+  ///
+  /// In fr, this message translates to:
+  /// **'À venir'**
+  String get upcomingTitle;
+
+  /// Dans combien de jours tombe une date à retenir.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aujourd\'hui} =1{Demain} other{Dans {count} jours}}'**
+  String daysAwayLabel(int count);
+
+  /// Social : texte de la section Proches tant qu'il n'y en a aucun.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note les repos et l\'anniversaire de tes proches : tu es seul à les voir.'**
+  String get contactsEmpty;
+
+  /// Social : sous-titre d'un proche dont l'agenda est importé par lien iCal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Planning importé, pour toi seul'**
+  String get contactImportedSubtitle;
+
+  /// Page d'un proche : ce qui est noté maintenant.
+  ///
+  /// In fr, this message translates to:
+  /// **'En ce moment'**
+  String get contactNowTitle;
+
+  /// Page d'un proche : rien n'est en cours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien de noté en ce moment.'**
+  String get contactNothingNow;
+
+  /// Page d'un proche : un rdv en cours et son heure de fin.
+  ///
+  /// In fr, this message translates to:
+  /// **'{title}, jusqu\'à {time}'**
+  String contactUntil(String title, String time);
+
+  /// Page d'un proche : le prochain rdv noté et quand.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ensuite : {title}, {when}'**
+  String contactNext(String title, String when);
+
+  /// Page d'un proche : titre des raccourcis (anniversaire, horaires, repos, import).
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter vite'**
+  String get contactShortcutsTitle;
+
+  /// Raccourci : noter l'anniversaire d'un proche (journée entière, chaque année).
+  ///
+  /// In fr, this message translates to:
+  /// **'Anniversaire'**
+  String get shortcutBirthday;
+
+  /// Raccourci : noter les horaires de travail d'un proche (chaque semaine).
+  ///
+  /// In fr, this message translates to:
+  /// **'Horaires de travail'**
+  String get shortcutWorkHours;
+
+  /// Raccourci : noter un jour de repos d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jour de repos'**
+  String get shortcutRest;
+
+  /// Raccourci : importer le planning d'un proche par son lien iCal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer son planning'**
+  String get shortcutImport;
+
+  /// Titre proposé par le raccourci Anniversaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Anniversaire de {name}'**
+  String birthdayEventTitle(String name);
+
+  /// Titre proposé par le raccourci Horaires de travail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Travail'**
+  String get workEventTitle;
+
+  /// Titre proposé par le raccourci Jour de repos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Repos'**
+  String get restEventTitle;
+
+  /// Nom proposé pour le planning importé d'un proche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Planning de {name}'**
+  String contactImportedName(String name);
+
+  /// Page d'un proche : titre de la liste de ses prochains rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les 30 prochains jours'**
+  String get contactUpcomingTitle;
+
+  /// Page d'un proche : aucun rdv à venir.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien de noté pour les 30 prochains jours.'**
+  String get contactNothingUpcoming;
+
+  /// Page d'un proche : noter un rdv dans son agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter'**
+  String get contactAddEventButton;
+
+  /// Page d'un proche : renommer, changer la couleur, supprimer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le proche'**
+  String get contactEditTooltip;
+
+  /// Éditeur de rdv : jours de la semaine d'une répétition hebdomadaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les jours'**
+  String get repeatDaysLabel;
+
+  /// Éditeur de rdv : une semaine sur combien.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rythme'**
+  String get repeatIntervalLabel;
+
+  /// Éditeur de rdv : rythme d'une répétition hebdomadaire.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Chaque semaine} other{Toutes les {count} semaines}}'**
+  String repeatEveryWeeks(int count);
+
+  /// Éditeur de rdv : date de la dernière occurrence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fin de la répétition'**
+  String get repeatEndLabel;
+
+  /// Éditeur de rdv : la répétition ne s'arrête pas.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jamais'**
+  String get repeatEndNever;
+
+  /// Éditeur de rdv : la répétition s'arrête ce jour-là.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le {date}'**
+  String repeatEndOn(String date);
+
+  /// Éditeur de rdv : retirer la date de fin de la répétition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sans fin'**
+  String get repeatEndClearTooltip;
 }
 
 class _AppLocalizationsDelegate

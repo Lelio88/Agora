@@ -1423,4 +1423,126 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get importForContactHint =>
       'Visible de toi seul, jamais compté comme tes créneaux pris.';
+
+  @override
+  String get navSocial => 'Social';
+
+  @override
+  String get navMe => 'Moi';
+
+  @override
+  String get socialAddButton => 'Ajouter';
+
+  @override
+  String get upcomingTitle => 'À venir';
+
+  @override
+  String daysAwayLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dans $count jours',
+      one: 'Demain',
+      zero: 'Aujourd\'hui',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contactsEmpty =>
+      'Note les repos et l\'anniversaire de tes proches : tu es seul à les voir.';
+
+  @override
+  String get contactImportedSubtitle => 'Planning importé, pour toi seul';
+
+  @override
+  String get contactNowTitle => 'En ce moment';
+
+  @override
+  String get contactNothingNow => 'Rien de noté en ce moment.';
+
+  @override
+  String contactUntil(String title, String time) {
+    return '$title, jusqu\'à $time';
+  }
+
+  @override
+  String contactNext(String title, String when) {
+    return 'Ensuite : $title, $when';
+  }
+
+  @override
+  String get contactShortcutsTitle => 'Ajouter vite';
+
+  @override
+  String get shortcutBirthday => 'Anniversaire';
+
+  @override
+  String get shortcutWorkHours => 'Horaires de travail';
+
+  @override
+  String get shortcutRest => 'Jour de repos';
+
+  @override
+  String get shortcutImport => 'Importer son planning';
+
+  @override
+  String birthdayEventTitle(String name) {
+    return 'Anniversaire de $name';
+  }
+
+  @override
+  String get workEventTitle => 'Travail';
+
+  @override
+  String get restEventTitle => 'Repos';
+
+  @override
+  String contactImportedName(String name) {
+    return 'Planning de $name';
+  }
+
+  @override
+  String get contactUpcomingTitle => 'Les 30 prochains jours';
+
+  @override
+  String get contactNothingUpcoming =>
+      'Rien de noté pour les 30 prochains jours.';
+
+  @override
+  String get contactAddEventButton => 'Ajouter';
+
+  @override
+  String get contactEditTooltip => 'Modifier le proche';
+
+  @override
+  String get repeatDaysLabel => 'Les jours';
+
+  @override
+  String get repeatIntervalLabel => 'Rythme';
+
+  @override
+  String repeatEveryWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Toutes les $count semaines',
+      one: 'Chaque semaine',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repeatEndLabel => 'Fin de la répétition';
+
+  @override
+  String get repeatEndNever => 'Jamais';
+
+  @override
+  String repeatEndOn(String date) {
+    return 'Le $date';
+  }
+
+  @override
+  String get repeatEndClearTooltip => 'Sans fin';
 }

@@ -52,12 +52,15 @@ final class SupabaseCalendarsRepository implements CalendarsRepository {
   }
 
   @override
-  Future<void> createCalendar(CalendarDraft draft) => guardPostgrest(
-    () => _client.from('calendars').insert({
-      ..._toRow(draft),
-      'contact': draft.isContact,
-    }),
-  );
+  Future<String> createCalendar(CalendarDraft draft) =>
+      guardPostgrest(() async {
+        final row = await _client
+            .from('calendars')
+            .insert({..._toRow(draft), 'contact': draft.isContact})
+            .select('id')
+            .single();
+        return row['id'] as String;
+      });
 
   @override
   Future<void> importCalendar(ImportedCalendarDraft draft) => guardPostgrest(

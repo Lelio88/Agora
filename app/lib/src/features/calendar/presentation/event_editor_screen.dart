@@ -8,7 +8,16 @@
 /// [EventEditorScreen.onResult] et ne se ferme que s'il a abouti.
 ///
 /// Pour un agenda de groupe, pas de réglage de visibilité : un rdv du
-/// groupe est vu en détail de tous ses membres.
+/// groupe est vu en détail de tous ses membres. Pour l'agenda d'un proche
+/// non plus : il est invisible des groupes quoi qu'on règle ici.
+///
+/// Une création peut arriver préremplie (titre, journée entière, règle) :
+/// ce sont les raccourcis de la page d'un proche (anniversaire, horaires de
+/// travail, repos), qui restent ainsi un rdv ordinaire, modifiable avant
+/// d'être enregistré.
+///
+/// Une répétition hebdomadaire choisit ses jours ; sans choix, elle suit le
+/// jour du rdv (pas de BYDAY), ce qui laisse les jours suivre un rdv déplacé.
 ///
 /// Dates et heures sont saisies dans le fuseau local de l'appareil et
 /// stockées en UTC ; un rdv « journée entière » va de minuit UTC à minuit
@@ -55,6 +64,9 @@ class EventEditorScreen extends StatefulWidget {
     this.existing,
     this.initialStart,
     this.initialEnd,
+    this.initialTitle,
+    this.initialAllDay = false,
+    this.initialRecurrence,
     this.onResult,
     super.key,
   });
@@ -78,6 +90,15 @@ class EventEditorScreen extends StatefulWidget {
   /// alors repris tels quels, sans arrondi.
   final DateTime? initialEnd;
 
+  /// Titre proposé à la création (raccourci).
+  final String? initialTitle;
+
+  /// Création en journée entière (raccourci).
+  final bool initialAllDay;
+
+  /// Répétition proposée à la création (raccourci).
+  final RecurrenceRule? initialRecurrence;
+
   /// Traite le résultat sans fermer l'éditeur ; vrai s'il a abouti, et
   /// l'éditeur se ferme alors en rendant `true`. Sans lui, l'éditeur se
   /// ferme en rendant le [EditorResult].
@@ -91,6 +112,10 @@ class EventEditorScreen extends StatefulWidget {
     List<UserCalendar> calendars = const [],
     AgendaItem? existing,
     DateTime? initialStart,
+    DateTime? initialEnd,
+    String? initialTitle,
+    bool initialAllDay = false,
+    RecurrenceRule? initialRecurrence,
   }) => Navigator.of(context).push<EditorResult>(
     MaterialPageRoute(
       fullscreenDialog: true,
@@ -100,6 +125,10 @@ class EventEditorScreen extends StatefulWidget {
         calendars: calendars,
         existing: existing,
         initialStart: initialStart,
+        initialEnd: initialEnd,
+        initialTitle: initialTitle,
+        initialAllDay: initialAllDay,
+        initialRecurrence: initialRecurrence,
       ),
     ),
   );
@@ -110,14 +139,16 @@ class EventEditorScreen extends StatefulWidget {
 
 class _EventEditorScreenState extends State<EventEditorScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _title = TextEditingController(text: widget.existing?.title);
+  late final _title = TextEditingController(
+    text: widget.existing?.title ?? widget.initialTitle,
+  );
   late final _location = TextEditingController(text: widget.existing?.location);
   late final _description = TextEditingController(
     text: widget.existing?.description,
   );
   late DateTime _start;
   late DateTime _end;
-  late bool _isAllDay = widget.existing?.isAllDay ?? false;
+  late bool _isAllDay = widget.existing?.isAllDay ?? widget.initialAllDay;
   late EventVisibility? _visibility = widget.existing?.visibility;
   late String _calendarId = widget.existing?.calendarId ?? widget.calendarId;
   bool _isSending = false;
@@ -125,6 +156,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   /// Le rdv va dans l'agenda d'un groupe : tous ses membres le voient.
   bool get _inGroupCalendar => widget.calendars.any(
     (calendar) => calendar.id == _calendarId && !calendar.isPersonal,
+  );
+
+  /// Le rdv va dans l'agenda d'un proche : aucun groupe ne le voit.
+  bool get _inContactCalendar => widget.calendars.any(
+    (calendar) => calendar.id == _calendarId && calendar.isContact,
   );
 
   /// Règle éditable ; `null` sans répétition. Une règle importée hors du
@@ -158,12 +194,12 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     )) {
       _start = start.toLocal();
       _end = end.toLocal();
-      _recurrence = null;
+      _recurrence = widget.initialRecurrence;
       _advancedRule = null;
     } else {
       _start = _roundedStart(widget.initialStart?.toLocal() ?? DateTime.now());
       _end = _start.add(_defaultDuration);
-      _recurrence = null;
+      _recurrence = widget.initialRecurrence;
       _advancedRule = null;
     }
   }
@@ -247,7 +283,9 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           isAllDay: _isAllDay,
           timezone: widget.existing?.timezone ?? widget.timezone,
           recurrence: _recurrence,
-          visibility: _inGroupCalendar ? null : _visibility,
+          visibility: _inGroupCalendar || _inContactCalendar
+              ? null
+              : _visibility,
         ).withRawRule(_advancedRule),
       ),
     );
@@ -305,7 +343,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               TextFormField(
                 key: CalendarKeys.title,
                 controller: _title,
-                autofocus: !isEditing,
+                autofocus: !isEditing && widget.initialTitle == null,
                 decoration: InputDecoration(labelText: l10n.eventTitleLabel),
                 textCapitalization: TextCapitalization.sentences,
                 validator: (value) {
@@ -351,7 +389,14 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 advancedRule: _advancedRule,
                 onChanged: (rule) => setState(() => _recurrence = rule),
               ),
-              if (!_inGroupCalendar)
+              if (_advancedRule == null)
+                if (_recurrence case final rule?)
+                  _RepeatDetails(
+                    rule: rule,
+                    startDay: _start,
+                    onChanged: (rule) => setState(() => _recurrence = rule),
+                  ),
+              if (!_inGroupCalendar && !_inContactCalendar)
                 VisibilityField(
                   key: CalendarKeys.visibility,
                   value: _visibility,
@@ -436,8 +481,12 @@ class _RepeatField extends StatelessWidget {
     };
     return PopupMenuButton<Frequency?>(
       key: CalendarKeys.repeat,
+      // Changer de fréquence repart de ses réglages par défaut, mais garde
+      // la date de fin déjà choisie.
       onSelected: (frequency) => onChanged(
-        frequency == null ? null : RecurrenceRule(frequency: frequency),
+        frequency == null
+            ? null
+            : RecurrenceRule(frequency: frequency, until: recurrence?.until),
       ),
       itemBuilder: (context) => [
         for (final frequency in [null, ...Frequency.values])
@@ -458,8 +507,155 @@ class _RepeatField extends StatelessWidget {
   }
 }
 
-/// Visibilité du rdv pour les groupes : hérite, occupé ou invisible. On ne
-/// peut que restreindre, jamais forcer le détail.
+/// Réglages d'une répétition simple : pour une répétition hebdomadaire, ses
+/// jours et son rythme (une semaine sur combien) ; pour toutes, sa fin.
+///
+/// Sans jour choisi, la règle n'a pas de BYDAY : elle suit le jour du rdv,
+/// que les puces montrent coché. On ne peut pas décocher le dernier jour.
+class _RepeatDetails extends StatelessWidget {
+  const _RepeatDetails({
+    required this.rule,
+    required this.startDay,
+    required this.onChanged,
+  });
+
+  final RecurrenceRule rule;
+
+  /// Début du rdv : son jour tient lieu de jours choisis, et la fin ne
+  /// peut pas le précéder.
+  final DateTime startDay;
+  final ValueChanged<RecurrenceRule> onChanged;
+
+  static const _maxWeeks = 4;
+
+  Set<int> get _days =>
+      rule.weekdays.isEmpty ? {startDay.weekday} : rule.weekdays;
+
+  void _toggle(int weekday) {
+    final days = {..._days};
+    if (!days.remove(weekday)) days.add(weekday);
+    if (days.isEmpty) return;
+    onChanged(rule.copyWith(weekdays: days));
+  }
+
+  Future<void> _pickEnd(BuildContext context) async {
+    final first = DateTime(startDay.year, startDay.month, startDay.day);
+    final current = rule.until?.toLocal();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: current == null || current.isBefore(first) ? first : current,
+      firstDate: first,
+      lastDate: DateTime(first.year + 10, first.month, first.day),
+    );
+    if (picked == null) return;
+    // Fin incluse : jusqu'au dernier instant de ce jour, à l'heure locale.
+    final until = DateTime(picked.year, picked.month, picked.day, 23, 59, 59);
+    onChanged(rule.copyWith(until: () => until.toUtc(), count: () => null));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final until = rule.until;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (rule.frequency == Frequency.weekly) ...[
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 40, bottom: 4),
+            child: Text(
+              l10n.repeatDaysLabel,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 40),
+            child: _WeekdayChips(selected: _days, onToggle: _toggle),
+          ),
+          PopupMenuButton<int>(
+            key: CalendarKeys.repeatInterval,
+            onSelected: (weeks) => onChanged(rule.copyWith(interval: weeks)),
+            itemBuilder: (context) => [
+              for (var weeks = 1; weeks <= _maxWeeks; weeks++)
+                PopupMenuItem(
+                  key: CalendarKeys.repeatIntervalOption(weeks),
+                  value: weeks,
+                  child: Text(l10n.repeatEveryWeeks(weeks)),
+                ),
+            ],
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const SizedBox(width: 24),
+              title: Text(l10n.repeatIntervalLabel),
+              subtitle: Text(l10n.repeatEveryWeeks(rule.interval)),
+              trailing: const Icon(Icons.arrow_drop_down),
+            ),
+          ),
+        ],
+        ListTile(
+          key: CalendarKeys.repeatEnd,
+          contentPadding: EdgeInsets.zero,
+          leading: const SizedBox(width: 24),
+          title: Text(l10n.repeatEndLabel),
+          subtitle: Text(
+            until == null
+                ? l10n.repeatEndNever
+                : l10n.repeatEndOn(
+                    DateFormat.yMMMEd(locale).format(until.toLocal()),
+                  ),
+          ),
+          trailing: until == null
+              ? null
+              : IconButton(
+                  key: CalendarKeys.repeatEndClear,
+                  tooltip: l10n.repeatEndClearTooltip,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => onChanged(rule.copyWith(until: () => null)),
+                ),
+          onTap: () => _pickEnd(context),
+        ),
+      ],
+    );
+  }
+}
+
+/// Les sept jours de la semaine, du lundi au dimanche, en initiales.
+class _WeekdayChips extends StatelessWidget {
+  const _WeekdayChips({required this.selected, required this.onToggle});
+
+  final Set<int> selected;
+  final ValueChanged<int> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    final initial = DateFormat.EEEEE(locale);
+    final full = DateFormat.EEEE(locale);
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        for (
+          var weekday = DateTime.monday;
+          weekday <= DateTime.sunday;
+          weekday++
+        )
+          // Le 1er janvier 2024 est un lundi : son jour N tombe le N-ième
+          // jour de la semaine.
+          FilterChip(
+            key: CalendarKeys.repeatWeekday(weekday),
+            label: Text(initial.format(DateTime(2024, 1, weekday))),
+            tooltip: full.format(DateTime(2024, 1, weekday)),
+            showCheckmark: false,
+            visualDensity: VisualDensity.compact,
+            selected: selected.contains(weekday),
+            onSelected: (_) => onToggle(weekday),
+          ),
+      ],
+    );
+  }
+}
 
 class _CalendarField extends StatelessWidget {
   const _CalendarField({

@@ -74,11 +74,12 @@ class FakeCalendarsRepository implements CalendarsRepository {
   }
 
   @override
-  Future<void> createCalendar(CalendarDraft draft) async {
+  Future<String> createCalendar(CalendarDraft draft) async {
     _record('createCalendar');
+    final id = 'cal-new-${_nextId++}';
     _calendars.add(
       UserCalendar(
-        id: 'cal-new-${_nextId++}',
+        id: id,
         name: draft.name.trim(),
         kind: CalendarKind.native,
         colorHex: draft.colorHex,
@@ -88,6 +89,7 @@ class FakeCalendarsRepository implements CalendarsRepository {
         isContact: draft.isContact,
       ),
     );
+    return id;
   }
 
   /// Comme `add_ics_calendar` : lien vérifié, dix agendas importés au plus.

@@ -1,5 +1,6 @@
-/// Écran de profil : nom affiché, langue (app et e-mails), fuseau horaire,
-/// compte Discord relié, pages légales, déconnexion et suppression du compte.
+/// Onglet « Moi » de l'accueil : nom affiché, langue (app et e-mails),
+/// fuseau horaire, compte Discord relié, pages légales, déconnexion et
+/// suppression du compte. Le titre vient de la barre de l'accueil.
 ///
 /// Le fuseau ne se tape pas : on reprend celui de l'appareil. C'est le seul
 /// réglage utile en pratique, et le serveur n'accepte de toute façon que des
@@ -39,10 +40,8 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     return Scaffold(
       key: ProfileKeys.screen,
-      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: AsyncValueWidget<Profile?>(
         value: ref.watch(currentProfileProvider),
         data: (profile) =>

@@ -93,4 +93,28 @@ abstract final class CalendarKeys {
   /// Entrée du menu de répétition ; `null` pour « jamais ».
   static ValueKey<String> repeatOption(Frequency? frequency) =>
       ValueKey('calendar.editor.repeat.${frequency?.name ?? 'never'}');
+
+  /// Jour d'une répétition hebdomadaire (`DateTime.monday` … `sunday`).
+  static ValueKey<String> repeatWeekday(int weekday) =>
+      ValueKey('calendar.editor.repeat.day.$weekday');
+  static const repeatInterval = ValueKey('calendar.editor.repeat.interval');
+  static ValueKey<String> repeatIntervalOption(int weeks) =>
+      ValueKey('calendar.editor.repeat.interval.$weeks');
+  static const repeatEnd = ValueKey('calendar.editor.repeat.end');
+  static const repeatEndClear = ValueKey('calendar.editor.repeat.end.clear');
+
+  // Proches : leur ligne (onglet Social), leur page, ses raccourcis.
+  static ValueKey<String> contactTile(String calendarId) =>
+      ValueKey('contacts.tile.$calendarId');
+  static ValueKey<String> anniversaryTile(String instanceKey) =>
+      ValueKey('contacts.anniversary.$instanceKey');
+  static const contactScreen = ValueKey('contact.screen');
+  static const contactEdit = ValueKey('contact.edit');
+  static const contactAddEvent = ValueKey('contact.addEvent');
+  static const contactBirthday = ValueKey('contact.shortcut.birthday');
+  static const contactWorkHours = ValueKey('contact.shortcut.workHours');
+  static const contactRest = ValueKey('contact.shortcut.rest');
+  static const contactImport = ValueKey('contact.shortcut.import');
+  static ValueKey<String> contactEvent(String instanceKey) =>
+      ValueKey('contact.event.$instanceKey');
 }

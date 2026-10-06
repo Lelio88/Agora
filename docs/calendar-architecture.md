@@ -98,6 +98,20 @@ Migration : `20260921220000_calendar_management.sql`.
   devenus les créneaux pris d'Ana dans la vue du groupe, « Trouver un créneau », `/dispo` et
   l'assistant. `my_agenda` les rend, et l'assistant les reçoit marqués `proche`. Pas de lien avec
   un compte Agora : rattacher par adresse révélerait qu'une adresse est inscrite.
+- **Proches dans l'app** : l'onglet Social les liste (`ContactsSection`) sous « À venir » — les
+  dates à retenir des 31 prochains jours (`upcomingAnniversariesProvider`). Une date à retenir
+  est un rdv **journée entière répété chaque année** dans l'agenda d'un proche
+  (`contact_agenda.dart`), sans marquage de plus en base. « Ajouter un proche » crée l'agenda
+  (`createCalendar` rend son identifiant) puis ouvre sa page (`/contacts/:calendarId`,
+  `ContactScreen`) : ce qui y est noté en ce moment (`contactMoment` — ce qui est noté, pas
+  « libre » : un « Repos » rend justement disponible), ses rdv à venir, et quatre raccourcis.
+  Anniversaire, Horaires de travail (lun.–ven., 9 h–17 h) et Jour de repos ouvrent l'éditeur de
+  rdv **prérempli** (titre, journée entière, règle) : un rdv ordinaire, ajusté avant d'être
+  enregistré. « Importer son planning » ouvre l'import iCal en mode proche : le planning importé
+  est un agenda de proche à part, en lecture seule (sa page n'a ni raccourci ni ajout). Ces
+  lectures passent par `agendaProvider`, pas l'agenda visible : masquer un proche de sa vue ne
+  fait pas oublier son anniversaire. L'éditeur de rdv n'offre pas de réglage de visibilité dans
+  l'agenda d'un proche.
 - **Masquer un agenda dans SA vue** : `public.calendar_preferences (user_id, calendar_id,
   hidden)`, une ligne par personne et par agenda (prête pour les agendas de groupe). C'est de
   l'**affichage**, pas de la vie privée : rien ne change pour les groupes. L'app filtre
@@ -183,7 +197,9 @@ Migration : `20260921220000_calendar_management.sql`.
   mardi glissé au mercredi se répète le mercredi. L'app ne compte aucun écart de jours elle-même
   (le fuseau de l'appareil peut différer de celui de la série).
 - **`RecurrenceRule`** couvre le sous-ensemble éditable (fréquence, intervalle, jours, fin par
-  date ou nombre). Une règle importée hors de ce sous-ensemble se lit `null`, s'affiche « règle
+  date ou nombre). L'éditeur en expose les jours et le rythme d'une répétition hebdomadaire
+  (une semaine sur 1 à 4) et la date de fin (incluse : jusqu'à 23 h 59 locales ce jour-là) ;
+  sans jour coché, la règle n'a pas de `BYDAY` et suit le jour du rdv. Une règle importée hors de ce sous-ensemble se lit `null`, s'affiche « règle
   avancée » et repart **telle quelle** (`EventDraft.rawRule`) : l'app ne réécrit jamais une
   RRULE qu'elle ne sait pas représenter.
 - **Dates** : l'éditeur saisit en heure locale de l'appareil et stocke en UTC. Une journée

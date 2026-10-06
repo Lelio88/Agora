@@ -47,9 +47,13 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
 
 ## Dans l'app (`app/lib/src/features/groups/`)
 
-- **Accueil à deux onglets** (Agenda, Groupes) dans une `IndexedStack` : changer d'onglet garde
-  la page de l'agenda. Chaque onglet a son bouton flottant, avec son propre `heroTag` (deux
-  boutons au tag par défaut dans la même page cassent toute transition).
+- **Accueil à trois onglets** (Agenda, Social, Moi) dans une `IndexedStack` : changer d'onglet
+  garde la page de l'agenda. Les groupes vivent dans l'onglet Social (`GroupsSection`, sous les
+  proches) ; son bouton « Ajouter » crée un groupe ou ouvre « Rejoindre » (`createGroup`,
+  `joinGroupWithCode`). Chaque onglet a son bouton flottant, avec son propre `heroTag` (deux
+  boutons au tag par défaut dans la même page cassent toute transition). Chaque groupe reçoit
+  une couleur de la palette tirée de son identifiant (`paletteHexFor`, stable d'un lancement à
+  l'autre).
 - **Routes** sous l'accueil : `/groups/:groupId`, `/join` (taper le code), `/join/:code` (lien).
   Imbriquées, elles gardent l'accueil dessous : le retour y ramène, même ouvertes par un lien.
 - **Invitation en attente** : un lien `/join/CODE` ouvert **déconnecté** est retenu

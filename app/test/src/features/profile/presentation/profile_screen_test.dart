@@ -67,13 +67,14 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), locale: null);
     await robot.openProfile();
-    robot.expectText('Profil');
+    // L'onglet « Moi » : son titre et son libellé.
+    expect(find.text('Moi'), findsWidgets);
 
     await robot.selectLanguage('English');
     await robot.tap(ProfileKeys.save);
 
     expect(_stored(robot)?.language, AppLanguage.en);
-    robot.expectText('Profile');
+    expect(find.text('Me'), findsWidgets);
   });
 
   testWidgets('refuses an empty name without calling the server', (

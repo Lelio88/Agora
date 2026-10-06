@@ -1,22 +1,23 @@
-/// Écran d'accueil : deux onglets, l'agenda de la personne et ses groupes,
-/// et l'accès au profil.
+/// Écran d'accueil : trois onglets — l'agenda de la personne, « Social »
+/// (ses proches et ses groupes) et « Moi » (profil et réglages).
 ///
 /// Les onglets vivent dans une `IndexedStack` : passer de l'un à l'autre
-/// garde la page, la vue et le défilement de l'agenda.
+/// garde la page, la vue et le défilement de l'agenda. Le profil est un
+/// onglet plutôt qu'une icône en haut à droite : on le trouve sans le
+/// chercher.
 library;
 
 import 'package:agora/src/features/calendar/presentation/calendar_screen.dart';
-import 'package:agora/src/features/groups/presentation/groups_screen.dart';
+import 'package:agora/src/features/home/presentation/social_screen.dart';
+import 'package:agora/src/features/profile/presentation/profile_screen.dart';
 import 'package:agora/src/localization/app_localizations.dart';
-import 'package:agora/src/routing/app_route.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 abstract final class HomeKeys {
   static const screen = ValueKey('home.screen');
-  static const profileButton = ValueKey('home.profileButton');
   static const agendaTab = ValueKey('home.tab.agenda');
-  static const groupsTab = ValueKey('home.tab.groups');
+  static const socialTab = ValueKey('home.tab.social');
+  static const meTab = ValueKey('home.tab.me');
 }
 
 class HomeScreen extends StatefulWidget {
@@ -35,20 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       key: HomeKeys.screen,
       appBar: AppBar(
-        title: Text(_tab == 0 ? l10n.agendaTitle : l10n.groupsTitle),
-        actions: [
-          IconButton(
-            key: HomeKeys.profileButton,
-            tooltip: l10n.profileTooltip,
-            icon: const Icon(Icons.account_circle_outlined),
-            // push, pas go : le profil se referme par le bouton retour.
-            onPressed: () => context.pushNamed(AppRoute.profile.name),
-          ),
-        ],
+        title: Text(switch (_tab) {
+          0 => l10n.agendaTitle,
+          1 => l10n.navSocial,
+          _ => l10n.navMe,
+        }),
       ),
       body: IndexedStack(
         index: _tab,
-        children: const [CalendarScreen(), GroupsScreen()],
+        children: const [CalendarScreen(), SocialScreen(), ProfileScreen()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
@@ -61,10 +57,16 @@ class _HomeScreenState extends State<HomeScreen> {
             label: l10n.navAgenda,
           ),
           NavigationDestination(
-            key: HomeKeys.groupsTab,
+            key: HomeKeys.socialTab,
             icon: const Icon(Icons.groups_outlined),
             selectedIcon: const Icon(Icons.groups),
-            label: l10n.navGroups,
+            label: l10n.navSocial,
+          ),
+          NavigationDestination(
+            key: HomeKeys.meTab,
+            icon: const Icon(Icons.account_circle_outlined),
+            selectedIcon: const Icon(Icons.account_circle),
+            label: l10n.navMe,
           ),
         ],
       ),

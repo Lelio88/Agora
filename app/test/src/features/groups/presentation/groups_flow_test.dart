@@ -47,7 +47,7 @@ void main() {
     await robot.pumpApp(auth: _signedIn());
 
     await robot.openGroupsTab();
-    await robot.tap(GroupKeys.newGroup);
+    await robot.addFromSocial(GroupKeys.newGroup);
     await robot.enter(GroupKeys.name, 'Coloc');
     await robot.tap(GroupKeys.save);
 
@@ -61,7 +61,7 @@ void main() {
     await robot.pumpApp(auth: _signedIn(), groups: _colocToJoin());
 
     await robot.openGroupsTab();
-    await robot.tap(GroupKeys.joinWithCode);
+    await robot.addFromSocial(GroupKeys.joinWithCode);
     await robot.enter(GroupKeys.codeField, 'abcd2345');
     await robot.tap(GroupKeys.continueButton);
     robot.expectText('Rejoindre « Coloc » ?');

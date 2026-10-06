@@ -2,6 +2,7 @@ import 'package:agora/src/features/auth/domain/app_user.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
+import 'package:agora/src/features/home/presentation/social_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,8 +38,8 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn());
 
-    await robot.openCalendars();
-    await robot.tap(CalendarKeys.newContactCalendar);
+    await robot.openSocialTab();
+    await robot.addFromSocial(SocialKeys.addContact);
     await robot.enter(CalendarKeys.calendarName, 'Léa');
     // Pas de réglage de partage : l'agenda d'un proche n'est qu'à moi.
     expect(find.byKey(CalendarKeys.calendarVisibility), findsNothing);
@@ -52,7 +53,7 @@ void main() {
     expect(created.name, 'Léa');
     expect(created.isContact, isTrue);
     expect(created.visibility, EventVisibility.invisible);
-    expect(find.byKey(CalendarKeys.contactCalendarsHeader), findsOneWidget);
+    robot.expectScreen(CalendarKeys.contactScreen);
     robot.expectText('Proche ajouté.');
   });
 

@@ -1412,4 +1412,125 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importForContactHint =>
       'Visible to you only, never counted as your busy times.';
+
+  @override
+  String get navSocial => 'Social';
+
+  @override
+  String get navMe => 'Me';
+
+  @override
+  String get socialAddButton => 'Add';
+
+  @override
+  String get upcomingTitle => 'Coming up';
+
+  @override
+  String daysAwayLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count days',
+      one: 'Tomorrow',
+      zero: 'Today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contactsEmpty =>
+      'Note your close ones\' days off and birthdays: only you can see them.';
+
+  @override
+  String get contactImportedSubtitle => 'Imported schedule, just for you';
+
+  @override
+  String get contactNowTitle => 'Right now';
+
+  @override
+  String get contactNothingNow => 'Nothing noted right now.';
+
+  @override
+  String contactUntil(String title, String time) {
+    return '$title, until $time';
+  }
+
+  @override
+  String contactNext(String title, String when) {
+    return 'Next: $title, $when';
+  }
+
+  @override
+  String get contactShortcutsTitle => 'Quick add';
+
+  @override
+  String get shortcutBirthday => 'Birthday';
+
+  @override
+  String get shortcutWorkHours => 'Work hours';
+
+  @override
+  String get shortcutRest => 'Day off';
+
+  @override
+  String get shortcutImport => 'Import their schedule';
+
+  @override
+  String birthdayEventTitle(String name) {
+    return '$name\'s birthday';
+  }
+
+  @override
+  String get workEventTitle => 'Work';
+
+  @override
+  String get restEventTitle => 'Day off';
+
+  @override
+  String contactImportedName(String name) {
+    return '$name\'s schedule';
+  }
+
+  @override
+  String get contactUpcomingTitle => 'Next 30 days';
+
+  @override
+  String get contactNothingUpcoming => 'Nothing noted for the next 30 days.';
+
+  @override
+  String get contactAddEventButton => 'Add';
+
+  @override
+  String get contactEditTooltip => 'Edit close one';
+
+  @override
+  String get repeatDaysLabel => 'On';
+
+  @override
+  String get repeatIntervalLabel => 'Every';
+
+  @override
+  String repeatEveryWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count weeks',
+      one: 'Every week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repeatEndLabel => 'Repeat ends';
+
+  @override
+  String get repeatEndNever => 'Never';
+
+  @override
+  String repeatEndOn(String date) {
+    return 'On $date';
+  }
+
+  @override
+  String get repeatEndClearTooltip => 'No end';
 }

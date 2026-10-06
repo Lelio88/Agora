@@ -297,8 +297,10 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   lien vers l'app d'itinéraire en transports (Citymapper avec l'heure d'arrivée, Google Maps,
   ou `geo:` sur Android). Aucun calcul, aucun appel réseau, rien d'enregistré ; sans adresse
   saisie, l'app d'itinéraire part de la position du téléphone, qu'Agora ne demande pas.
-- **Accueil** : deux onglets (Agenda, Groupes). Groupes et invitations : voir
-  [`groups-architecture.md`](./groups-architecture.md).
+- **Accueil** : trois onglets — Agenda, Social (dates à retenir des proches, proches, groupes ;
+  un bouton « Ajouter » pour un proche, un groupe ou un code), Moi (profil et réglages).
+  Proches : voir [`calendar-architecture.md`](./calendar-architecture.md) ; groupes et
+  invitations : [`groups-architecture.md`](./groups-architecture.md).
 - **Langues** : repli sur le français pour une langue d'appareil non prise en charge.
 - **Android** : `INTERNET` déclarée dans le manifeste principal (le gabarit Flutter ne la met que
   dans les manifestes debug/profile) ; `applicationId` `app.agora`.
@@ -322,7 +324,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Brique | Outil | Ce qui est couvert |
 |---|---|---|
 | Schéma | pgTAP (`supabase test db`) | `visibility_test.sql` : chaque niveau, le plafond Discord, la lecture directe interdite ; `cross_group_busy_test.sql` : rdv acceptés dans d'autres groupes (« occupé » au plus) ; `groups_test.sql` : inscription, groupes, invitations, droits d'écriture, iCal ; `ics_test.sql` : contrat du worker iCal (secret, bail, application, échecs) ; `profile_test.sql` : langue et fuseau à l'inscription, fuseau validé, langue recopiée pour les e-mails ; `discord_test.sql` : liaison d'un salon, lectures du bot au nom du demandeur, plafond des récaps, rappels uniques ; `assistant_test.sql` : bascule de rôle du worker sans héritage, jeton d'assistant refusé par PostgREST et le temps réel |
-| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé) ; branchement de `prodOverrides` |
+| App | `flutter_test` | unités (règles de saisie, traduction des erreurs GoTrue, redirection, messages exhaustifs, `RecurrenceRule`) ; providers et services de l'agenda et des agendas sur faux dépôts ; parcours complets par `AgoraRobot` sous faux dépôts (comptes, profil, agenda : création, série, portée occurrence/série, suppression, vues, glisser-déposer ; « Mes agendas » ; import iCal, état de synchro, rdv importé ; onglet Social, page d'un proche et ses raccourcis ; jours, rythme et fin d'une répétition) ; branchement de `prodOverrides` |
 | Worker | `go test -race` | tests table-driven (`t.Run(tt.name, …)`) : dépliage (DST, exceptions, bornes), service sur faux stockage, `Run` avec notifications ; iCal : garde SSRF, téléchargement contre un serveur TLS `httptest` (codes, 304, redirections, taille, délai), lecture (fuseaux, séries, annulations, fenêtre, bornes), service sur faux stockage et faux téléchargeur ; `-tags integration` : `PgStore` (récurrences, iCal, Discord) et `Listen` contre la pile locale (`AGORA_TEST_DATABASE_URL`, `AGORA_TEST_ADMIN_URL`) |
 
 - **Scénario pgTAP canonique** : fixtures insérées en `postgres`, puis `set local role

@@ -60,8 +60,12 @@ final class CalendarsService {
   /// Appelé après chaque action réussie (invalide agendas et agenda).
   final void Function() _onChanged;
 
-  Future<void> create(CalendarDraft draft) =>
-      _then(_repository.createCalendar(draft));
+  /// Crée un agenda et rend son identifiant.
+  Future<String> create(CalendarDraft draft) async {
+    final id = await _repository.createCalendar(draft);
+    _onChanged();
+    return id;
+  }
 
   Future<void> import(ImportedCalendarDraft draft) =>
       _then(_repository.importCalendar(draft));

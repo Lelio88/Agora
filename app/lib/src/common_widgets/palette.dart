@@ -32,3 +32,14 @@ Color readableOn(Color background) =>
     ThemeData.estimateBrightnessForColor(background) == Brightness.dark
     ? Colors.white
     : Colors.black87;
+
+/// Couleur de la palette attribuée à [key] (l'identifiant d'un groupe) :
+/// toujours la même pour une même clé, d'un lancement et d'une plateforme à
+/// l'autre (`String.hashCode` ne le garantit pas).
+String paletteHexFor(String key) {
+  var hash = 0;
+  for (final unit in key.codeUnits) {
+    hash = (hash * 31 + unit) & 0x7fffffff;
+  }
+  return appPalette[hash % appPalette.length];
+}

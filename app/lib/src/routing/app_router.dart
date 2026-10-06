@@ -6,7 +6,7 @@
 /// dans un widget laisserait voir le contenu protégé une fraction de seconde.
 /// La règle elle-même est dans `auth_redirect.dart`.
 ///
-/// Un groupe et « Rejoindre » sont des sous-routes de l'accueil : ouverts
+/// Un groupe, un proche et « Rejoindre » sont des sous-routes de l'accueil : ouverts
 /// par un lien, le retour ramène à l'accueil. Un rdv de groupe (fiche,
 /// proposition) est une sous-route de son groupe ; ses écrans viennent de la
 /// feature agenda, que l'écran du groupe ouvre par leur seul nom de route. Un lien d'invitation ouvert
@@ -25,6 +25,7 @@ import 'package:agora/src/features/auth/presentation/reset_password_screen.dart'
 import 'package:agora/src/features/auth/presentation/sign_in_screen.dart';
 import 'package:agora/src/features/auth/presentation/sign_up_screen.dart';
 import 'package:agora/src/features/auth/presentation/verify_email_screen.dart';
+import 'package:agora/src/features/calendar/presentation/contact_screen.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_editor_page.dart';
 import 'package:agora/src/features/calendar/presentation/group_event_screen.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
@@ -34,7 +35,6 @@ import 'package:agora/src/features/groups/presentation/group_screen.dart';
 import 'package:agora/src/features/groups/presentation/join_group_screen.dart';
 import 'package:agora/src/features/groups/presentation/twin_group_screen.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
-import 'package:agora/src/features/profile/presentation/profile_screen.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:agora/src/routing/auth_redirect.dart';
 import 'package:agora/src/routing/stream_listenable.dart';
@@ -117,6 +117,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // La page d'un proche (onglet Social) : l'agenda que l'on tient
+          // pour lui, par son identifiant.
+          GoRoute(
+            path: 'contacts/:calendarId',
+            name: AppRoute.contact.name,
+            builder: (context, state) =>
+                ContactScreen(calendarId: state.pathParameters['calendarId']!),
+          ),
           GoRoute(
             path: 'join',
             name: AppRoute.joinByCode.name,
@@ -141,11 +149,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/profile',
-        name: AppRoute.profile.name,
-        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/assistant',
