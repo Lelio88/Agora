@@ -1533,4 +1533,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get repeatEndClearTooltip => 'No end';
+
+  @override
+  String get meSettingsTitle => 'Settings';
+
+  @override
+  String get meConnectionsTitle => 'Connections';
+
+  @override
+  String get meAccountTitle => 'Account';
+
+  @override
+  String get editNameTooltip => 'Change your name';
+
+  @override
+  String timezoneMatchesDevice(String zone) {
+    return '$zone, this device\'s';
+  }
+
+  @override
+  String get calendarsTileSubtitle => 'Create, import, colours and sharing';
+
+  @override
+  String get assistantConnectTitle => 'Connect an assistant';
 }

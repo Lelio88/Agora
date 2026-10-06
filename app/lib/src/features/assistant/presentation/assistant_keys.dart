@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 abstract final class AssistantKeys {
   // Écran « Assistant IA » (profil).
   static const screen = ValueKey('assistant.screen');
+  static const connect = ValueKey('assistant.connect');
   static const address = ValueKey('assistant.address');
   static const copyAddress = ValueKey('assistant.address.copy');
   static const copyCommand = ValueKey('assistant.command.copy');

@@ -57,7 +57,7 @@ inscrites par `worker register-commands` (voir [Mise en service](#mise-en-servic
 ## Liaisons
 
 - **Compte Discord ↔ compte Agora** : c'est une identité GoTrue du fournisseur `discord`,
-  obtenue par `linkIdentity` (OAuth, scope `identify`) depuis Profil → Discord. Il n'y a aucune
+  obtenue par `linkIdentity` (OAuth, scope `identify`) depuis Moi → Discord. Il n'y a aucune
   table en double : `private.discord_user(id)` lit `auth.identities`. Au retour de l'OAuth,
   Android reçoit `app.agora://login-callback` (intent-filter du manifeste) et le web revient sur
   sa propre page. Les deux adresses doivent figurer dans `ADDITIONAL_REDIRECT_URLS`. Un compte

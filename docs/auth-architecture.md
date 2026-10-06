@@ -108,9 +108,10 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 ## Suppression du compte
 
 - **Exigée par le Play Store** pour toute app qui crée des comptes, dans l'app **et** par une
-  adresse web : la version web d'Agora (profil → « Supprimer mon compte ») sert de lien pour la
+  adresse web : la version web d'Agora (Moi → « Supprimer mon compte ») sert de lien pour la
   fiche Play.
-- Écran de profil → dialogue qui expose les conséquences → RPC `public.delete_my_account()`
+- Onglet Moi (tout en bas, loin de « Se déconnecter ») → dialogue qui expose les conséquences
+  → RPC `public.delete_my_account()`
   (`SECURITY DEFINER`, migration `account_deletion`), puis fermeture de la session.
 - **Groupes possédés transmis** dans la même transaction : à l'admin le plus ancien, sinon au
   membre le plus ancien. Un groupe sans autre membre est supprimé, avec son agenda et ses rdv.

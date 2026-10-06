@@ -2706,6 +2706,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Sans fin'**
   String get repeatEndClearTooltip;
+
+  /// Onglet Moi : titre de la section des réglages (langue, fuseau, agendas).
+  ///
+  /// In fr, this message translates to:
+  /// **'Réglages'**
+  String get meSettingsTitle;
+
+  /// Onglet Moi : titre de la section Discord et assistant IA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexions'**
+  String get meConnectionsTitle;
+
+  /// Onglet Moi : titre de la section déconnexion et pages légales.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get meAccountTitle;
+
+  /// Onglet Moi : bouton qui ouvre la saisie du nom affiché.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer ton nom'**
+  String get editNameTooltip;
+
+  /// Onglet Moi : le fuseau du profil est celui du téléphone.
+  ///
+  /// In fr, this message translates to:
+  /// **'{zone}, celui de cet appareil'**
+  String timezoneMatchesDevice(String zone);
+
+  /// Onglet Moi : sous-titre de la ligne « Mes agendas ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer, importer, couleurs et partage'**
+  String get calendarsTileSubtitle;
+
+  /// Écran Assistant IA : section repliable qui explique comment brancher un assistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brancher un assistant'**
+  String get assistantConnectTitle;
 }
 
 class _AppLocalizationsDelegate

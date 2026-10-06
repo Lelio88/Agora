@@ -148,7 +148,50 @@ void main() {
   });
 
   group('assistant screen', () {
-    testWidgets('shows the address, the granted accesses, and revokes one', (
+    testWidgets('lists the granted accesses first, and revokes one', (
+      tester,
+    ) async {
+      final robot = AgoraRobot(tester);
+      final assistant = FakeAssistantRepository()
+        ..seedGrant('client-claude', 'Claude')
+        ..seedGrant('client-cursor', '');
+      await robot.pumpApp(
+        auth: _signedIn(),
+        assistant: assistant,
+        mcpUrl: _mcp,
+      );
+      await robot.openProfile();
+      await robot.tap(ProfileKeys.assistant);
+
+      expect(find.byKey(AssistantKeys.grant('client-claude')), findsOneWidget);
+      robot.expectText('Assistant sans nom');
+      // Un accès existe : brancher un assistant est replié.
+      expect(find.byKey(AssistantKeys.address), findsNothing);
+      await robot.tap(AssistantKeys.revoke('client-claude'));
+      await robot.tap(AssistantKeys.confirmRevoke);
+      expect(assistant.calls, contains('revoke client-claude'));
+      expect(find.byKey(AssistantKeys.grant('client-claude')), findsNothing);
+      expect(robot.logger.errorCount, 0);
+    });
+
+    testWidgets('on a phone, the address only; no command to type', (
+      tester,
+    ) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        mcpUrl: _mcp,
+        screenSize: const Size(412, 915),
+      );
+      await robot.openProfile();
+      await robot.tap(ProfileKeys.assistant);
+
+      // Aucun accès : la marche à suivre est dépliée.
+      robot.expectText(_mcp.toString());
+      expect(find.byKey(AssistantKeys.copyCommand), findsNothing);
+    });
+
+    testWidgets('on a computer, copies the address and the command', (
       tester,
     ) async {
       final robot = AgoraRobot(tester);
@@ -175,10 +218,13 @@ void main() {
         auth: _signedIn(),
         assistant: assistant,
         mcpUrl: _mcp,
+        screenSize: const Size(1280, 900),
       );
       await robot.openProfile();
       await robot.tap(ProfileKeys.assistant);
       robot.expectScreen(AssistantKeys.screen);
+      // Des accès existent : on déplie la marche à suivre.
+      await robot.tap(AssistantKeys.connect);
       robot.expectText(_mcp.toString());
 
       await robot.tap(AssistantKeys.copyAddress);
@@ -187,14 +233,6 @@ void main() {
         _mcp.toString(),
         'claude mcp add --transport http --scope user agora $_mcp',
       ]);
-
-      expect(find.byKey(AssistantKeys.grant('client-claude')), findsOneWidget);
-      robot.expectText('Assistant sans nom');
-      await robot.tap(AssistantKeys.revoke('client-claude'));
-      await robot.tap(AssistantKeys.confirmRevoke);
-      expect(assistant.calls, contains('revoke client-claude'));
-      expect(find.byKey(AssistantKeys.grant('client-claude')), findsNothing);
-      expect(robot.logger.errorCount, 0);
     });
 
     testWidgets('with no access granted, says so', (tester) async {

@@ -445,5 +445,12 @@
   "repeatEndLabel": "Repeat ends",
   "repeatEndNever": "Never",
   "repeatEndOn": "On {date}",
-  "repeatEndClearTooltip": "No end"
+  "repeatEndClearTooltip": "No end",
+  "meSettingsTitle": "Settings",
+  "meConnectionsTitle": "Connections",
+  "meAccountTitle": "Account",
+  "editNameTooltip": "Change your name",
+  "timezoneMatchesDevice": "{zone}, this device's",
+  "calendarsTileSubtitle": "Create, import, colours and sharing",
+  "assistantConnectTitle": "Connect an assistant"
 }

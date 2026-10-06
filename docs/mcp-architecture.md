@@ -77,11 +77,13 @@ l'échange, il consomme le code puis répond 500. La ressource n'annonce que `em
   `/oauth/consent?authorization_id=…` tant qu'on ne recharge pas ; une liaison Discord lancée
   depuis ce même onglet y reviendrait et montrerait « demande expirée » (bouton d'accueil).
 
-## L'écran « Assistant IA » (profil)
+## L'écran « Assistant IA » (onglet Moi)
 
-L'adresse du connecteur (`<API>/mcp`, depuis la configuration du build) avec Copier, les gestes
-pour claude.ai et Claude Code, le lien vers la page publique, et la liste des accès accordés
-(`listGrants`) avec Retirer (`revokeGrant`) — la coupure est immédiate. Serveur OAuth éteint
+D'abord la liste des accès accordés (`listGrants`) avec Retirer (`revokeGrant`) — la coupure est
+immédiate : sur un téléphone, c'est ce qui sert. Puis « Brancher un assistant », repliée dès
+qu'un accès existe : l'adresse du connecteur (`<API>/mcp`, depuis la configuration du build) avec
+Copier, le geste pour claude.ai, la commande Claude Code (sur un écran d'au moins 600 px
+seulement : un téléphone ne la tape pas) et le lien vers la page publique. Serveur OAuth éteint
 (`feature_disabled`) : un avis calme, pas une erreur.
 
 ## La page publique

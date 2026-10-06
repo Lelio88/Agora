@@ -4,7 +4,6 @@ import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/agora_robot.dart';
@@ -46,21 +45,43 @@ void main() {
     robot.expectScreen(ProfileKeys.screen);
     robot.expectText('zoe@test.local');
     robot.expectText('Europe/Paris');
-    expect(find.widgetWithText(TextFormField, 'Zoé'), findsOneWidget);
+    robot.expectText('Zoé');
   });
 
-  testWidgets('saves the device time zone and a new name', (tester) async {
+  testWidgets('the device time zone applies at once', (tester) async {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(auth: _signedIn(), deviceTimezone: 'America/Montreal');
     await robot.openProfile();
 
     await robot.tap(ProfileKeys.useDeviceTimezone);
-    await robot.enter(ProfileKeys.displayName, 'Zoé M.');
-    await robot.tap(ProfileKeys.save);
 
     expect(_stored(robot)?.timezone, 'America/Montreal');
+    robot.expectText('Profil enregistré.');
+    // Le profil suit l'appareil : plus rien à proposer.
+    expect(find.byKey(ProfileKeys.useDeviceTimezone), findsNothing);
+    robot.expectText('America/Montreal, celui de cet appareil');
+  });
+
+  testWidgets('no device time zone button when they already match', (
+    tester,
+  ) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), deviceTimezone: 'Europe/Paris');
+    await robot.openProfile();
+
+    expect(find.byKey(ProfileKeys.useDeviceTimezone), findsNothing);
+  });
+
+  testWidgets('a new name is saved from its dialog', (tester) async {
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn());
+    await robot.openProfile();
+
+    await robot.renameTo('Zoé M.');
+
     expect(_stored(robot)?.displayName, 'Zoé M.');
     robot.expectText('Profil enregistré.');
+    robot.expectText('Zoé M.');
   });
 
   testWidgets('switching to English translates the app', (tester) async {
@@ -71,7 +92,6 @@ void main() {
     expect(find.text('Moi'), findsWidgets);
 
     await robot.selectLanguage('English');
-    await robot.tap(ProfileKeys.save);
 
     expect(_stored(robot)?.language, AppLanguage.en);
     expect(find.text('Me'), findsWidgets);
@@ -84,8 +104,7 @@ void main() {
     await robot.pumpApp(auth: _signedIn());
     await robot.openProfile();
 
-    await robot.enter(ProfileKeys.displayName, '   ');
-    await robot.tap(ProfileKeys.save);
+    await robot.renameTo('   ');
 
     robot.expectText('Entre 1 et 60 caractères.');
     expect(_stored(robot)?.displayName, 'Zoé');
@@ -97,7 +116,7 @@ void main() {
     await robot.openProfile();
     robot.profiles.nextError = const InvalidTimezoneException();
 
-    await robot.tap(ProfileKeys.save);
+    await robot.tap(ProfileKeys.useDeviceTimezone);
 
     robot.expectText('Fuseau horaire inconnu.');
   });

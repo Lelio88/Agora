@@ -291,8 +291,8 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   valeur par défaut : une URL sans clé fait échouer le démarrage, au lieu des 401 muets d'une
   clé retombée sur celle du poste local.
 - **Assistants IA** (`features/assistant/`) : l'écran de consentement (`/oauth/consent`, web
-  seulement) et l'écran « Assistant IA » du profil (adresse du connecteur, accès accordés à
-  retirer) — détail dans [`mcp-architecture.md`](./mcp-architecture.md).
+  seulement) et l'écran « Assistant IA » de l'onglet Moi (accès accordés à retirer, puis
+  l'adresse du connecteur) — détail dans [`mcp-architecture.md`](./mcp-architecture.md).
 - **« Y aller »** (`features/directions/`) : sur la fiche d'un rdv enregistré qui a un lieu, un
   lien vers l'app d'itinéraire en transports (Citymapper avec l'heure d'arrivée, Google Maps,
   ou `geo:` sur Android). Aucun calcul, aucun appel réseau, rien d'enregistré ; sans adresse

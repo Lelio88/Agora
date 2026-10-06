@@ -209,14 +209,24 @@ class AgoraRobot {
   /// Ouvre l'onglet « Moi » (profil et réglages).
   Future<void> openProfile() => tap(HomeKeys.meTab);
 
+  /// Choisit la langue [label] dans le dialogue de l'onglet « Moi » (le
+  /// choix s'enregistre aussitôt).
   Future<void> selectLanguage(String label) async {
+    await tap(ProfileKeys.language);
     await tester.tap(
       find.descendant(
-        of: find.byKey(ProfileKeys.language),
+        of: find.byType(SimpleDialog),
         matching: find.text(label),
       ),
     );
-    await tester.pumpAndSettle();
+    await settle();
+  }
+
+  /// Change le nom affiché par son dialogue.
+  Future<void> renameTo(String name) async {
+    await tap(ProfileKeys.editName);
+    await enter(ProfileKeys.displayName, name);
+    await tap(ProfileKeys.save);
   }
 
   /// Ouvre l'éditeur par le bouton « + » de l'agenda.

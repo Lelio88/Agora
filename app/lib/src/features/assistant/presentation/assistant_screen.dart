@@ -1,8 +1,12 @@
-/// Écran « Assistant IA » (profil → Assistant IA) : l'adresse à donner à un
-/// assistant (claude.ai, Claude Code, ChatGPT…), et les accès accordés, à
-/// retirer d'un geste.
+/// Écran « Assistant IA » (Moi → Assistant IA) : les accès accordés, à
+/// retirer d'un geste, puis, repliée, la façon de brancher un assistant
+/// (l'adresse à donner à claude.ai, Claude Code, ChatGPT…).
 ///
 /// Choix non évidents :
+/// - les accès passent en premier : sur un téléphone, c'est ce qui sert
+///   (voir qui lit son agenda, et le couper). Brancher un assistant se fait
+///   surtout depuis un ordinateur ; la section est repliée dès qu'un accès
+///   existe, et la commande Claude Code n'apparaît que sur un grand écran ;
 /// - autoriser un assistant se fait hors d'ici (l'assistant ouvre l'écran de
 ///   consentement de l'app web) : cet écran est donc le seul endroit où
 ///   l'utilisateur VOIT qui lit son agenda ;
@@ -28,6 +32,9 @@ import 'package:intl/intl.dart';
 /// Page publique qui décrit le serveur MCP, servie par la version web.
 const assistantGuidePath = '/assistant.html';
 
+/// Largeur à partir de laquelle on montre la commande Claude Code.
+const _wideScreen = 600.0;
+
 class AssistantScreen extends ConsumerWidget {
   const AssistantScreen({super.key});
 
@@ -44,6 +51,10 @@ class AssistantScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final url = ref.watch(mcpUrlProvider);
     final web = ref.watch(webBaseUrlProvider);
+    final hasGrants =
+        ref.watch(assistantGrantsProvider).value?.isNotEmpty ?? false;
+    // Un téléphone ne tape pas de commande : réservée aux grands écrans.
+    final isWide = MediaQuery.sizeOf(context).width >= _wideScreen;
     return Scaffold(
       key: AssistantKeys.screen,
       appBar: AppBar(title: Text(l10n.assistantTitle)),
@@ -52,57 +63,80 @@ class AssistantScreen extends ConsumerWidget {
         children: [
           Text(l10n.assistantIntro),
           const SizedBox(height: 16),
-          if (url != null) ...[
-            Text(l10n.assistantAddressTitle, style: text.titleSmall),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: SelectableText(url.toString(), key: AssistantKeys.address),
-              trailing: IconButton(
-                key: AssistantKeys.copyAddress,
-                tooltip: l10n.assistantCopy,
-                icon: const Icon(Icons.copy),
-                onPressed: () => _copy(context, url.toString()),
-              ),
-            ),
-            Text(l10n.assistantClaudeAi),
-            const SizedBox(height: 12),
-            Text(l10n.assistantClaudeCode),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: SelectableText(
-                claudeCodeCommand(url),
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
-              trailing: IconButton(
-                key: AssistantKeys.copyCommand,
-                tooltip: l10n.assistantCopy,
-                icon: const Icon(Icons.copy),
-                onPressed: () => _copy(context, claudeCodeCommand(url)),
-              ),
-            ),
-            Text(l10n.assistantOthers),
-            if (web != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  key: AssistantKeys.guide,
-                  onPressed: () => ref
-                      .read(linkOpenerProvider)
-                      .open(web.resolve(assistantGuidePath)),
-                  icon: const Icon(Icons.open_in_new),
-                  label: Text(l10n.assistantGuide),
-                ),
-              ),
-          ] else
-            Text(l10n.assistantNoAddress),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 8),
           Text(l10n.assistantGrantsTitle, style: text.titleSmall),
           const SizedBox(height: 4),
           Text(l10n.assistantRevokeImmediate, style: text.bodySmall),
           const SizedBox(height: 8),
           const _Grants(),
+          const SizedBox(height: 8),
+          const Divider(),
+          // Une clé par état : la section se replie d'elle-même quand le
+          // premier accès apparaît (ExpansionTile ne relit son état initial
+          // qu'à sa création).
+          KeyedSubtree(
+            key: ValueKey(hasGrants),
+            child: ExpansionTile(
+              key: AssistantKeys.connect,
+              title: Text(l10n.assistantConnectTitle),
+              initiallyExpanded: !hasGrants,
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(bottom: 8),
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              children: [
+                if (url != null) ...[
+                  Text(l10n.assistantAddressTitle, style: text.titleSmall),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: SelectableText(
+                      url.toString(),
+                      key: AssistantKeys.address,
+                    ),
+                    trailing: IconButton(
+                      key: AssistantKeys.copyAddress,
+                      tooltip: l10n.assistantCopy,
+                      icon: const Icon(Icons.copy),
+                      onPressed: () => _copy(context, url.toString()),
+                    ),
+                  ),
+                  Text(l10n.assistantClaudeAi),
+                  if (isWide) ...[
+                    const SizedBox(height: 12),
+                    Text(l10n.assistantClaudeCode),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: SelectableText(
+                        claudeCodeCommand(url),
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                      trailing: IconButton(
+                        key: AssistantKeys.copyCommand,
+                        tooltip: l10n.assistantCopy,
+                        icon: const Icon(Icons.copy),
+                        onPressed: () => _copy(context, claudeCodeCommand(url)),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Text(l10n.assistantOthers),
+                  if (web != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        key: AssistantKeys.guide,
+                        onPressed: () => ref
+                            .read(linkOpenerProvider)
+                            .open(web.resolve(assistantGuidePath)),
+                        icon: const Icon(Icons.open_in_new),
+                        label: Text(l10n.assistantGuide),
+                      ),
+                    ),
+                ] else
+                  Text(l10n.assistantNoAddress),
+              ],
+            ),
+          ),
         ],
       ),
     );

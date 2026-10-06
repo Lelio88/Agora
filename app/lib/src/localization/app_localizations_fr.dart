@@ -1545,4 +1545,27 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get repeatEndClearTooltip => 'Sans fin';
+
+  @override
+  String get meSettingsTitle => 'Réglages';
+
+  @override
+  String get meConnectionsTitle => 'Connexions';
+
+  @override
+  String get meAccountTitle => 'Compte';
+
+  @override
+  String get editNameTooltip => 'Changer ton nom';
+
+  @override
+  String timezoneMatchesDevice(String zone) {
+    return '$zone, celui de cet appareil';
+  }
+
+  @override
+  String get calendarsTileSubtitle => 'Créer, importer, couleurs et partage';
+
+  @override
+  String get assistantConnectTitle => 'Brancher un assistant';
 }

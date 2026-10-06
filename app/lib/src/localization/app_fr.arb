@@ -906,5 +906,19 @@
   "repeatEndOn": "Le {date}",
   "@repeatEndOn": {"description": "Éditeur de rdv : la répétition s'arrête ce jour-là.", "placeholders": {"date": {"type": "String"}}},
   "repeatEndClearTooltip": "Sans fin",
-  "@repeatEndClearTooltip": {"description": "Éditeur de rdv : retirer la date de fin de la répétition."}
+  "@repeatEndClearTooltip": {"description": "Éditeur de rdv : retirer la date de fin de la répétition."},
+  "meSettingsTitle": "Réglages",
+  "@meSettingsTitle": {"description": "Onglet Moi : titre de la section des réglages (langue, fuseau, agendas)."},
+  "meConnectionsTitle": "Connexions",
+  "@meConnectionsTitle": {"description": "Onglet Moi : titre de la section Discord et assistant IA."},
+  "meAccountTitle": "Compte",
+  "@meAccountTitle": {"description": "Onglet Moi : titre de la section déconnexion et pages légales."},
+  "editNameTooltip": "Changer ton nom",
+  "@editNameTooltip": {"description": "Onglet Moi : bouton qui ouvre la saisie du nom affiché."},
+  "timezoneMatchesDevice": "{zone}, celui de cet appareil",
+  "@timezoneMatchesDevice": {"description": "Onglet Moi : le fuseau du profil est celui du téléphone.", "placeholders": {"zone": {"type": "String"}}},
+  "calendarsTileSubtitle": "Créer, importer, couleurs et partage",
+  "@calendarsTileSubtitle": {"description": "Onglet Moi : sous-titre de la ligne « Mes agendas »."},
+  "assistantConnectTitle": "Brancher un assistant",
+  "@assistantConnectTitle": {"description": "Écran Assistant IA : section repliable qui explique comment brancher un assistant."}
 }
