@@ -63,6 +63,14 @@ python -c "from PIL import Image; Image.open('app/store/01-agenda.png').convert(
 Pour les captures de l'agenda (01 et 08), Hugo est masqué (Agendas affichés) :
 ses horaires de semaine couvriraient sinon la semaine de Camille.
 
+Puis les envoyer sur la fiche, dans l'ordre de leur numéro, à la place des
+précédentes (toutes les langues de fiche ; essai à blanc d'abord) :
+
+```bash
+python tools/store/publish_screenshots.py --dry-run
+python tools/store/publish_screenshots.py
+```
+
 Trois pièges qui coûtent une heure chacun :
 
 - **Le build `profile`, pas `debug`** : le bandeau « DEBUG » barre le coin de
