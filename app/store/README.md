@@ -364,6 +364,16 @@ Dans l'agenda, une bande avant chaque rendez-vous montre le trajet. Choisissez l
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.12.0+18 (rdv semblables)
+
+Français, envoyées sur `alpha` :
+
+```
+Un cours noté séance par séance se modifie d'un coup : changez par exemple le lieu d'une séance, puis cochez « Appliquer aussi aux … suivants ». Les séances de même titre, au même jour et à la même heure, reçoivent ce que vous avez changé ; chacune garde sa date, son heure et sa description.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
