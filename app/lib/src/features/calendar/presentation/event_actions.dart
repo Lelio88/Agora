@@ -10,6 +10,10 @@
 /// le supprime aussi en entier ; une journée de travail se supprime seule
 /// si on le choisit.
 ///
+/// Un rdv ponctuel n'a pas de question de portée, mais l'éditeur peut avoir
+/// coché « appliquer aussi aux semblables » : le service recopie alors ce
+/// qui a changé sur eux avant d'enregistrer le rdv.
+///
 /// Invariant : la question de portée ne se pose qu'ici (et au glisser-
 /// déposer de l'agenda, qui passe par [askScope]).
 library;
@@ -52,7 +56,7 @@ Future<bool> editInstance(
         );
   if (result == null || !context.mounted) return false;
   switch (result) {
-    case EditorSaved(:final draft):
+    case EditorSaved(:final draft, :final applyToSimilar):
       final target = contactForm != null
           ? EditTarget.series(item)
           : await askScope(
@@ -68,7 +72,7 @@ Future<bool> editInstance(
         context,
         () => ref
             .read(calendarServiceProvider)
-            .save(target: target, draft: draft),
+            .save(target: target, draft: draft, applyToSimilar: applyToSimilar),
         AppLocalizations.of(context).eventSaved,
       );
     case EditorDeleteRequested():

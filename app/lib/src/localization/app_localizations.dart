@@ -895,6 +895,66 @@ abstract class AppLocalizations {
   /// **'Changer d\'agenda s\'applique toujours à toute la série.'**
   String get scopeCalendarMoveNote;
 
+  /// Éditeur d'un rendez-vous ponctuel : case qui recopie la modification sur les rendez-vous semblables qui suivent (même agenda, même titre, même jour et même heure), comme les séances d'un cours saisies une à une.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Appliquer aussi au « {title} » suivant} other{Appliquer aussi aux {count} « {title} » suivants}}'**
+  String similarEventsApply(int count, String title);
+
+  /// Sous la case des rendez-vous semblables : leur jour de la semaine et leur heure (« Chaque lundi à 08:00 »).
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque {weekday} à {time}'**
+  String similarEventsSlot(String weekday, String time);
+
+  /// Sous la case des rendez-vous semblables, pour une journée entière : leur jour de la semaine (« Chaque lundi »).
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaque {weekday}'**
+  String similarEventsSlotAllDay(String weekday);
+
+  /// Sous la case des rendez-vous semblables : leur créneau, puis les champs modifiés qui y seront recopiés (« lieu, description »).
+  ///
+  /// In fr, this message translates to:
+  /// **'{slot} · recopie : {fields}'**
+  String similarEventsCopies(String slot, String fields);
+
+  /// Sous la case des rendez-vous semblables, avant tout changement : ce que la case recopiera.
+  ///
+  /// In fr, this message translates to:
+  /// **'{slot} · recopie ce que tu changes, sauf la date et l\'heure'**
+  String similarEventsCopiesNothing(String slot);
+
+  /// Champ recopié sur les rendez-vous semblables, dans une liste (« recopie : titre, lieu »).
+  ///
+  /// In fr, this message translates to:
+  /// **'titre'**
+  String get similarFieldTitle;
+
+  /// Champ recopié sur les rendez-vous semblables, dans une liste.
+  ///
+  /// In fr, this message translates to:
+  /// **'lieu'**
+  String get similarFieldLocation;
+
+  /// Champ recopié sur les rendez-vous semblables, dans une liste.
+  ///
+  /// In fr, this message translates to:
+  /// **'description'**
+  String get similarFieldDescription;
+
+  /// Champ recopié sur les rendez-vous semblables, dans une liste : ce qu'en voient les groupes.
+  ///
+  /// In fr, this message translates to:
+  /// **'visibilité'**
+  String get similarFieldVisibility;
+
+  /// Champ recopié sur les rendez-vous semblables, dans une liste : l'agenda où ils sont rangés.
+  ///
+  /// In fr, this message translates to:
+  /// **'agenda'**
+  String get similarFieldCalendar;
+
   /// Confirmation après un glisser-déposer.
   ///
   /// In fr, this message translates to:

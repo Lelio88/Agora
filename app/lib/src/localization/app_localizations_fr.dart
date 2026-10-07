@@ -456,6 +456,52 @@ class AppLocalizationsFr extends AppLocalizations {
       'Changer d\'agenda s\'applique toujours à toute la série.';
 
   @override
+  String similarEventsApply(int count, String title) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Appliquer aussi aux $count « $title » suivants',
+      one: 'Appliquer aussi au « $title » suivant',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String similarEventsSlot(String weekday, String time) {
+    return 'Chaque $weekday à $time';
+  }
+
+  @override
+  String similarEventsSlotAllDay(String weekday) {
+    return 'Chaque $weekday';
+  }
+
+  @override
+  String similarEventsCopies(String slot, String fields) {
+    return '$slot · recopie : $fields';
+  }
+
+  @override
+  String similarEventsCopiesNothing(String slot) {
+    return '$slot · recopie ce que tu changes, sauf la date et l\'heure';
+  }
+
+  @override
+  String get similarFieldTitle => 'titre';
+
+  @override
+  String get similarFieldLocation => 'lieu';
+
+  @override
+  String get similarFieldDescription => 'description';
+
+  @override
+  String get similarFieldVisibility => 'visibilité';
+
+  @override
+  String get similarFieldCalendar => 'agenda';
+
+  @override
   String get eventMoved => 'Rendez-vous déplacé.';
 
   @override

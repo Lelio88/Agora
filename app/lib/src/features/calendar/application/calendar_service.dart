@@ -18,7 +18,11 @@
 ///   le décalage (un rdv du mardi glissé au mercredi se répète le
 ///   mercredi). L'écart de jours est compté par le serveur, dans le fuseau
 ///   de la série : compté ici, dans celui de l'appareil, il pouvait
-///   différer près de minuit pour un utilisateur en voyage.
+///   différer près de minuit pour un utilisateur en voyage ;
+/// - un rdv ponctuel peut recopier ce qui a changé sur ses rdv semblables
+///   (`similar_events.dart`) : en deux écritures, les semblables puis le rdv.
+///   Si la seconde échoue, la première a eu lieu et l'agenda est relu ;
+///   recommencer converge.
 library;
 
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -29,6 +33,7 @@ import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
+import 'package:agora/src/features/calendar/domain/similar_events.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum EditScope { occurrence, series }
@@ -65,7 +70,27 @@ final class CalendarService {
   Future<void> create(EventDraft draft) =>
       _then(_repository.createEvent(draft));
 
-  Future<void> save({required EditTarget target, required EventDraft draft}) {
+  /// Enregistre [draft] sur [target]. Avec [applyToSimilar], sur un rdv
+  /// ponctuel, ce qui a changé (hors date et heure) est d'abord recopié sur
+  /// ses semblables : renommé d'abord, il n'en aurait plus.
+  Future<void> save({
+    required EditTarget target,
+    required EventDraft draft,
+    bool applyToSimilar = false,
+  }) async {
+    final item = target.item;
+    if (applyToSimilar && canHaveSimilar(item)) {
+      final fields = similarChanges(item, draft);
+      if (fields.isNotEmpty) {
+        await _then(
+          _repository.updateSimilarEvents(item.eventId, draft, fields),
+        );
+      }
+    }
+    return _saveTarget(target, draft);
+  }
+
+  Future<void> _saveTarget(EditTarget target, EventDraft draft) {
     if (target.isSingleOccurrence) {
       return _then(
         _repository.updateOccurrence(

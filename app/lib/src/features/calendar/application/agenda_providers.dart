@@ -9,6 +9,11 @@
 /// [visibleAgendaProvider] retire les agendas que l'utilisateur a masqués
 /// dans sa vue : un simple filtre local, relu à chaque changement de la
 /// liste des agendas, sans recharger les rdv.
+///
+/// [similarEventsCountProvider] compte les rdv semblables à un rdv ponctuel
+/// (`domain/similar_events.dart`) : l'éditeur ne propose de les modifier
+/// aussi qu'au-dessus de zéro. Une erreur de lecture passe par
+/// `AsyncErrorLogger`, et l'éditeur n'affiche alors simplement pas la case.
 library;
 
 import 'package:agora/src/features/auth/application/auth_providers.dart';
@@ -46,6 +51,13 @@ final agendaChangesProvider = StreamProvider<int>((ref) async* {
   if (await ref.watch(currentUserIdProvider.future) == null) return;
   yield* repository.watchChanges();
 });
+
+/// Nombre de rdv semblables au rdv ponctuel d'identifiant donné.
+final similarEventsCountProvider = FutureProvider.autoDispose
+    .family<int, String>(
+      (ref, eventId) =>
+          ref.watch(calendarRepositoryProvider).countSimilarEvents(eventId),
+    );
 
 final agendaProvider = FutureProvider.autoDispose
     .family<List<AgendaItem>, AgendaRange>((ref, range) {

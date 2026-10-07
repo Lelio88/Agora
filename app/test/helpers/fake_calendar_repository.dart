@@ -6,6 +6,7 @@ import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+import 'package:agora/src/features/calendar/domain/similar_events.dart';
 
 import 'fakes.dart';
 
@@ -15,7 +16,8 @@ import 'fakes.dart';
 /// remplace la sienne, une occurrence supprimée disparaît. Modifier toute
 /// la série la décale d'autant que l'occurrence touchée ; un nouvel horaire
 /// efface ses occurrences modifiées, comme le serveur. Les réponses aux rdv
-/// de groupe se posent par instance ; ma réponse revient avec l'agenda.
+/// de groupe se posent par instance ; ma réponse revient avec l'agenda. Les
+/// rdv semblables suivent la règle de `similar_event_ids`.
 class FakeCalendarRepository implements CalendarRepository {
   static const calendarId = 'cal-1';
 
@@ -29,9 +31,11 @@ class FakeCalendarRepository implements CalendarRepository {
   /// Réponses par instance, puis par membre.
   final responses = <ResponseKey, Map<String, ResponseStatus>>{};
 
-  /// Les appels qui modifient quelque chose (sans les relectures).
-  List<String> get writes =>
-      calls.where((c) => c != 'fetchAgenda').toList(growable: false);
+  /// Les appels qui modifient quelque chose (sans les relectures de
+  /// l'agenda, ni le compte des rdv semblables que lit l'éditeur).
+  List<String> get writes => calls
+      .where((c) => c != 'fetchAgenda' && c != 'countSimilarEvents')
+      .toList(growable: false);
   AppException? nextError;
   int _ticks = 0;
   int _nextId = 1;
@@ -188,6 +192,65 @@ class FakeCalendarRepository implements CalendarRepository {
     _notify();
   }
 
+  /// Comme `similar_event_ids` : rdv ponctuels du même agenda, de même
+  /// titre, au même jour de la semaine et à la même heure (UTC ici : les
+  /// tests ne traversent pas de changement d'heure), à partir de [eventId].
+  List<AgendaItem> _similarTo(String eventId) {
+    final ref = _items.values
+        .where((i) => i.eventId == eventId && i.kind == InstanceKind.single)
+        .firstOrNull;
+    if (ref == null) return const [];
+    final slot = ref.start.toUtc();
+    return _items.values.where((i) {
+      final start = i.start.toUtc();
+      return i.eventId != eventId &&
+          i.kind == InstanceKind.single &&
+          i.calendarId == ref.calendarId &&
+          i.title == ref.title &&
+          i.isAllDay == ref.isAllDay &&
+          !start.isBefore(slot) &&
+          start.weekday == slot.weekday &&
+          start.hour == slot.hour &&
+          start.minute == slot.minute;
+    }).toList();
+  }
+
+  @override
+  Future<int> countSimilarEvents(String eventId) async {
+    await _record('countSimilarEvents');
+    return _similarTo(eventId).length;
+  }
+
+  @override
+  Future<void> updateSimilarEvents(
+    String eventId,
+    EventDraft draft,
+    Set<SimilarField> fields,
+  ) async {
+    await _record('updateSimilarEvents');
+    for (final item in _similarTo(eventId)) {
+      seed(
+        _copy(
+          item,
+          calendarId: fields.contains(SimilarField.calendar)
+              ? draft.calendarId
+              : null,
+          title: fields.contains(SimilarField.title) ? draft.title : null,
+          location: fields.contains(SimilarField.location)
+              ? () => draft.location
+              : null,
+          description: fields.contains(SimilarField.description)
+              ? () => draft.description
+              : null,
+          visibility: fields.contains(SimilarField.visibility)
+              ? () => draft.visibility
+              : null,
+        ),
+      );
+    }
+    _notify();
+  }
+
   @override
   Future<void> deleteEvent(String eventId) async {
     await _record('deleteEvent');
@@ -298,11 +361,14 @@ class FakeCalendarRepository implements CalendarRepository {
     _notify();
   }
 
-  /// [visibility] et [myResponse] sont des fonctions pour distinguer
-  /// « inchangée » (absente) de « aucune » (`null`).
+  /// [location], [description], [visibility] et [myResponse] sont des
+  /// fonctions pour distinguer « inchangé » (absent) de « aucun » (`null`).
   AgendaItem _copy(
     AgendaItem item, {
     String? calendarId,
+    String? title,
+    String? Function()? location,
+    String? Function()? description,
     EventVisibility? Function()? visibility,
     ResponseStatus? Function()? myResponse,
   }) => AgendaItem(
@@ -310,9 +376,9 @@ class FakeCalendarRepository implements CalendarRepository {
     seriesId: item.seriesId,
     originalStart: item.originalStart,
     calendarId: calendarId ?? item.calendarId,
-    title: item.title,
-    location: item.location,
-    description: item.description,
+    title: title ?? item.title,
+    location: location == null ? item.location : location(),
+    description: description == null ? item.description : description(),
     start: item.start,
     end: item.end,
     isAllDay: item.isAllDay,

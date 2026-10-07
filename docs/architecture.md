@@ -422,6 +422,8 @@ jeton. Pile, pièges, première installation et répétition locale :
 - ❌ Réécrire la ligne maîtresse d'une série avec les dates d'une de ses occurrences : passer par
   `update_series`, qui décale la série.
 - ❌ Bâtir le brouillon d'une occurrence modifiée sans la règle de sa série (`my_agenda` la fournit).
+- ❌ Enregistrer un rdv ponctuel avant de recopier ses changements sur ses semblables : renommé,
+  il n'en a plus (`update_similar_events` d'abord, qui les cherche sur le rdv enregistré).
 - ❌ Supprimer un agenda autrement que par `delete_calendar` (le dernier agenda natif doit rester).
 - ❌ Régler le partage d'un membre après `join_group` au lieu de le passer à `join_group` : le
   groupe verrait « occupé » le temps de l'écart.

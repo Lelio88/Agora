@@ -24,6 +24,7 @@ import 'package:agora/src/features/calendar/domain/calendar_repository.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+import 'package:agora/src/features/calendar/domain/similar_events.dart';
 import 'package:agora/src/supabase/postgrest_errors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -122,6 +123,35 @@ final class SupabaseCalendarRepository implements CalendarRepository {
         'p_starts_at': draft.start.toUtc().toIso8601String(),
         'p_ends_at': draft.end.toUtc().toIso8601String(),
         'p_all_day': draft.isAllDay,
+        'p_visibility': draft.visibility?.name,
+      },
+    ),
+  );
+
+  @override
+  Future<int> countSimilarEvents(String eventId) => _guard(
+    () => _client.rpc<int>(
+      'count_similar_events',
+      params: {'p_event_id': eventId},
+    ),
+  );
+
+  @override
+  Future<void> updateSimilarEvents(
+    String eventId,
+    EventDraft draft,
+    Set<SimilarField> fields,
+  ) => _guard(
+    // Le nom de chaque champ est le code qu'attend la RPC.
+    () => _client.rpc<void>(
+      'update_similar_events',
+      params: {
+        'p_event_id': eventId,
+        'p_fields': [for (final field in fields) field.name],
+        'p_calendar_id': draft.calendarId,
+        'p_title': draft.title.trim(),
+        'p_location': _nullIfBlank(draft.location),
+        'p_description': _nullIfBlank(draft.description),
         'p_visibility': draft.visibility?.name,
       },
     ),

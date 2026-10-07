@@ -1,11 +1,16 @@
 /// Éditeur d'un rdv : création, ou modification d'une instance de l'agenda.
 ///
-/// Il ne parle pas au serveur lui-même : il renvoie un [EditorResult] à
-/// l'écran d'agenda, qui pose la question « cette occurrence ou la série »
-/// s'il y a lieu, puis appelle le service. L'éditeur reste ainsi testable
-/// seul, et la question de portée n'existe qu'à un endroit. Ouvert par une
-/// route (proposer un rdv à un groupe), il confie son résultat à
+/// Il n'écrit rien lui-même : il renvoie un [EditorResult] à l'écran
+/// d'agenda, qui pose la question « cette occurrence ou la série » s'il y a
+/// lieu, puis appelle le service. L'éditeur reste ainsi testable seul, et la
+/// question de portée n'existe qu'à un endroit. Ouvert par une route
+/// (proposer un rdv à un groupe), il confie son résultat à
 /// [EventEditorScreen.onResult] et ne se ferme que s'il a abouti.
+///
+/// Sur un rdv ponctuel de mes agendas, il lit seulement combien de rdv lui
+/// sont semblables (`similar_events.dart`, les séances d'un cours saisies
+/// une à une) : s'il y en a, une case propose de leur recopier ce qui a
+/// changé, et dit quoi ; [EditorSaved.applyToSimilar] porte ce choix.
 ///
 /// Pour un agenda de groupe, pas de réglage de visibilité : un rdv du
 /// groupe est vu en détail de tous ses membres. Pour l'agenda d'un proche
@@ -30,10 +35,12 @@ library;
 import 'package:agora/src/common_widgets/form_error_text.dart';
 import 'package:agora/src/common_widgets/palette.dart';
 import 'package:agora/src/common_widgets/submit_button.dart';
+import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/calendar/domain/recurrence_rule.dart';
+import 'package:agora/src/features/calendar/domain/similar_events.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
@@ -41,6 +48,7 @@ import 'package:agora/src/features/calendar/presentation/weekday_chips.dart';
 import 'package:agora/src/features/directions/presentation/go_there_button.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 const _maxTitleLength = 200;
@@ -51,8 +59,11 @@ sealed class EditorResult {
 }
 
 final class EditorSaved extends EditorResult {
-  const EditorSaved(this.draft);
+  const EditorSaved(this.draft, {this.applyToSimilar = false});
   final EventDraft draft;
+
+  /// Recopier aussi ce qui a changé sur les rdv semblables (rdv ponctuel).
+  final bool applyToSimilar;
 }
 
 final class EditorDeleteRequested extends EditorResult {
@@ -167,6 +178,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   late EventVisibility? _visibility = widget.existing?.visibility;
   late String _calendarId = widget.existing?.calendarId ?? widget.calendarId;
   bool _isSending = false;
+  bool _applyToSimilar = false;
 
   /// Le rdv va dans l'agenda d'un groupe : tous ses membres le voient.
   bool get _inGroupCalendar => widget.calendars.any(
@@ -183,6 +195,21 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   late RecurrenceRule? _recurrence;
   late final String? _advancedRule;
   String? _rangeError;
+
+  /// Le rdv ouvert est ponctuel, dans un de mes agendas, et le reste : ses
+  /// semblables peuvent recevoir la même modification. Devenu une série, il
+  /// n'en a plus (la case disparaît, et avec elle le choix).
+  bool get _offersSimilar {
+    final existing = widget.existing;
+    return existing != null &&
+        canHaveSimilar(existing) &&
+        widget.calendars.any(
+          (calendar) =>
+              calendar.id == existing.calendarId && calendar.isWritable,
+        ) &&
+        _recurrence == null &&
+        _advancedRule == null;
+  }
 
   @override
   void initState() {
@@ -279,6 +306,13 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     setState(() => _rangeError = rangeError);
     if (!isFormValid || rangeError != null) return;
 
+    _finish(
+      EditorSaved(_draft(), applyToSimilar: _offersSimilar && _applyToSimilar),
+    );
+  }
+
+  /// Le rdv tel que le formulaire le décrit en ce moment.
+  EventDraft _draft() {
     final (start, end) = _isAllDay
         ? (
             _allDayUtc(_start),
@@ -286,24 +320,18 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 .add(const Duration(days: 1)),
           )
         : (_start.toUtc(), _end.toUtc());
-    _finish(
-      EditorSaved(
-        EventDraft(
-          calendarId: _calendarId,
-          title: _title.text,
-          location: _location.text,
-          description: _description.text,
-          start: start,
-          end: end,
-          isAllDay: _isAllDay,
-          timezone: widget.existing?.timezone ?? widget.timezone,
-          recurrence: _recurrence,
-          visibility: _inGroupCalendar || _inContactCalendar
-              ? null
-              : _visibility,
-        ).withRawRule(_advancedRule),
-      ),
-    );
+    return EventDraft(
+      calendarId: _calendarId,
+      title: _title.text,
+      location: _location.text,
+      description: _description.text,
+      start: start,
+      end: end,
+      isAllDay: _isAllDay,
+      timezone: widget.existing?.timezone ?? widget.timezone,
+      recurrence: _recurrence,
+      visibility: _inGroupCalendar || _inContactCalendar ? null : _visibility,
+    ).withRawRule(_advancedRule);
   }
 
   Future<void> _finish(EditorResult result) async {
@@ -455,6 +483,23 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 minLines: 2,
                 maxLines: 6,
               ),
+              if (_offersSimilar)
+                if (widget.existing case final existing?)
+                  // Relu à chaque frappe : la case dit ce qu'elle recopiera.
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      _title,
+                      _location,
+                      _description,
+                    ]),
+                    builder: (context, _) => _SimilarEventsField(
+                      item: existing,
+                      changes: similarChanges(existing, _draft()),
+                      value: _applyToSimilar,
+                      onChanged: (value) =>
+                          setState(() => _applyToSimilar = value),
+                    ),
+                  ),
               const SizedBox(height: 24),
               SubmitButton(
                 key: CalendarKeys.save,
@@ -638,6 +683,59 @@ class _RepeatDetails extends StatelessWidget {
           onTap: () => _pickEnd(context),
         ),
       ],
+    );
+  }
+}
+
+/// Case « appliquer aussi aux semblables » d'un rdv ponctuel : absente tant
+/// que le serveur n'en compte aucun (ou si la lecture échoue, que
+/// `AsyncErrorLogger` journalise) ; dit leur nombre, leur créneau et ce qui
+/// sera recopié.
+class _SimilarEventsField extends ConsumerWidget {
+  const _SimilarEventsField({
+    required this.item,
+    required this.changes,
+    required this.value,
+    required this.onChanged,
+  });
+
+  /// Le rdv ouvert, tel qu'il est enregistré.
+  final AgendaItem item;
+  final Set<SimilarField> changes;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count =
+        ref.watch(similarEventsCountProvider(item.eventId)).value ?? 0;
+    if (count == 0) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final start = item.localStart;
+    final weekday = DateFormat.EEEE(locale).format(start);
+    final slot = item.isAllDay
+        ? l10n.similarEventsSlotAllDay(weekday)
+        : l10n.similarEventsSlot(weekday, DateFormat.Hm(locale).format(start));
+    String label(SimilarField field) => switch (field) {
+      SimilarField.title => l10n.similarFieldTitle,
+      SimilarField.location => l10n.similarFieldLocation,
+      SimilarField.description => l10n.similarFieldDescription,
+      SimilarField.visibility => l10n.similarFieldVisibility,
+      SimilarField.calendar => l10n.similarFieldCalendar,
+    };
+    return CheckboxListTile(
+      key: CalendarKeys.applyToSimilar,
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      value: value,
+      onChanged: (checked) => onChanged(checked ?? false),
+      title: Text(l10n.similarEventsApply(count, item.title)),
+      subtitle: Text(
+        changes.isEmpty
+            ? l10n.similarEventsCopiesNothing(slot)
+            : l10n.similarEventsCopies(slot, changes.map(label).join(', ')),
+      ),
     );
   }
 }

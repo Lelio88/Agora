@@ -29,6 +29,7 @@ abstract final class CalendarKeys {
   static const title = ValueKey('calendar.editor.title');
   static const location = ValueKey('calendar.editor.location');
   static const description = ValueKey('calendar.editor.description');
+  static const applyToSimilar = ValueKey('calendar.editor.applyToSimilar');
   static const allDay = ValueKey('calendar.editor.allDay');
   static const repeat = ValueKey('calendar.editor.repeat');
   static const visibility = ValueKey('calendar.editor.visibility');

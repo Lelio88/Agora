@@ -1,7 +1,7 @@
 # Agenda perso — annexe d'architecture
 
 Annexe de [`architecture.md`](./architecture.md) §2 et §7. Elle décrit les séries de rdv, leur
-dépliage par le worker, les agendas de chacun et l'agenda dans l'app.
+dépliage par le worker, les agendas de chacun, l'agenda dans l'app et les rdv semblables.
 
 ## Séries et exceptions (base)
 
@@ -267,6 +267,35 @@ Migration : `20260921220000_calendar_management.sql`.
   de bouton de suppression. Les tuiles prennent la couleur de leur agenda, texte clair ou
   foncé selon la luminance. L'éditeur de rdv propose l'agenda à partir de deux agendas.
 
+## Rdv semblables (séances saisies une à une)
+
+Migration : `20261012120000_similar_events.sql` ; tests `similar_events_test.sql`,
+`similar_events_test.dart`, `similar_events_flow_test.dart`.
+
+Un emploi du temps saisi séance par séance (chacune avec son sujet en description) n'est pas une
+série : chaque séance est un rdv ponctuel, et la question de portée ne se pose pas. L'éditeur d'un
+rdv ponctuel de mes agendas propose alors de recopier la modification sur ses **semblables**.
+
+- **Semblable** (`private.similar_event_ids`, SECURITY INVOKER) : rdv ponctuel du même agenda
+  natif **dont on est propriétaire**, de même titre, de même nature (journée entière ou non), au
+  même jour de la semaine et à la même heure locale — dans le fuseau du rdv ouvert, en UTC pour une
+  journée entière : 8 h reste 8 h de part et d'autre du changement d'heure —, à partir du rdv
+  ouvert. Jamais dans un agenda de groupe : les semblables y seraient aussi les rdv des autres
+  membres, que leurs rappels Discord annoncent.
+- **Ce qui est recopié** : les seuls champs que l'utilisateur a changés (`similarChanges` :
+  titre, lieu, description, visibilité, agenda ; texte comparé nettoyé), que la case cite sous son
+  libellé. **Jamais la date ni l'heure** : chaque séance garde son horaire, et sa description si
+  elle n'a pas changé. `public.update_similar_events(rdv, champs, …)` n'applique que les champs
+  nommés (`invalid_fields` pour un autre nom) ; le nom d'un `SimilarField` est son code.
+- **Ordre des écritures** (`CalendarService.save`) : les semblables d'abord, puis le rdv ouvert.
+  Ils se cherchent sur le rdv **tel qu'il est enregistré** : renommé d'abord, il n'en aurait plus.
+  Si le second enregistrement échoue, les semblables sont déjà à jour et l'agenda est relu ;
+  recommencer converge.
+- **La case** (`CalendarKeys.applyToSimilar`, décochée à l'ouverture) n'apparaît que si
+  `count_similar_events` en compte au moins un (une erreur de lecture passe par
+  `AsyncErrorLogger` et la case reste absente), et disparaît si le rdv devient une série. Elle dit
+  leur nombre, leur créneau (« Chaque lundi à 08:00 ») et ce qu'elle recopiera.
+
 ## Un rdv préparé dans une autre app
 
 Arpente (« Mettre dans Agora », la sortie d'un parcours de groupe) ouvre Agora sur
@@ -303,6 +332,8 @@ sens et ne fait que préremplir l'éditeur habituel.
 | `supabase/migrations/20261007120000_contact_calendars.sql` · `20261008120000_contact_member.sql` | agendas de proches ; lien d'un proche à un co-membre (`link_contact`, `create_member_contact`, nom suivi) |
 | `supabase/tests/agenda_test.sql` | tests pgTAP : lecture, exceptions, triggers, agenda de groupe, publication temps réel, droits du worker |
 | `supabase/tests/calendars_test.sql` · `series_move_test.sql` | agendas multiples ; décalage d'une série (fuseau, heure d'été, journée entière) |
+| `supabase/migrations/20261012120000_similar_events.sql` · `supabase/tests/similar_events_test.sql` | rdv semblables : `count_similar_events`, `update_similar_events` |
+| `app/lib/src/features/calendar/domain/similar_events.dart` | champs changés à recopier sur les semblables (pur) ; tests `similar_events_test.dart`, `similar_events_flow_test.dart` |
 | `worker/recurrence/expand.go` · `service.go` · `pgstore.go` | dépliage, orchestration, Postgres |
 | `worker/recurrence/pgstore_integration_test.go` · `worker/internal/database/listen_integration_test.go` | tests taggés `integration` contre la pile locale |
 | `app/lib/src/features/calendar/domain/` | `AgendaItem`, `EventDraft`, `RecurrenceRule`, `EventVisibility`, `UserCalendar`, contrats des dépôts |

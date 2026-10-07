@@ -17,6 +17,7 @@ import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
 import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+import 'package:agora/src/features/calendar/domain/similar_events.dart';
 
 abstract interface class CalendarRepository {
   /// Instances de [from] (inclus) à [to] (exclu), au plus un trimestre.
@@ -50,6 +51,19 @@ abstract interface class CalendarRepository {
     required DateTime originalStart,
     required EventDraft draft,
   });
+
+  /// Nombre de rdv semblables au rdv ponctuel [eventId] (même agenda à soi,
+  /// même titre, même jour de la semaine et même heure, à partir de lui).
+  Future<int> countSimilarEvents(String eventId);
+
+  /// Recopie sur les semblables de [eventId] les seuls [fields] de [draft],
+  /// jamais ses dates. À appeler AVANT d'enregistrer le rdv lui-même : les
+  /// semblables se cherchent sur le rdv tel qu'il est enregistré.
+  Future<void> updateSimilarEvents(
+    String eventId,
+    EventDraft draft,
+    Set<SimilarField> fields,
+  );
 
   /// Supprime un rdv ponctuel, une occurrence modifiée, ou toute une série.
   Future<void> deleteEvent(String eventId);
