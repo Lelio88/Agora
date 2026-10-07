@@ -11,6 +11,9 @@ import 'package:agora/src/device/link_opener.dart';
 import 'package:agora/src/device/sharer.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
+import 'package:agora/src/features/directions/application/directions_providers.dart';
+import 'package:agora/src/features/directions/presentation/directions_keys.dart';
+import 'package:agora/src/features/directions/presentation/travel_screen.dart';
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/presentation/auth_keys.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
@@ -33,6 +36,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'fake_assistant_repository.dart';
+import 'fake_directions.dart';
 import 'fake_calendar_repository.dart';
 import 'fake_calendars_repository.dart';
 import 'fake_discord_repository.dart';
@@ -53,6 +57,8 @@ class AgoraRobot {
   late final FakeGroupsRepository groups;
   late final FakeDiscordRepository discord;
   late final FakeAssistantRepository assistant;
+  late final FakeHomeRepository home;
+  late final FakeAddressSearch addressSearch;
   late final FakeLinkOpener links;
   late final FakeSharer sharer;
 
@@ -70,6 +76,8 @@ class AgoraRobot {
     FakeGroupsRepository? groups,
     FakeDiscordRepository? discord,
     FakeAssistantRepository? assistant,
+    FakeHomeRepository? home,
+    FakeAddressSearch? addressSearch,
     Uri? mcpUrl,
     String? pendingConsent,
     Uri? discordBotInvite,
@@ -110,6 +118,8 @@ class AgoraRobot {
     this.discord = discord ?? FakeDiscordRepository();
     addTearDown(this.discord.dispose);
     this.assistant = assistant ?? FakeAssistantRepository();
+    this.home = home ?? FakeHomeRepository();
+    this.addressSearch = addressSearch ?? FakeAddressSearch();
     this.links = links ?? FakeLinkOpener();
     this.sharer = sharer ?? FakeSharer();
     addTearDown(this.auth.dispose);
@@ -128,6 +138,8 @@ class AgoraRobot {
           groupsRepositoryProvider.overrideWithValue(this.groups),
           discordRepositoryProvider.overrideWithValue(this.discord),
           assistantRepositoryProvider.overrideWithValue(this.assistant),
+          homeRepositoryProvider.overrideWithValue(this.home),
+          addressSearchProvider.overrideWithValue(this.addressSearch),
           mcpUrlProvider.overrideWithValue(mcpUrl),
           // Comme main.dart sur le web : la demande lue dans l'adresse.
           pendingConsentProvider.overrideWithValue(
@@ -214,6 +226,20 @@ class AgoraRobot {
 
   /// Ouvre l'onglet « Moi » (profil et réglages).
   Future<void> openProfile() => tap(HomeKeys.meTab);
+
+  /// Ouvre « Trajets » depuis l'onglet « Moi ».
+  Future<void> openTravel() async {
+    await openProfile();
+    await tap(ProfileKeys.travel);
+  }
+
+  /// Tape [text] dans la recherche du domicile et attend que la recherche
+  /// parte (elle attend une pause de la frappe) et revienne.
+  Future<void> searchHome(String text) async {
+    await enter(DirectionsKeys.homeField, text);
+    await tester.pump(addressSearchDelay);
+    await settle();
+  }
 
   /// Choisit la langue [label] dans le dialogue de l'onglet « Moi » (le
   /// choix s'enregistre aussitôt).

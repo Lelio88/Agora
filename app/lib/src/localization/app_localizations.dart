@@ -2005,17 +2005,23 @@ abstract class AppLocalizations {
   /// **'Pour arriver le {when}'**
   String goThereArriveBy(String when);
 
-  /// Champ facultatif : adresse de départ.
+  /// Champ de l'adresse de départ, pré-rempli par le domicile s'il y en a un.
   ///
   /// In fr, this message translates to:
-  /// **'Partir d\'une autre adresse'**
+  /// **'Départ'**
   String get goThereOriginLabel;
 
-  /// Aide du champ de départ : position par défaut, rien de stocké.
+  /// Aide du champ de départ : vide, c'est la position ; ce qu'on y tape n'est pas gardé.
   ///
   /// In fr, this message translates to:
-  /// **'Sinon, depuis ta position. Rien n\'est enregistré.'**
+  /// **'Vide : depuis ta position. Une adresse tapée ici n\'est pas enregistrée.'**
   String get goThereOriginHelper;
+
+  /// Bulle du bouton qui vide le champ de départ : l'itinéraire part de la position du téléphone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Depuis ma position'**
+  String get goThereFromMyPosition;
 
   /// Ouvre l'itinéraire dans Citymapper.
   ///
@@ -2046,6 +2052,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune app n\'a pu ouvrir l\'itinéraire.'**
   String get goThereFailed;
+
+  /// Titre de l'écran des trajets (onglet Moi) et de sa ligne dans Moi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trajets'**
+  String get travelTitle;
+
+  /// Sous-titre de la ligne Trajets de Moi quand aucun domicile n'est posé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun domicile'**
+  String get travelTileNoHome;
+
+  /// Section du domicile dans l'écran des trajets.
+  ///
+  /// In fr, this message translates to:
+  /// **'Domicile'**
+  String get travelHomeTitle;
+
+  /// Écran des trajets, sans domicile posé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun domicile enregistré : « Y aller » part de ta position.'**
+  String get travelNoHome;
+
+  /// Bulle du bouton qui efface le domicile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer mon domicile'**
+  String get travelClearHome;
+
+  /// Champ de recherche du domicile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chercher une adresse'**
+  String get travelHomeSearchLabel;
+
+  /// Aide du champ de recherche : la France seulement, et le domicile se choisit parmi les suggestions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une adresse en France, à choisir dans les suggestions.'**
+  String get travelHomeSearchHelper;
+
+  /// La recherche d'adresses n'a rien rendu.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune adresse trouvée. Essaie avec le numéro, la rue et la ville.'**
+  String get travelNoAddressFound;
+
+  /// Confirmation après avoir choisi un domicile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Domicile enregistré.'**
+  String get travelHomeSaved;
+
+  /// Confirmation après avoir effacé le domicile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Domicile effacé.'**
+  String get travelHomeCleared;
+
+  /// Pied de l'écran des trajets : qui voit le domicile, à quoi il sert, et la source des adresses (attribution IGN).
+  ///
+  /// In fr, this message translates to:
+  /// **'Toi seul vois ton domicile : ni tes groupes, ni Discord, ni un assistant IA. « Y aller » en part par défaut. Adresses : Géoplateforme de l\'IGN.'**
+  String get travelHomePrivacy;
 
   /// Séparateur entre le formulaire et les boutons de connexion par fournisseur.
   ///

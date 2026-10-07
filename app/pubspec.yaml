@@ -17,6 +17,9 @@ dependencies:
   flutter_riverpod: ^3.4.3
   flutter_timezone: ^5.1.0
   go_router: ^18.0.1
+  # Le service d'adresses de l'IGN (Moi → Trajets). Déjà tiré par
+  # supabase_flutter : le déclarer ne change pas la version installée.
+  http: ^1.6.0
   intl: ^0.20.3
   kalender: ^0.31.3
   share_plus: ^13.3.1

@@ -226,6 +226,7 @@ Pour **tous** : partagées = **Non**, éphémères = **Non**.
 | Informations personnelles → **Adresse e-mail** | Obligatoire | Fonctionnalité, Gestion du compte |
 | Informations personnelles → **Nom** | Obligatoire | Fonctionnalité, Gestion du compte |
 | Informations personnelles → **ID utilisateur** | Obligatoire | Fonctionnalité, Gestion du compte |
+| Informations personnelles → **Adresse** | Facultative | Fonctionnalité |
 | Agenda → **Événements d'agenda** | Facultative | Fonctionnalité |
 | Activité dans l'app → **Autres actions** | Facultative | Fonctionnalité |
 
@@ -234,7 +235,13 @@ partage, les invitations créées, les réponses aux rendez-vous et les
 réglages du salon Discord d'un groupe. Le compte Discord relié (identifiant
 et nom) entre dans **ID utilisateur** et **Nom**, déjà déclarés.
 
-**Éphémère : non, pour les cinq.** Une donnée éphémère est lue en mémoire le
+**Adresse** : le domicile posé dans Moi → Trajets (libellé et coordonnées,
+table `travel_settings`), lisible de son seul titulaire, départ par défaut de
+« Y aller ». Pour le choisir, l'app envoie le texte tapé au service
+d'adresses de l'IGN (`data.geopf.fr`) : transfert déclenché par
+l'utilisateur, qui attend des suggestions, donc pas un partage.
+
+**Éphémère : non, pour les six.** Une donnée éphémère est lue en mémoire le
 temps d'une requête puis jetée ; chacun de ces types atterrit dans une table
 Postgres et y reste jusqu'à la suppression du compte. La seule donnée
 réellement éphémère du produit est l'adresse IP vue par Cloudflare pendant le
@@ -267,17 +274,19 @@ connexion Google recueillait déjà (ID utilisateur, nom, adresse e-mail).
 
 | Catégorie | Pourquoi c'est sûr |
 |---|---|
-| Emplacement | le manifeste fusionné du build de publication ne demande que `INTERNET` |
+| Emplacement | le manifeste fusionné du build de publication ne demande que `INTERNET` ; le domicile est une adresse tapée, déclarée en **Adresse**, pas la position de l'appareil |
 | Photos et vidéos | `profiles.avatar_url` existe en base, mais aucun écran ne permet d'envoyer une image — ni `image_picker`, ni `file_picker` ; les `CircleAvatar` du code sont des pastilles de couleur |
 | ID d'appareil | aucun identifiant publicitaire, aucun `device_info`, aucun Firebase, aucune notification push |
 | Infos sur l'app et performances | le journal passe par `dart:developer` et ne quitte pas l'appareil ; aucun rapport de plantage |
-| Contacts, Fichiers, Messages, Navigation Web, Santé, Finances | rien de tel dans les dix tables du schéma |
+| Contacts, Fichiers, Messages, Navigation Web, Santé, Finances | rien de tel dans les tables du schéma |
 
-Les seuls hôtes contactés par l'app sont le serveur Supabase d'Agora et
-`challenges.cloudflare.com` pour le CAPTCHA. La liaison d'un compte Discord
+Les seuls hôtes contactés par l'app sont le serveur Supabase d'Agora,
+`challenges.cloudflare.com` pour le CAPTCHA, et `data.geopf.fr` (IGN) pour
+les suggestions d'adresses du domicile. La liaison d'un compte Discord
 s'ouvre dans le navigateur, sur `discord.com`, et non dans l'app. « Y aller »
-passe la main à l'app d'itinéraire choisie (Citymapper, Google Maps) : ni
-localisation demandée, ni donnée enregistrée, rien à déclarer.
+passe la main à l'app d'itinéraire choisie (Citymapper, Google Maps) : aucune
+localisation demandée ; le départ pré-rempli est le domicile, déjà déclaré
+en **Adresse**.
 
 ### Le point non tranché
 

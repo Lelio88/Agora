@@ -1109,11 +1109,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get goThereOriginLabel => 'Start from another address';
+  String get goThereOriginLabel => 'Start from';
 
   @override
   String get goThereOriginHelper =>
-      'Otherwise, from where you are. Nothing is saved.';
+      'Empty: from where you are. An address typed here isn\'t saved.';
+
+  @override
+  String get goThereFromMyPosition => 'From where I am';
 
   @override
   String get goThereCitymapper => 'Citymapper';
@@ -1130,6 +1133,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goThereFailed => 'No app could open the route.';
+
+  @override
+  String get travelTitle => 'Travel';
+
+  @override
+  String get travelTileNoHome => 'No home set';
+
+  @override
+  String get travelHomeTitle => 'Home';
+
+  @override
+  String get travelNoHome =>
+      'No home saved: “Get there” starts from where you are.';
+
+  @override
+  String get travelClearHome => 'Forget my home';
+
+  @override
+  String get travelHomeSearchLabel => 'Search for an address';
+
+  @override
+  String get travelHomeSearchHelper =>
+      'An address in France, picked from the suggestions.';
+
+  @override
+  String get travelNoAddressFound =>
+      'No address found. Try with the number, street and town.';
+
+  @override
+  String get travelHomeSaved => 'Home saved.';
+
+  @override
+  String get travelHomeCleared => 'Home forgotten.';
+
+  @override
+  String get travelHomePrivacy =>
+      'Only you can see your home: not your groups, Discord or an AI assistant. “Get there” starts from it by default. Addresses: IGN Géoplateforme.';
 
   @override
   String get orDivider => 'or';

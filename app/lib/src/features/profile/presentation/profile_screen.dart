@@ -1,5 +1,6 @@
 /// Onglet « Moi » de l'accueil : qui je suis (nom affiché, e-mail), mes
-/// réglages (langue de l'app et des e-mails, fuseau horaire, mes agendas),
+/// réglages (langue de l'app et des e-mails, fuseau horaire, mes agendas,
+/// mon domicile pour les trajets),
 /// mes connexions (Google, Discord, assistants IA), puis la déconnexion, les
 /// pages légales et, tout en bas, la suppression du compte.
 ///
@@ -31,6 +32,8 @@ import 'package:agora/src/features/auth/domain/credential_rules.dart';
 import 'package:agora/src/features/auth/domain/left_behind_event.dart';
 import 'package:agora/src/features/auth/presentation/google_account_tile.dart';
 import 'package:agora/src/features/calendar/presentation/calendars_screen.dart';
+import 'package:agora/src/features/directions/application/directions_providers.dart';
+import 'package:agora/src/features/directions/presentation/travel_screen.dart';
 import 'package:agora/src/features/discord/presentation/discord_account_section.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/domain/profile.dart';
@@ -169,6 +172,7 @@ class _MePage extends ConsumerWidget {
     final isBusy = ref.watch(profileControllerProvider).isLoading;
     final email = ref.watch(currentUserProvider).value?.email;
     final deviceZone = ref.watch(_deviceTimezoneNameProvider).value;
+    final home = ref.watch(homeProvider).value;
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -237,6 +241,14 @@ class _MePage extends ConsumerWidget {
                 subtitle: Text(l10n.calendarsTileSubtitle),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => CalendarsScreen.show(context),
+              ),
+              ListTile(
+                key: ProfileKeys.travel,
+                leading: const Icon(Icons.home_outlined),
+                title: Text(l10n.travelTitle),
+                subtitle: Text(home?.label ?? l10n.travelTileNoHome),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => TravelScreen.show(context),
               ),
               SectionTitle(l10n.meConnectionsTitle),
               const Padding(

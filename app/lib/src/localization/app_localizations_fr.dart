@@ -1119,11 +1119,14 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get goThereOriginLabel => 'Partir d\'une autre adresse';
+  String get goThereOriginLabel => 'Départ';
 
   @override
   String get goThereOriginHelper =>
-      'Sinon, depuis ta position. Rien n\'est enregistré.';
+      'Vide : depuis ta position. Une adresse tapée ici n\'est pas enregistrée.';
+
+  @override
+  String get goThereFromMyPosition => 'Depuis ma position';
 
   @override
   String get goThereCitymapper => 'Citymapper';
@@ -1140,6 +1143,43 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get goThereFailed => 'Aucune app n\'a pu ouvrir l\'itinéraire.';
+
+  @override
+  String get travelTitle => 'Trajets';
+
+  @override
+  String get travelTileNoHome => 'Aucun domicile';
+
+  @override
+  String get travelHomeTitle => 'Domicile';
+
+  @override
+  String get travelNoHome =>
+      'Aucun domicile enregistré : « Y aller » part de ta position.';
+
+  @override
+  String get travelClearHome => 'Effacer mon domicile';
+
+  @override
+  String get travelHomeSearchLabel => 'Chercher une adresse';
+
+  @override
+  String get travelHomeSearchHelper =>
+      'Une adresse en France, à choisir dans les suggestions.';
+
+  @override
+  String get travelNoAddressFound =>
+      'Aucune adresse trouvée. Essaie avec le numéro, la rue et la ville.';
+
+  @override
+  String get travelHomeSaved => 'Domicile enregistré.';
+
+  @override
+  String get travelHomeCleared => 'Domicile effacé.';
+
+  @override
+  String get travelHomePrivacy =>
+      'Toi seul vois ton domicile : ni tes groupes, ni Discord, ni un assistant IA. « Y aller » en part par défaut. Adresses : Géoplateforme de l\'IGN.';
 
   @override
   String get orDivider => 'ou';

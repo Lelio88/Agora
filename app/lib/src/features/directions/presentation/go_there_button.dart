@@ -3,13 +3,16 @@
 /// départ que sa position.
 ///
 /// Choix non évidents :
-/// - l'adresse de départ vit le temps de la feuille : ni profil, ni base,
-///   ni préférence locale. La refermer l'oublie ;
+/// - le départ est pré-rempli par le domicile du compte (Moi → Trajets),
+///   s'il y en a un ; « Depuis ma position » vide le champ ;
+/// - une autre adresse tapée vit le temps de la feuille : ni base, ni
+///   préférence locale. La refermer l'oublie ;
 /// - « Autre app de cartes » (lien `geo:`) n'existe que sur Android : un
 ///   navigateur ne sait pas l'ouvrir.
 library;
 
 import 'package:agora/src/device/link_opener.dart';
+import 'package:agora/src/features/directions/application/directions_providers.dart';
 import 'package:agora/src/features/directions/domain/directions.dart';
 import 'package:agora/src/features/directions/presentation/directions_keys.dart';
 import 'package:agora/src/localization/app_localizations.dart';
@@ -18,7 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class GoThereButton extends StatelessWidget {
+class GoThereButton extends ConsumerWidget {
   const GoThereButton({
     required this.location,
     required this.start,
@@ -32,9 +35,11 @@ class GoThereButton extends StatelessWidget {
   final bool isAllDay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (location.trim().isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
+    // Surveillé dès la fiche : la feuille s'ouvre sur un domicile déjà lu.
+    final home = ref.watch(homeProvider).value;
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: TextButton.icon(
@@ -45,6 +50,7 @@ class GoThereButton extends StatelessWidget {
           showDragHandle: true,
           builder: (_) => _GoThereSheet(
             destination: location,
+            origin: home?.label ?? '',
             arriveBy: wantedArrival(
               start: start,
               isAllDay: isAllDay,
@@ -60,9 +66,16 @@ class GoThereButton extends StatelessWidget {
 }
 
 class _GoThereSheet extends ConsumerStatefulWidget {
-  const _GoThereSheet({required this.destination, required this.arriveBy});
+  const _GoThereSheet({
+    required this.destination,
+    required this.origin,
+    required this.arriveBy,
+  });
 
   final String destination;
+
+  /// Départ proposé à l'ouverture : le domicile, ou vide (sa position).
+  final String origin;
   final DateTime? arriveBy;
 
   @override
@@ -70,7 +83,7 @@ class _GoThereSheet extends ConsumerStatefulWidget {
 }
 
 class _GoThereSheetState extends ConsumerState<_GoThereSheet> {
-  final _origin = TextEditingController();
+  late final _origin = TextEditingController(text: widget.origin);
 
   @override
   void dispose() {
@@ -134,6 +147,12 @@ class _GoThereSheetState extends ConsumerState<_GoThereSheet> {
                 labelText: l10n.goThereOriginLabel,
                 helperText: l10n.goThereOriginHelper,
                 prefixIcon: const Icon(Icons.trip_origin),
+                suffixIcon: IconButton(
+                  key: DirectionsKeys.fromMyPosition,
+                  tooltip: l10n.goThereFromMyPosition,
+                  icon: const Icon(Icons.my_location),
+                  onPressed: _origin.clear,
+                ),
               ),
             ),
             const SizedBox(height: 16),

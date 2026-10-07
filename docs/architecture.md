@@ -95,6 +95,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `event_responses` | réponse d'un membre à un rdv de groupe (présent / peut-être / absent), par instance : `occurrence_start` pour une occurrence de série | `respond_to_event()` seul ; lisible des membres du groupe |
 | `series_expansions` | horodatage du dernier dépliage **qui a changé** une série : signal temps réel pour l'app | le worker seul |
 | `discord_channels` | salon Discord relié à un groupe, et réglages des récaps et rappels | `/relier` (worker) ; admins pour régler et délier — voir [`discord-architecture.md`](./discord-architecture.md) |
+| `travel_settings` | domicile (libellé et point d'une adresse IGN), départ par défaut de « Y aller » ; une ligne si un domicile est posé, **lisible de sa seule personne** : ni co-membres, ni worker, donc ni Discord ni assistant | l'utilisateur (upsert, effacement) |
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom
   vient des métadonnées du fournisseur (`display_name`, `full_name`, `global_name` Discord,
@@ -305,8 +306,13 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   l'adresse du connecteur) — détail dans [`mcp-architecture.md`](./mcp-architecture.md).
 - **« Y aller »** (`features/directions/`) : sur la fiche d'un rdv enregistré qui a un lieu, un
   lien vers l'app d'itinéraire en transports (Citymapper avec l'heure d'arrivée, Google Maps,
-  ou `geo:` sur Android). Aucun calcul, aucun appel réseau, rien d'enregistré ; sans adresse
-  saisie, l'app d'itinéraire part de la position du téléphone, qu'Agora ne demande pas.
+  ou `geo:` sur Android). Aucun calcul d'itinéraire. Le départ est pré-rempli par le domicile
+  (`travel_settings`) ; champ vide (« Depuis ma position »), l'app d'itinéraire part de la
+  position du téléphone, qu'Agora ne demande pas. Une autre adresse tapée n'est pas gardée.
+- **Trajets** (Moi → Trajets, même feature) : le domicile se choisit parmi les suggestions du
+  service d'adresses de l'IGN (`data.geopf.fr/geocodage`, sans clé, France seulement), appelé
+  **depuis l'app** après une pause de la frappe, sans relance automatique d'une recherche ratée.
+  `IgnAddressSearch` ne laisse sortir que des `AppException`, sans le texte cherché.
 - **Accueil** : trois onglets — Agenda, Social (dates à retenir des proches, proches, groupes ;
   un bouton « Ajouter » pour un proche, un groupe ou un code), Moi (profil et réglages).
   Proches : voir [`calendar-architecture.md`](./calendar-architecture.md) ; groupes et
@@ -364,6 +370,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../docs/brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
 | Google OAuth | connexion (identité seule, sans accès à l'agenda) : câblée, désactivée | console Google Cloud |
+| Géoplateforme de l'IGN | suggestions d'adresses du domicile, appelées depuis l'app (CSP `connect-src` du web) ; public, sans clé, 50 requêtes/s par IP ; attribution affichée dans Moi → Trajets | `cartes.gouv.fr` (guides de la Géoplateforme) |
 
 Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public. Carte du serveur :
 `../INFRASTRUCTURE.md`.
