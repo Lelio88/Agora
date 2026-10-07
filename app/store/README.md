@@ -352,6 +352,18 @@ Corrigé : proposer un rendez-vous au groupe ne perd plus votre saisie quand un 
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.11.0+17 (domicile et temps de trajet)
+
+Français, envoyées sur `alpha` :
+
+```
+Posez votre domicile (Moi → Trajets) : « Y aller » en part, et la fiche d'un rendez-vous qui a un lieu donne le temps de trajet en voiture et à pied, avec l'heure à laquelle partir.
+
+Dans l'agenda, une bande avant chaque rendez-vous montre le trajet. Choisissez le mode pour un rendez-vous, ou « Pas de trajet ». Calcul de l'IGN, sans trafic, visible de vous seul.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
