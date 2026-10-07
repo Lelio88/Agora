@@ -16,7 +16,8 @@ import 'package:agora/src/features/calendar/data/supabase_calendars_repository.d
 import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/directions/application/directions_providers.dart';
 import 'package:agora/src/features/directions/data/ign_address_search.dart';
-import 'package:agora/src/features/directions/data/supabase_home_repository.dart';
+import 'package:agora/src/features/directions/data/ign_route_times.dart';
+import 'package:agora/src/features/directions/data/supabase_travel_repository.dart';
 import 'package:agora/src/features/discord/data/supabase_discord_repository.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
@@ -69,9 +70,10 @@ void main() {
       isA<SupabaseAssistantRepository>(),
     );
     expect(
-      container.read(homeRepositoryProvider),
-      isA<SupabaseHomeRepository>(),
+      container.read(travelRepositoryProvider),
+      isA<SupabaseTravelRepository>(),
     );
     expect(container.read(addressSearchProvider), isA<IgnAddressSearch>());
+    expect(container.read(routeTimesProvider), isA<IgnRouteTimes>());
   });
 }

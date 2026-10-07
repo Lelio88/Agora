@@ -236,10 +236,17 @@ réglages du salon Discord d'un groupe. Le compte Discord relié (identifiant
 et nom) entre dans **ID utilisateur** et **Nom**, déjà déclarés.
 
 **Adresse** : le domicile posé dans Moi → Trajets (libellé et coordonnées,
-table `travel_settings`), lisible de son seul titulaire, départ par défaut de
-« Y aller ». Pour le choisir, l'app envoie le texte tapé au service
-d'adresses de l'IGN (`data.geopf.fr`) : transfert déclenché par
-l'utilisateur, qui attend des suggestions, donc pas un partage.
+table `travel_settings`, avec le mode préféré et les modes choisis par rdv),
+lisible de son seul titulaire, départ de « Y aller » et des temps de trajet.
+L'app appelle elle-même la Géoplateforme de l'IGN (`data.geopf.fr`) : le
+texte tapé pour trouver le domicile, puis, pour un temps de trajet, le lieu
+d'un rdv (jamais son titre) et le domicile arrondi à ~100 m. **Partagées :
+non**, par l'exception des transferts déclenchés par l'utilisateur : il pose
+lui-même un domicile pour obtenir ces calculs, l'écran Trajets dit ce qui
+part vers l'IGN, et effacer le domicile les arrête tous. L'interrupteur
+« Trajets dans l'agenda » ne retire que les bandes de l'agenda : la fiche
+d'un rdv qui a un lieu calcule encore son trajet à l'ouverture. Les durées ne
+sont pas stockées.
 
 **Éphémère : non, pour les six.** Une donnée éphémère est lue en mémoire le
 temps d'une requête puis jetée ; chacun de ces types atterrit dans une table
@@ -282,7 +289,7 @@ connexion Google recueillait déjà (ID utilisateur, nom, adresse e-mail).
 
 Les seuls hôtes contactés par l'app sont le serveur Supabase d'Agora,
 `challenges.cloudflare.com` pour le CAPTCHA, et `data.geopf.fr` (IGN) pour
-les suggestions d'adresses du domicile. La liaison d'un compte Discord
+les suggestions d'adresses du domicile et les temps de trajet. La liaison d'un compte Discord
 s'ouvre dans le navigateur, sur `discord.com`, et non dans l'app. « Y aller »
 passe la main à l'app d'itinéraire choisie (Citymapper, Google Maps) : aucune
 localisation demandée ; le départ pré-rempli est le domicile, déjà déclaré

@@ -51,10 +51,10 @@ void main() {
     tester,
   ) async {
     final robot = AgoraRobot(tester);
-    final home = FakeHomeRepository();
+    final home = FakeTravelRepository();
     await robot.pumpApp(
       auth: _signedIn(),
-      home: home,
+      travel: home,
       addressSearch: FakeAddressSearch([_townHall, _station]),
     );
 
@@ -85,8 +85,8 @@ void main() {
 
   testWidgets('the home can be forgotten', (tester) async {
     final robot = AgoraRobot(tester);
-    final home = FakeHomeRepository(home: _townHall);
-    await robot.pumpApp(auth: _signedIn(), home: home);
+    final home = FakeTravelRepository(home: _townHall);
+    await robot.pumpApp(auth: _signedIn(), travel: home);
 
     await robot.openTravel();
     await robot.tap(DirectionsKeys.clearHome);
@@ -132,7 +132,7 @@ void main() {
     final robot = AgoraRobot(tester);
     await robot.pumpApp(
       auth: _signedIn(),
-      home: FakeHomeRepository(home: _townHall),
+      travel: FakeTravelRepository(home: _townHall),
       calendar: FakeCalendarRepository()..seed(_dentist()),
     );
 

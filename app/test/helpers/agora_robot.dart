@@ -57,8 +57,9 @@ class AgoraRobot {
   late final FakeGroupsRepository groups;
   late final FakeDiscordRepository discord;
   late final FakeAssistantRepository assistant;
-  late final FakeHomeRepository home;
+  late final FakeTravelRepository travel;
   late final FakeAddressSearch addressSearch;
+  late final FakeRouteTimes routeTimes;
   late final FakeLinkOpener links;
   late final FakeSharer sharer;
 
@@ -76,8 +77,9 @@ class AgoraRobot {
     FakeGroupsRepository? groups,
     FakeDiscordRepository? discord,
     FakeAssistantRepository? assistant,
-    FakeHomeRepository? home,
+    FakeTravelRepository? travel,
     FakeAddressSearch? addressSearch,
+    FakeRouteTimes? routeTimes,
     Uri? mcpUrl,
     String? pendingConsent,
     Uri? discordBotInvite,
@@ -118,8 +120,9 @@ class AgoraRobot {
     this.discord = discord ?? FakeDiscordRepository();
     addTearDown(this.discord.dispose);
     this.assistant = assistant ?? FakeAssistantRepository();
-    this.home = home ?? FakeHomeRepository();
+    this.travel = travel ?? FakeTravelRepository();
     this.addressSearch = addressSearch ?? FakeAddressSearch();
+    this.routeTimes = routeTimes ?? FakeRouteTimes();
     this.links = links ?? FakeLinkOpener();
     this.sharer = sharer ?? FakeSharer();
     addTearDown(this.auth.dispose);
@@ -138,8 +141,9 @@ class AgoraRobot {
           groupsRepositoryProvider.overrideWithValue(this.groups),
           discordRepositoryProvider.overrideWithValue(this.discord),
           assistantRepositoryProvider.overrideWithValue(this.assistant),
-          homeRepositoryProvider.overrideWithValue(this.home),
+          travelRepositoryProvider.overrideWithValue(this.travel),
           addressSearchProvider.overrideWithValue(this.addressSearch),
+          routeTimesProvider.overrideWithValue(this.routeTimes),
           mcpUrlProvider.overrideWithValue(mcpUrl),
           // Comme main.dart sur le web : la demande lue dans l'adresse.
           pendingConsentProvider.overrideWithValue(

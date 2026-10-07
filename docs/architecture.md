@@ -95,7 +95,8 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `event_responses` | réponse d'un membre à un rdv de groupe (présent / peut-être / absent), par instance : `occurrence_start` pour une occurrence de série | `respond_to_event()` seul ; lisible des membres du groupe |
 | `series_expansions` | horodatage du dernier dépliage **qui a changé** une série : signal temps réel pour l'app | le worker seul |
 | `discord_channels` | salon Discord relié à un groupe, et réglages des récaps et rappels | `/relier` (worker) ; admins pour régler et délier — voir [`discord-architecture.md`](./discord-architecture.md) |
-| `travel_settings` | domicile (libellé et point d'une adresse IGN), départ par défaut de « Y aller » ; une ligne si un domicile est posé, **lisible de sa seule personne** : ni co-membres, ni worker, donc ni Discord ni assistant | l'utilisateur (upsert, effacement) |
+| `travel_settings` | domicile (libellé et point d'une adresse IGN), départ de « Y aller » et des temps de trajet ; mode préféré (`auto`/`car`/`walk`), trajets dans l'agenda ; une ligne si un domicile est posé, **lisible de sa seule personne** : ni co-membres, ni worker, donc ni Discord ni assistant | l'utilisateur (upsert, effacement) |
+| `event_travel_modes` | mode choisi par une personne pour un rdv ou une série (`car`/`walk`/`none`), sur un rdv qu'elle voit ; oublié quand elle quitte le groupe du rdv. Les durées ne sont jamais stockées | l'utilisateur (upsert) |
 
 - **Inscription** : `private.handle_new_user` crée le profil et un agenda natif « Agenda ». Le nom
   vient des métadonnées du fournisseur (`display_name`, `full_name`, `global_name` Discord,
@@ -313,6 +314,17 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   service d'adresses de l'IGN (`data.geopf.fr/geocodage`, sans clé, France seulement), appelé
   **depuis l'app** après une pause de la frappe, sans relance automatique d'une recherche ratée.
   `IgnAddressSearch` ne laisse sortir que des `AppException`, sans le texte cherché.
+- **Temps de trajet** : voiture et marche, par l'itinéraire de l'IGN (`navigation/itineraire`,
+  sans trafic), **pour soi seul** — ni groupes, ni créneaux communs, ni Discord, ni assistant.
+  Le lieu d'un rdv (texte libre) n'est retenu que si le texte nomme sa commune ou son code
+  postal (`mentionsPlace`) ; un point recalé à plus de 500 m (hors de France) ne fait pas de
+  trajet (`isNear`). Le domicile part arrondi au millième de degré. Mode : choix du rdv, sinon
+  réglage ; automatique = à pied jusqu'à 15 min, sinon voiture. Lieux et durées se gardent en
+  mémoire (`placeProvider`, `routeDurationProvider`) ; `IgnRouteTimes` sert un appel à la fois.
+  Sur la fiche : les deux durées, le mode retenu, l'heure de départ, le lieu reconnu (`TravelTimes`).
+  Dans l'agenda : une bande avant chaque rdv de la page visible (`TravelEvent`, `travel_strip.dart`),
+  en vues jour et semaine, et pour les deux semaines qui viennent en planning, pour les rdv perso ou importés et les rdv de groupe où l'on a
+  répondu présent ou peut-être (`needsTravel`).
 - **Accueil** : trois onglets — Agenda, Social (dates à retenir des proches, proches, groupes ;
   un bouton « Ajouter » pour un proche, un groupe ou un code), Moi (profil et réglages).
   Proches : voir [`calendar-architecture.md`](./calendar-architecture.md) ; groupes et
@@ -370,7 +382,7 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
 | Brevo | e-mails d'authentification, `no-reply@heianenterprise.com` | `../docs/brevo-email-guide.md` |
 | Discord | application + bot : clé publique (signature), jeton du bot ; OAuth pour relier un compte (identité seule, scope `identify`) | portail développeurs Discord, [`discord-architecture.md`](./discord-architecture.md) |
 | Google OAuth | connexion (identité seule, sans accès à l'agenda) : câblée, désactivée | console Google Cloud |
-| Géoplateforme de l'IGN | suggestions d'adresses du domicile, appelées depuis l'app (CSP `connect-src` du web) ; public, sans clé, 50 requêtes/s par IP ; attribution affichée dans Moi → Trajets | `cartes.gouv.fr` (guides de la Géoplateforme) |
+| Géoplateforme de l'IGN | adresses du domicile et lieux des rdv (géocodage, 50 requêtes/s par IP), temps de trajet en voiture et à pied (itinéraire, 5 requêtes/s par IP), appelés depuis l'app (CSP `connect-src` du web) ; public, sans clé ; attribution affichée dans Moi → Trajets | `cartes.gouv.fr` (guides de la Géoplateforme) |
 
 Secrets : coffre `../.agora-secrets/`, jamais dans ce dépôt, qui est public. Carte du serveur :
 `../INFRASTRUCTURE.md`.
@@ -427,6 +439,11 @@ jeton. Pile, pièges, première installation et répétition locale :
 - ❌ Confier un flux au décodeur de go-ical sans `withinDecoderLimits` ni `recover` : il panique
   sur certaines lignes et peut tourner des heures sur un paramètre géant.
 - ❌ Contrôler le SSRF sur l'URL seule plutôt que sur l'adresse résolue au moment de la connexion.
+- ❌ Croire le géocodage d'un lieu en texte libre : l'IGN trouve presque toujours quelque chose
+  (« Bureau » → un lieu-dit du Maine-et-Loire). Un lieu ne compte que si le texte nomme sa
+  commune ou son code postal (`mentionsPlace`).
+- ❌ Prendre une durée de l'itinéraire IGN sans comparer les points renvoyés aux points demandés :
+  il recale sur la frontière, sans erreur, un point hors de France (`isNear`).
 - ❌ Donner une valeur par défaut à `SUPABASE_URL` ou à sa clé.
 - ❌ Ajouter un flux d'e-mail GoTrue sans son gabarit bilingue : il partirait en anglais.
 - ❌ Naviguer soi-même après une connexion réussie : c'est au routeur de le faire, sur

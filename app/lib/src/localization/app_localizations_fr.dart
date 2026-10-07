@@ -1179,7 +1179,80 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get travelHomePrivacy =>
-      'Toi seul vois ton domicile : ni tes groupes, ni Discord, ni un assistant IA. « Y aller » en part par défaut. Adresses : Géoplateforme de l\'IGN.';
+      'Toi seul vois ton domicile et tes trajets : ni tes groupes, ni Discord, ni un assistant IA. Pour calculer un trajet, l\'app envoie à l\'IGN le lieu du rdv, jamais son titre, et ton domicile arrondi à une centaine de mètres. Adresses et itinéraires : Géoplateforme de l\'IGN.';
+
+  @override
+  String get travelTimesTitle => 'Temps de trajet';
+
+  @override
+  String get travelModeAuto => 'Auto';
+
+  @override
+  String get travelModeCar => 'Voiture';
+
+  @override
+  String get travelModeWalk => 'À pied';
+
+  @override
+  String get travelModeAutoHelper =>
+      'Auto : à pied jusqu\'à un quart d\'heure de marche, sinon en voiture. Les durées de l\'IGN ignorent le trafic : une estimation.';
+
+  @override
+  String get travelShowInAgenda => 'Trajets dans l\'agenda';
+
+  @override
+  String get travelShowInAgendaHelper =>
+      'Une bande avant chaque rdv qui a un lieu, en vue jour, semaine et planning.';
+
+  @override
+  String get travelSetHomeHint =>
+      'Pose ton domicile pour voir le temps de trajet';
+
+  @override
+  String get travelComputing => 'Calcul du trajet…';
+
+  @override
+  String get travelPlaceUnknown =>
+      'Lieu non reconnu pour le trajet : ajoute la ville au lieu du rdv.';
+
+  @override
+  String get travelNoRoute => 'pas de chemin';
+
+  @override
+  String get travelUnavailable => 'indisponible';
+
+  @override
+  String get travelNoTrip => 'Pas de trajet';
+
+  @override
+  String travelMinutes(int minutes) {
+    return '≈ $minutes min';
+  }
+
+  @override
+  String travelHoursMinutes(int hours, String minutes) {
+    return '≈ $hours h $minutes';
+  }
+
+  @override
+  String travelDeparture(String time) {
+    return 'Pars à $time';
+  }
+
+  @override
+  String travelToward(String place) {
+    return 'Vers $place';
+  }
+
+  @override
+  String travelStripLabel(String duration, String time) {
+    return '$duration · pars à $time';
+  }
+
+  @override
+  String travelStripSemantics(String duration, String time) {
+    return 'Trajet de $duration, départ à $time';
+  }
 
   @override
   String get orDivider => 'ou';

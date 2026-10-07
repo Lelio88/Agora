@@ -41,7 +41,7 @@ final class Address {
   String toString() => 'Address($label)';
 }
 
-/// Recherche d'adresses pendant la frappe.
+/// Recherche d'adresses pendant la frappe, et lieu d'un rdv.
 ///
 /// Invariant : seules des `AppException` en sortent.
 abstract interface class AddressSearch {
@@ -49,6 +49,11 @@ abstract interface class AddressSearch {
   /// sans rien demander si [text] ne se cherche pas encore
   /// ([isSearchableAddress]).
   Future<List<Address>> search(String text);
+
+  /// Le lieu que désigne [place], le lieu d'un rdv en texte libre (une
+  /// adresse, une gare, une mairie…), ou `null` s'il n'en désigne aucun
+  /// avec assez de certitude (voir `mentionsPlace`).
+  Future<Address?> locate(String place);
 }
 
 final _startsWithLetterOrDigit = RegExp(r'^[\p{L}\p{N}]', unicode: true);

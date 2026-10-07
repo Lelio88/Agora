@@ -32,7 +32,8 @@ import 'package:agora/src/features/calendar/data/supabase_calendar_repository.da
 import 'package:agora/src/features/calendar/data/supabase_calendars_repository.dart';
 import 'package:agora/src/features/directions/application/directions_providers.dart';
 import 'package:agora/src/features/directions/data/ign_address_search.dart';
-import 'package:agora/src/features/directions/data/supabase_home_repository.dart';
+import 'package:agora/src/features/directions/data/ign_route_times.dart';
+import 'package:agora/src/features/directions/data/supabase_travel_repository.dart';
 import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/discord/data/supabase_discord_repository.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
@@ -63,11 +64,18 @@ List<Override> prodOverrides(SupabaseClient client) => [
   assistantRepositoryProvider.overrideWith(
     (ref) => SupabaseAssistantRepository(client),
   ),
-  homeRepositoryProvider.overrideWith((ref) => SupabaseHomeRepository(client)),
+  travelRepositoryProvider.overrideWith(
+    (ref) => SupabaseTravelRepository(client),
+  ),
   addressSearchProvider.overrideWith((ref) {
     final ign = http.Client();
     ref.onDispose(ign.close);
     return IgnAddressSearch(ign);
+  }),
+  routeTimesProvider.overrideWith((ref) {
+    final ign = http.Client();
+    ref.onDispose(ign.close);
+    return IgnRouteTimes(ign);
   }),
   deviceTimezoneProvider.overrideWith((ref) => const PlatformDeviceTimezone()),
   linkOpenerProvider.overrideWith((ref) => const UrlLauncherLinkOpener()),

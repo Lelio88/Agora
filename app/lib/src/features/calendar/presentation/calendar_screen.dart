@@ -20,7 +20,12 @@
 ///   contrôleur de kalender à chaque changement : kalender ne connaît pas le
 ///   dépôt, il n'affiche que ce qu'on lui donne ;
 /// - kalender travaille dans le fuseau local de l'appareil, ce qui est celui
-///   de l'affichage attendu.
+///   de l'affichage attendu ;
+/// - le trajet depuis le domicile se dessine en bande avant un rdv
+///   (`travel_strip.dart`), en vues jour, semaine et planning, pour les
+///   seuls rdv de la page visible (en planning, qui publie sa plage entière,
+///   ceux des deux semaines qui viennent) : l'itinéraire de l'IGN limite les
+///   appels.
 library;
 
 import 'package:agora/src/common_widgets/agenda_view.dart';
@@ -31,6 +36,7 @@ import 'package:agora/src/features/calendar/application/calendars_providers.dart
 import 'package:agora/src/features/calendar/domain/agenda_item.dart';
 import 'package:agora/src/features/calendar/domain/event_draft.dart';
 import 'package:agora/src/features/calendar/domain/event_response.dart';
+import 'package:agora/src/features/calendar/domain/travel_candidates.dart';
 import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/agenda_event.dart';
 import 'package:agora/src/common_widgets/palette.dart';
@@ -41,9 +47,13 @@ import 'package:agora/src/features/calendar/presentation/event_sheet.dart';
 import 'package:agora/src/features/calendar/presentation/imported_event_sheet.dart';
 import 'package:agora/src/features/calendar/presentation/scope_dialog.dart';
 import 'package:agora/src/features/calendar/presentation/shown_calendars_sheet.dart';
+import 'package:agora/src/features/calendar/presentation/travel_strip.dart';
+import 'package:agora/src/features/directions/application/directions_providers.dart';
+import 'package:agora/src/features/directions/domain/travel.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:agora/src/routing/app_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -85,10 +95,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       },
     );
     _range = _toAgendaRange(_follower.range);
+    _kalenderController.visibleDateTimeRange.addListener(_onVisibleChanged);
   }
 
   @override
   void dispose() {
+    _kalenderController.visibleDateTimeRange.removeListener(_onVisibleChanged);
     _follower.dispose();
     _kalenderController.dispose();
     _eventsController.dispose();
@@ -97,6 +109,98 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   static AgendaRange _toAgendaRange(LoadedRange range) =>
       AgendaRange(from: range.from, to: range.to);
+
+  /// La page que montre kalender : seuls ses rdv reçoivent leur trajet.
+  KalenderDateTimeRange? _visible;
+
+  /// kalender publie sa page pendant sa propre construction : on la lit à
+  /// la fin de l'image.
+  void _onVisibleChanged() {
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        final visible = _kalenderController.visibleDateTimeRange.value;
+        if (!mounted ||
+            (visible?.start == _visible?.start &&
+                visible?.end == _visible?.end)) {
+          return;
+        }
+        setState(() => _visible = visible);
+      })
+      ..ensureVisualUpdate();
+  }
+
+  /// Le trajet de chaque rdv de la page qui en reçoit un, par instance ;
+  /// rien en vue mois, ni si l'agenda ne doit pas les montrer.
+  Map<String, TravelEstimate> _travelFor(
+    List<AgendaItem>? items,
+    List<UserCalendar> calendars,
+  ) {
+    final settings = ref.watch(travelSettingsProvider).value;
+    final window = _travelWindow;
+    if (items == null ||
+        window == null ||
+        settings == null ||
+        !settings.showInAgenda) {
+      return const {};
+    }
+    final (:from, :to) = window;
+    final byId = {for (final calendar in calendars) calendar.id: calendar};
+    return {
+      for (final item in items)
+        if (item.localStart.isAfter(from) &&
+            item.localStart.isBefore(to) &&
+            needsTravel(item, byId[item.calendarId]))
+          if (ref
+                  .watch(
+                    eventTravelProvider((
+                      eventKey: travelKeyOf(item),
+                      location: item.location?.trim() ?? '',
+                    )),
+                  )
+                  .value
+              case final estimate?
+              when estimate.duration > Duration.zero &&
+                  estimate.duration <= maxStripDuration)
+            item.instanceKey: estimate,
+    };
+  }
+
+  /// Les dates dont les rdv reçoivent leur trajet : la page de la vue jour
+  /// ou semaine, avec un jour de marge (kalender la publie en heures locales
+  /// « flottantes », à un décalage horaire près) ; en planning, qui publie
+  /// sa plage entière, les [_scheduleTravelDays] jours qui viennent ; rien
+  /// en vue mois.
+  ({DateTime from, DateTime to})? get _travelWindow {
+    switch (_view) {
+      case AgendaView.month:
+        return null;
+      case AgendaView.schedule:
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        return (from: today, to: today.add(_scheduleTravelDays));
+      case AgendaView.day || AgendaView.week:
+        final visible = _visible;
+        if (visible == null) return null;
+        return (
+          from: visible.start.subtract(const Duration(days: 1)),
+          to: visible.end.add(const Duration(days: 1)),
+        );
+    }
+  }
+
+  /// En planning, l'horizon des trajets calculés.
+  static const _scheduleTravelDays = Duration(days: 14);
+
+  void _changeView(AgendaView view) {
+    // La page publiée appartient à l'ancienne vue (le mois entier, par
+    // exemple) : l'oublier évite de calculer tous ses trajets le temps
+    // d'une image, puis relire celle de la nouvelle vue.
+    setState(() {
+      _view = view;
+      _visible = null;
+    });
+    _onVisibleChanged();
+  }
 
   Future<void> _createEvent([DateTime? start]) async {
     final calendarId = await ref.read(defaultCalendarIdProvider.future);
@@ -235,10 +339,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   List<AgendaItem>? _syncedItems;
   List<UserCalendar>? _syncedCalendars;
+  Map<String, TravelEstimate> _syncedTravel = const {};
 
-  /// Pousse les instances dans kalender, seulement si elles ont changé :
-  /// une reconstruction en plein glisser-déposer ne doit pas remettre la
-  /// tuile à sa place. [force] le fait exprès (déplacement abandonné).
+  /// Les trajets à dessiner, relus à chaque construction.
+  Map<String, TravelEstimate> _travel = const {};
+
+  /// Pousse les instances (et leurs trajets) dans kalender, seulement si
+  /// elles ont changé : une reconstruction en plein glisser-déposer ne doit
+  /// pas remettre la tuile à sa place. [force] le fait exprès (déplacement
+  /// abandonné).
   void _syncEvents({bool force = false}) {
     final items = ref.read(visibleAgendaProvider(_range)).value;
     final calendars =
@@ -246,15 +355,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (items == null) return;
     if (!force &&
         identical(items, _syncedItems) &&
-        identical(calendars, _syncedCalendars)) {
+        identical(calendars, _syncedCalendars) &&
+        mapEquals(_travel, _syncedTravel)) {
       return;
     }
     _syncedItems = items;
     _syncedCalendars = calendars;
+    _syncedTravel = _travel;
     final byId = {for (final calendar in calendars) calendar.id: calendar};
     _eventsController.replaceEvents([
-      for (final item in items)
+      for (final item in items) ...[
         AgendaEvent(item, calendar: byId[item.calendarId]),
+        if (_travel[item.instanceKey] case final estimate?)
+          TravelEvent(item, estimate),
+      ],
     ]);
   }
 
@@ -265,6 +379,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     // Les agendas donnent couleurs et droits de déplacement aux tuiles.
     final calendars =
         ref.watch(calendarsProvider).value ?? const <UserCalendar>[];
+    _travel = _travelFor(agenda.value, calendars);
     _syncEvents();
     final isPhoneMonth = _isPhoneMonth;
     return Scaffold(
@@ -282,7 +397,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           AgendaToolbar(
             keys: CalendarKeys.toolbar,
             view: _view,
-            onViewChanged: (view) => setState(() => _view = view),
+            onViewChanged: _changeView,
             controller: _kalenderController,
             trailing: [
               IconButton(
@@ -479,6 +594,8 @@ Widget _buildBar(
   KalenderEvent event,
   KalenderDateTimeRange tileRange,
 ) {
+  // La vue mois ne reçoit pas de trajets ; par sûreté, rien à dessiner.
+  if (event is TravelEvent) return const SizedBox.shrink();
   final agendaEvent = event is AgendaEvent ? event : null;
   final color = colorFromHex(
     agendaEvent?.calendar?.colorHex,
@@ -499,6 +616,7 @@ Widget _buildTile(
   KalenderEvent event,
   KalenderDateTimeRange tileRange,
 ) {
+  if (event is TravelEvent) return TravelStrip(event);
   final colors = Theme.of(context).colorScheme;
   final agendaEvent = event is AgendaEvent ? event : null;
   final item = agendaEvent?.item;

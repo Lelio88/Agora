@@ -105,6 +105,106 @@ void main() {
     }
   });
 
+  group('the place of an event', () {
+    // Relevés le 2026-10-07 : un lieu (poi) porte des listes, une adresse
+    // des chaînes.
+    Map<String, Object?> poi(
+      String name, {
+      required double score,
+      required String city,
+      required String postcode,
+    }) => {
+      'type': 'Feature',
+      'geometry': {
+        'type': 'Point',
+        'coordinates': [4.0244, 49.2597],
+      },
+      'properties': {
+        'name': [name],
+        'city': [city],
+        'postcode': [postcode],
+        'score': score,
+        '_type': 'poi',
+      },
+    };
+
+    IgnAddressSearch answering(
+      List<Map<String, Object?>> features, [
+      List<Uri>? asked,
+    ]) => IgnAddressSearch(
+      MockClient((request) async {
+        asked?.add(request.url);
+        return _json({'type': 'FeatureCollection', 'features': features});
+      }),
+    );
+
+    test('is the first sure match, among addresses and places', () async {
+      final asked = <Uri>[];
+      final search = answering([
+        poi('Gare de Reims', score: 0.85, city: 'Reims', postcode: '51100'),
+      ], asked);
+
+      expect(
+        await search.locate(' Gare de Reims '),
+        const Address(
+          label: 'Gare de Reims, 51100 Reims',
+          longitude: 4.0244,
+          latitude: 49.2597,
+        ),
+      );
+      expect(asked.single.queryParameters['q'], 'Gare de Reims');
+      expect(asked.single.queryParameters['index'], 'address,poi');
+    });
+
+    test('skips what the text does not name, or too unsure', () async {
+      final search = answering([
+        // « Chez Paul » : une rue d'Orléat, à l'autre bout de la France.
+        {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [3.4, 45.9],
+          },
+          'properties': {
+            'label': 'Chez Paul 63190 Orléat',
+            'city': 'Orléat',
+            'postcode': '63190',
+            'score': 0.95,
+            '_type': 'address',
+          },
+        },
+        poi(
+          'Halles du Boulingrin',
+          score: 0.41,
+          city: 'Reims',
+          postcode: '51100',
+        ),
+      ]);
+
+      expect(await search.locate('Chez Paul, Reims'), isNull);
+    });
+
+    test('takes a later result when the first is not sure', () async {
+      final search = answering([
+        poi('Gare', score: 0.9, city: 'Épernay', postcode: '51200'),
+        poi('Gare de Reims', score: 0.8, city: 'Reims', postcode: '51100'),
+      ]);
+
+      expect(
+        (await search.locate('Gare de Reims'))?.label,
+        startsWith('Gare de Reims'),
+      );
+    });
+
+    test('asks nothing for a text that cannot be searched', () async {
+      final asked = <Uri>[];
+      final search = answering(const [], asked);
+
+      expect(await search.locate('Zo'), isNull);
+      expect(asked, isEmpty);
+    });
+  });
+
   test('no connection is a network error', () async {
     final search = IgnAddressSearch(
       MockClient((_) async => throw http.ClientException('Failed host lookup')),

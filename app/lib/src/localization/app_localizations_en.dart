@@ -1169,7 +1169,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get travelHomePrivacy =>
-      'Only you can see your home: not your groups, Discord or an AI assistant. “Get there” starts from it by default. Addresses: IGN Géoplateforme.';
+      'Only you can see your home and your trips: not your groups, Discord or an AI assistant. To work out a trip, the app sends IGN the event\'s place, never its title, and your home rounded to about a hundred metres. Addresses and routes: IGN Géoplateforme.';
+
+  @override
+  String get travelTimesTitle => 'Travel time';
+
+  @override
+  String get travelModeAuto => 'Auto';
+
+  @override
+  String get travelModeCar => 'Car';
+
+  @override
+  String get travelModeWalk => 'Walk';
+
+  @override
+  String get travelModeAutoHelper =>
+      'Auto: walk up to a quarter of an hour, otherwise drive. IGN durations ignore traffic: an estimate.';
+
+  @override
+  String get travelShowInAgenda => 'Trips in the agenda';
+
+  @override
+  String get travelShowInAgendaHelper =>
+      'A band before each event that has a place, in day, week and schedule views.';
+
+  @override
+  String get travelSetHomeHint => 'Set your home to see the travel time';
+
+  @override
+  String get travelComputing => 'Working out the trip…';
+
+  @override
+  String get travelPlaceUnknown =>
+      'Place not recognised for the trip: add the town to the event\'s place.';
+
+  @override
+  String get travelNoRoute => 'no route';
+
+  @override
+  String get travelUnavailable => 'unavailable';
+
+  @override
+  String get travelNoTrip => 'No trip';
+
+  @override
+  String travelMinutes(int minutes) {
+    return '≈ $minutes min';
+  }
+
+  @override
+  String travelHoursMinutes(int hours, String minutes) {
+    return '≈ $hours h $minutes';
+  }
+
+  @override
+  String travelDeparture(String time) {
+    return 'Leave at $time';
+  }
+
+  @override
+  String travelToward(String place) {
+    return 'To $place';
+  }
+
+  @override
+  String travelStripLabel(String duration, String time) {
+    return '$duration · leave at $time';
+  }
+
+  @override
+  String travelStripSemantics(String duration, String time) {
+    return '$duration trip, leaving at $time';
+  }
 
   @override
   String get orDivider => 'or';

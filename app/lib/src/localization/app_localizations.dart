@@ -2113,11 +2113,125 @@ abstract class AppLocalizations {
   /// **'Domicile effacé.'**
   String get travelHomeCleared;
 
-  /// Pied de l'écran des trajets : qui voit le domicile, à quoi il sert, et la source des adresses (attribution IGN).
+  /// Pied de l'écran des trajets : qui voit le domicile et les trajets, ce qui part vers l'IGN, et l'attribution IGN.
   ///
   /// In fr, this message translates to:
-  /// **'Toi seul vois ton domicile : ni tes groupes, ni Discord, ni un assistant IA. « Y aller » en part par défaut. Adresses : Géoplateforme de l\'IGN.'**
+  /// **'Toi seul vois ton domicile et tes trajets : ni tes groupes, ni Discord, ni un assistant IA. Pour calculer un trajet, l\'app envoie à l\'IGN le lieu du rdv, jamais son titre, et ton domicile arrondi à une centaine de mètres. Adresses et itinéraires : Géoplateforme de l\'IGN.'**
   String get travelHomePrivacy;
+
+  /// Section des réglages de trajet (mode, agenda), visible une fois le domicile posé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Temps de trajet'**
+  String get travelTimesTitle;
+
+  /// Mode automatique : à pied si c'est court, sinon en voiture. Court : il tient dans un bouton segmenté.
+  ///
+  /// In fr, this message translates to:
+  /// **'Auto'**
+  String get travelModeAuto;
+
+  /// Mode de trajet : voiture.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voiture'**
+  String get travelModeCar;
+
+  /// Mode de trajet : marche.
+  ///
+  /// In fr, this message translates to:
+  /// **'À pied'**
+  String get travelModeWalk;
+
+  /// Aide sous le choix du mode : la règle du mode automatique, et la limite des durées.
+  ///
+  /// In fr, this message translates to:
+  /// **'Auto : à pied jusqu\'à un quart d\'heure de marche, sinon en voiture. Les durées de l\'IGN ignorent le trafic : une estimation.'**
+  String get travelModeAutoHelper;
+
+  /// Interrupteur : dessiner le trajet avant chaque rdv dans l'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trajets dans l\'agenda'**
+  String get travelShowInAgenda;
+
+  /// Aide de l'interrupteur des trajets dans l'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une bande avant chaque rdv qui a un lieu, en vue jour, semaine et planning.'**
+  String get travelShowInAgendaHelper;
+
+  /// Fiche d'un rdv qui a un lieu, sans domicile posé : bouton vers Moi → Trajets.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pose ton domicile pour voir le temps de trajet'**
+  String get travelSetHomeHint;
+
+  /// Fiche d'un rdv : le lieu est en cours de recherche.
+  ///
+  /// In fr, this message translates to:
+  /// **'Calcul du trajet…'**
+  String get travelComputing;
+
+  /// Fiche d'un rdv : le lieu (texte libre) ne désigne aucun endroit sûr ; la ville le rend reconnaissable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu non reconnu pour le trajet : ajoute la ville au lieu du rdv.'**
+  String get travelPlaceUnknown;
+
+  /// Durée d'un mode sans trajet possible (hors de France, en mer…), dans une puce.
+  ///
+  /// In fr, this message translates to:
+  /// **'pas de chemin'**
+  String get travelNoRoute;
+
+  /// Durée d'un mode que le service n'a pas pu calculer (réseau, limite d'appels), dans une puce : ce n'est pas l'absence de chemin.
+  ///
+  /// In fr, this message translates to:
+  /// **'indisponible'**
+  String get travelUnavailable;
+
+  /// Puce qui retire le trajet de ce rdv (visio, rdv chez soi).
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas de trajet'**
+  String get travelNoTrip;
+
+  /// Durée de trajet estimée, sous l'heure.
+  ///
+  /// In fr, this message translates to:
+  /// **'≈ {minutes} min'**
+  String travelMinutes(int minutes);
+
+  /// Durée de trajet estimée, d'une heure ou plus ; minutes sur deux chiffres.
+  ///
+  /// In fr, this message translates to:
+  /// **'≈ {hours} h {minutes}'**
+  String travelHoursMinutes(int hours, String minutes);
+
+  /// Heure de départ pour arriver au début du rdv.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pars à {time}'**
+  String travelDeparture(String time);
+
+  /// Le lieu reconnu vers lequel le trajet est calculé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vers {place}'**
+  String travelToward(String place);
+
+  /// Texte de la bande de trajet avant un rdv dans l'agenda.
+  ///
+  /// In fr, this message translates to:
+  /// **'{duration} · pars à {time}'**
+  String travelStripLabel(String duration, String time);
+
+  /// Lecture d'écran de la bande de trajet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trajet de {duration}, départ à {time}'**
+  String travelStripSemantics(String duration, String time);
 
   /// Séparateur entre le formulaire et les boutons de connexion par fournisseur.
   ///

@@ -19,7 +19,9 @@ import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/calendar/presentation/event_when_label.dart';
 import 'package:agora/src/features/calendar/presentation/visibility_field.dart';
+import 'package:agora/src/features/calendar/domain/travel_candidates.dart';
 import 'package:agora/src/features/directions/presentation/go_there_button.dart';
+import 'package:agora/src/features/directions/presentation/travel_times.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -121,6 +123,14 @@ class _EventSheet extends StatelessWidget {
                 start: item.localStart,
                 isAllDay: item.isAllDay,
               ),
+              // Le rdv d'un proche n'est pas un endroit où j'irai.
+              if (!(owner?.isContact ?? false))
+                TravelTimes(
+                  eventKey: travelKeyOf(item),
+                  location: location,
+                  start: item.localStart,
+                  isAllDay: item.isAllDay,
+                ),
             ],
             if (description.isNotEmpty) line(Icons.notes, description),
             const SizedBox(height: 16),
