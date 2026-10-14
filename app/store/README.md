@@ -374,6 +374,16 @@ Un cours noté séance par séance se modifie d'un coup : changez par exemple le
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.13.0+19 (lien de profil)
+
+Français, envoyées sur `alpha` :
+
+```
+Partagez votre profil : Moi → Partager mon profil. Créez un lien (ou un QR code) par personne, avec le niveau de détail de votre choix, « Tout » ou « Occupé ». Qui l'ouvre se crée un proche avec une copie de vos rendez-vous à venir, plafonnée par ce que vous avez caché. La copie ne se met pas à jour : rouvrir le lien la rafraîchit. Supprimer le lien le ferme.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
