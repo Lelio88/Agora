@@ -13,8 +13,9 @@
 /// déconnecté est retenu ([PendingInvite]) jusqu'à la connexion, comme une
 /// demande d'accès d'un assistant IA ([PendingConsent], lue aussi dans
 /// l'adresse de la page au démarrage : voir `assistant_providers.dart`), un
-/// lien de jumelage venu d'une autre app ([PendingTwin]) et un rdv préparé
-/// dans une autre app ([PendingEventLink]).
+/// lien de jumelage venu d'une autre app ([PendingTwin]), un rdv préparé
+/// dans une autre app ([PendingEventLink]) et un lien de profil
+/// ([PendingProfileLink]).
 library;
 
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
@@ -38,6 +39,9 @@ import 'package:agora/src/features/groups/presentation/group_screen.dart';
 import 'package:agora/src/features/groups/presentation/join_group_screen.dart';
 import 'package:agora/src/features/groups/presentation/twin_group_screen.dart';
 import 'package:agora/src/features/home/presentation/home_screen.dart';
+import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
+import 'package:agora/src/features/profile_link/presentation/open_profile_link_screen.dart';
+import 'package:agora/src/features/profile_link/presentation/profile_links_screen.dart';
 import 'package:agora/src/routing/app_route.dart';
 import 'package:agora/src/routing/auth_redirect.dart';
 import 'package:agora/src/routing/stream_listenable.dart';
@@ -51,6 +55,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final pendingConsent = ref.watch(pendingConsentProvider);
   final pendingTwin = ref.watch(pendingTwinProvider);
   final pendingEvent = ref.watch(pendingEventLinkProvider);
+  final pendingProfile = ref.watch(pendingProfileLinkProvider);
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
@@ -68,6 +73,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (!isSignedIn && location == eventLinkPath) {
         pendingEvent.location = state.uri.toString();
       }
+      final profileCode = profileLinkCodeInLocation(location);
+      if (!isSignedIn && profileCode != null) pendingProfile.code = profileCode;
       if (!isSignedIn && location == consentPath) {
         if (consentRequestIn(state.uri) case final id?) {
           pendingConsent.authorizationId = id;
@@ -80,6 +87,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         pendingConsent: pendingConsent.authorizationId,
         pendingTwin: pendingTwin.location,
         pendingEvent: pendingEvent.location,
+        pendingProfile: pendingProfile.code,
       );
     },
     routes: [
@@ -144,6 +152,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) =>
                 JoinGroupScreen(code: state.pathParameters['code']),
           ),
+          // Lien de profil de quelqu'un : crée son proche.
+          GoRoute(
+            path: 'profile/:code',
+            name: AppRoute.profileLink.name,
+            builder: (context, state) => OpenProfileLinkScreen(
+              key: ValueKey(state.uri.toString()),
+              code: state.pathParameters['code']!.toUpperCase(),
+            ),
+          ),
           // Lien de jumelage venu d'une autre app : ses paramètres sont
           // validés par l'écran (domain/twin.dart).
           GoRoute(
@@ -171,6 +188,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      // Mes liens de profil (onglet Moi).
+      GoRoute(
+        path: '/profile-links',
+        name: AppRoute.profileLinks.name,
+        builder: (context, state) => const ProfileLinksScreen(),
       ),
       GoRoute(
         path: '/assistant',

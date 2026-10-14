@@ -23,6 +23,11 @@ const _all = <AppException>[
   NotGroupMemberException(),
   NotGroupOwnerException(),
   InvalidMemberException(),
+  InvalidProfileLinkException(),
+  OwnProfileLinkException(),
+  TooManyProfileLinksException(),
+  ProfileTooLargeException(),
+  ContactNotNativeException(),
   NetworkException(),
   UnknownException(),
 ];

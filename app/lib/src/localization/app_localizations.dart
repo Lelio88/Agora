@@ -3330,6 +3330,180 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Rien'**
   String get shareShortNothing;
+
+  /// Lien de profil inconnu ou supprimé (le serveur ne dit pas lequel).
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien de profil n\'est plus valable.'**
+  String get errorInvalidProfileLink;
+
+  /// On a ouvert son propre lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'C\'est ton propre profil : partage ce lien à quelqu\'un d\'autre.'**
+  String get errorOwnProfileLink;
+
+  /// Limite de liens de profil atteinte.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as déjà 20 liens de profil : supprime-en un avant d\'en créer un autre.'**
+  String get errorTooManyProfileLinks;
+
+  /// Plus de 2000 rdv à copier depuis un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet agenda contient trop de rdv à venir pour être copié d\'un coup.'**
+  String get errorProfileTooLarge;
+
+  /// Le proche existant de cette personne est un agenda iCal importé.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette personne est déjà l\'un de tes proches, avec un agenda importé : on ne peut pas y copier ses rdv.'**
+  String get errorContactNotNative;
+
+  /// Titre de l'écran des liens de profil, et de sa ligne dans l'onglet Moi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager mon profil'**
+  String get profileLinksTitle;
+
+  /// Sous-titre de la ligne « Partager mon profil » de l'onglet Moi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un lien ou un QR code pour qu\'on copie mes rdv'**
+  String get profileLinksTileSubtitle;
+
+  /// Explication en haut de l'écran des liens de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Qui ouvre ton lien ou scanne le QR code crée un proche avec une copie de tes rdv à venir, au niveau de détail que tu choisis. Cette copie ne se met pas à jour, et le lien ne donne jamais accès à ton agenda en direct.'**
+  String get profileLinksIntro;
+
+  /// Liste des liens de profil vide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun lien pour l\'instant.'**
+  String get profileLinksEmpty;
+
+  /// Bouton qui crée un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau lien'**
+  String get profileLinkNew;
+
+  /// Champ du nom d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour qui ?'**
+  String get profileLinkLabelField;
+
+  /// Exemple dans le champ du nom d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par exemple : Marie'**
+  String get profileLinkLabelHint;
+
+  /// Nom de lien de profil manquant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Donne un nom à ce lien.'**
+  String get profileLinkLabelRequired;
+
+  /// Question du niveau d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Que verra cette personne ?'**
+  String get profileLinkLevelQuestion;
+
+  /// Précision sous le choix du niveau d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les agendas et les rdv que tu as cachés ou réglés sur « occupé » restent plafonnés.'**
+  String get profileLinkLevelHint;
+
+  /// Bouton de validation d'un nouveau lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer le lien'**
+  String get profileLinkCreateButton;
+
+  /// Ligne d'un lien de profil au niveau « détails ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Voit les titres et les lieux'**
+  String get profileLinkSeesDetails;
+
+  /// Ligne d'un lien de profil au niveau « occupé ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Voit seulement « occupé »'**
+  String get profileLinkSeesBusy;
+
+  /// Description du QR code, pour les lecteurs d'écran.
+  ///
+  /// In fr, this message translates to:
+  /// **'QR code de ce lien de profil'**
+  String get profileLinkQrLabel;
+
+  /// Build sans adresse web : pas de lien à partager.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette version n\'a pas d\'adresse web : le lien n\'est pas disponible.'**
+  String get profileLinkNoWebAddress;
+
+  /// Texte partagé avec le lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retrouve mon agenda sur Agora : {link}'**
+  String profileLinkShareText(String link);
+
+  /// Bouton qui supprime un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer ce lien'**
+  String get profileLinkRevoke;
+
+  /// Précision sous « Supprimer ce lien ».
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce qui a déjà été copié reste chez les personnes concernées.'**
+  String get profileLinkRevokeHint;
+
+  /// Confirmation de suppression d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien supprimé.'**
+  String get profileLinkRevoked;
+
+  /// Titre de l'écran qui ouvre le lien de profil de quelqu'un.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien de profil'**
+  String get openProfileTitle;
+
+  /// Question à l'ouverture d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un proche pour {name} ?'**
+  String openProfileQuestion(String name);
+
+  /// Explication à l'ouverture d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une copie des rdv à venir de {name} sera ajoutée à tes proches, au niveau de détail que cette personne a choisi. Elle ne se met pas à jour : rouvre le lien pour la rafraîchir.'**
+  String openProfileBody(String name);
+
+  /// Bouton qui copie l'agenda d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer le proche'**
+  String get openProfileConfirm;
+
+  /// Confirmation après l'ouverture d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} est dans tes proches.'**
+  String openProfileDone(String name);
 }
 
 class _AppLocalizationsDelegate

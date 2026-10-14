@@ -14,6 +14,7 @@ abstract final class ProfileKeys {
   static const timezone = ValueKey('profile.timezone');
   static const calendars = ValueKey('profile.calendars');
   static const travel = ValueKey('profile.travel');
+  static const profileLinks = ValueKey('profile.profileLinks');
   static const useDeviceTimezone = ValueKey('profile.useDeviceTimezone');
   static const save = ValueKey('profile.save');
   static const legalPrivacy = ValueKey('profile.legalPrivacy');

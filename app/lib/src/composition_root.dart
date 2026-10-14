@@ -40,6 +40,8 @@ import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/data/supabase_profile_repository.dart';
+import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
+import 'package:agora/src/features/profile_link/data/supabase_profile_link_repository.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -57,6 +59,9 @@ List<Override> prodOverrides(SupabaseClient client) => [
   ),
   groupsRepositoryProvider.overrideWith(
     (ref) => SupabaseGroupsRepository(client),
+  ),
+  profileLinkRepositoryProvider.overrideWith(
+    (ref) => SupabaseProfileLinkRepository(client),
   ),
   discordRepositoryProvider.overrideWith(
     (ref) => SupabaseDiscordRepository(client),

@@ -234,6 +234,80 @@ void main() {
     });
   });
 
+  group('profile link', () {
+    test('turns a profile link opened in the app into its screen', () {
+      expect(
+        appLinkRoute(
+          Uri.parse('https://agora.heianenterprise.com/#/profile/abcd2345'),
+        ),
+        '/profile/ABCD2345',
+      );
+      expect(appLinkRoute(Uri.parse('/#/profile')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/profile/ABCD')), isNull);
+      expect(appLinkRoute(Uri.parse('/#/profile/ABCD2345/x')), isNull);
+    });
+
+    test('profileLinkCodeInLocation reads only a plausible code', () {
+      expect(profileLinkCodeInLocation('/profile/abcd2345'), 'ABCD2345');
+      expect(profileLinkCodeInLocation('/profile/ABCD'), isNull);
+      expect(profileLinkCodeInLocation('/join/ABCD2345'), isNull);
+      expect(profileLinkCodeInLocation('/profile'), isNull);
+    });
+
+    test('a signed-out visitor is sent to sign in', () {
+      expect(
+        authRedirect(isSignedIn: false, location: '/profile/ABCD2345'),
+        '/sign-in',
+      );
+    });
+
+    test('once signed in, the visitor is brought back to the link', () {
+      for (final location in ['/', '/sign-in', '/verify-email']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingProfile: 'ABCD2345',
+          ),
+          '/profile/ABCD2345',
+          reason: location,
+        );
+      }
+    });
+
+    test('every other waiting link comes first, other screens are left', () {
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingEvent: '/event?de=arpente&titre=Sortie',
+          pendingProfile: 'ABCD2345',
+        ),
+        '/event?de=arpente&titre=Sortie',
+      );
+      expect(
+        authRedirect(
+          isSignedIn: true,
+          location: '/',
+          pendingInvite: 'WXYZ2345',
+          pendingProfile: 'ABCD2345',
+        ),
+        '/join/WXYZ2345',
+      );
+      for (final location in ['/profile', '/profile/ABCD2345']) {
+        expect(
+          authRedirect(
+            isSignedIn: true,
+            location: location,
+            pendingProfile: 'ABCD2345',
+          ),
+          isNull,
+          reason: location,
+        );
+      }
+    });
+  });
+
   group('pending rdv link', () {
     const event = '/event?de=arpente&titre=Sortie&duree=90';
 

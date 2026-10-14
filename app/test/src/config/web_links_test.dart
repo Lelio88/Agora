@@ -22,4 +22,11 @@ void main() {
       'https://example.org/agora/#/join/ABCD2345',
     );
   });
+
+  test('a profile link opens the profile page of the web version', () {
+    expect(
+      profileLink(Uri.parse('https://agora.example'), 'abcd2345').toString(),
+      'https://agora.example/#/profile/ABCD2345',
+    );
+  });
 }

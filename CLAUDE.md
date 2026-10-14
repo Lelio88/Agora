@@ -32,7 +32,7 @@ Topologie rapide :
 
 ## IV. Garde-Fous non négociables
 
-1. **Vie privée : un seul chemin de sortie.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda`, appelée par `group_agenda()` ou par le worker. Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy` ; un rdv accepté dans un autre groupe n'est jamais plus que `busy`. Toute évolution de la règle ajoute son test pgTAP.
+1. **Vie privée : deux chemins de sortie, et deux seulement.** Le détail d'un rdv d'autrui ne se lit que via `private.resolve_group_agenda` (par `group_agenda()` ou le worker), ou copié une fois par un lien de profil (`private.copy_profile_events`, même règle de niveau). Niveau effectif : le plus restrictif de `share_level`, `calendars.visibility` et `events.visibility`. Discord plafonne les rdv perso à `busy` ; un rdv accepté dans un autre groupe n'est jamais plus que `busy`. Toute évolution de la règle ajoute son test pgTAP.
 2. **Droits Supabase fermés par défaut** : RLS **et** GRANT par colonne à `authenticated` (rien à `anon`) ; toute table nouvelle commence par `revoke all ... from anon, authenticated` (la base accorde tout par défaut, `public_grants_test.sql` le vérifie). Toute fonction nouvelle : `revoke execute ... from public, anon`, puis accord explicite. `SECURITY DEFINER` toujours avec `search_path = ''`. Les helpers RLS vivent dans le schéma `private`. Un jeton d'assistant IA (claim `client_id`) ne vaut que pour `/mcp` : PostgREST, le temps réel et GoTrue (toute route qui reçoit un jeton) le refusent ; le worker n'agit au nom d'un membre que par `SET LOCAL ROLE authenticated` + claims `{sub}` dans la même transaction.
 3. **Migrations immuables** : une migration déjà appliquée en prod n'est **jamais** modifiée. Corriger = nouvelle migration.
 4. **Secrets hors du dépôt, qui est public** : URL et clé de build dans `app/config/<env>.json` (gitignoré), secrets serveur dans `../.agora-secrets/`. Une URL iCal est un secret : ni affichée, ni journalisée, ni renvoyée par l'API.
@@ -78,7 +78,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Modification | Fichier à mettre à jour |
 |---|---|
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
-| Séries, exceptions, dépliage, agendas, écran d'agenda, rdv semblables | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`, `contact_calendars`, `similar_events`) + tests Go de `worker/recurrence/` |
+| Séries, exceptions, dépliage, agendas, écran d'agenda, rdv semblables, lien de profil | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`, `contact_calendars`, `similar_events`, `profile_link`) + tests Go de `worker/recurrence/` ; lien de profil : aussi `confidentialite.html` + `liens-inter-apps.md` du dépôt méta |
 | Groupes, invitations, rôles, agenda de groupe, rdv de groupe et réponses, créneaux communs, jumelage | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `group_lifecycle`, `group_events`, `group_twins`, `visibility`) + `free_slots_test.dart`, `twin_test.dart` ; un lien entre apps qui change (jumelage, rdv `#/event` : `docs/calendar-architecture.md` + `event_link_test.dart`) : aussi `docs/liens-inter-apps.md` du dépôt méta |
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : assistants IA — serveur MCP dans le worker (jeton borné à `/mcp`, trois portes fermées), consentement et écran « Assistant IA » dans l'app (0.5.0+9).
-- **Focus immédiat** : mise en ligne en deux temps (déploiement, puis `AGORA_OAUTH_SERVER=true`), essai réel par Claude Code, puis 0.5.0+9 en test fermé.
+- **Dernier focus** : lien de profil — liens nommés au niveau propre, QR code, copie figée des rdv à venir dans un proche (migration `20261014120000`, feature `profile_link`).
+- **Focus immédiat** : mise en ligne de la migration (branche `release`), puis une version en test fermé.

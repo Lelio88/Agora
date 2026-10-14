@@ -23,6 +23,8 @@ import 'package:agora/src/features/groups/application/groups_providers.dart';
 import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/data/supabase_profile_repository.dart';
+import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
+import 'package:agora/src/features/profile_link/data/supabase_profile_link_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -60,6 +62,10 @@ void main() {
     expect(
       container.read(groupsRepositoryProvider),
       isA<SupabaseGroupsRepository>(),
+    );
+    expect(
+      container.read(profileLinkRepositoryProvider),
+      isA<SupabaseProfileLinkRepository>(),
     );
     expect(
       container.read(discordRepositoryProvider),

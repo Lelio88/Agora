@@ -27,6 +27,12 @@ Uri inviteLink(Uri base, String code) => base.replace(
   fragment: '/join/${code.toUpperCase()}',
 );
 
+/// Lien de profil : la page « Créer un proche » de la version web.
+Uri profileLink(Uri base, String code) => base.replace(
+  path: base.path.isEmpty ? '/' : base.path,
+  fragment: '/profile/${code.toUpperCase()}',
+);
+
 /// Pages légales, servies par la version web (`app/web/legal/`, recopié tel
 /// quel par `flutter build web`). Leurs adresses sont aussi celles données à
 /// la fiche Play Store : elles ne changent pas.

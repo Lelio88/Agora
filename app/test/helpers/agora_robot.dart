@@ -28,6 +28,7 @@ import 'package:agora/src/features/home/presentation/home_screen.dart';
 import 'package:agora/src/features/home/presentation/social_screen.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
+import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
 import 'package:agora/src/logging/app_logger.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,7 @@ import 'fake_calendar_repository.dart';
 import 'fake_calendars_repository.dart';
 import 'fake_discord_repository.dart';
 import 'fake_groups_repository.dart';
+import 'fake_profile_link_repository.dart';
 import 'fakes.dart';
 import 'recording_app_logger.dart';
 
@@ -55,6 +57,7 @@ class AgoraRobot {
   late final FakeCalendarRepository calendar;
   late final FakeCalendarsRepository calendars;
   late final FakeGroupsRepository groups;
+  late final FakeProfileLinkRepository profileLinks;
   late final FakeDiscordRepository discord;
   late final FakeAssistantRepository assistant;
   late final FakeTravelRepository travel;
@@ -75,6 +78,7 @@ class AgoraRobot {
     FakeCalendarRepository? calendar,
     FakeCalendarsRepository? calendars,
     FakeGroupsRepository? groups,
+    FakeProfileLinkRepository? profileLinks,
     FakeDiscordRepository? discord,
     FakeAssistantRepository? assistant,
     FakeTravelRepository? travel,
@@ -117,6 +121,8 @@ class AgoraRobot {
     this.calendar = calendar ?? FakeCalendarRepository();
     this.calendars = calendars ?? FakeCalendarsRepository();
     this.groups = groups ?? FakeGroupsRepository();
+    this.profileLinks = (profileLinks ?? FakeProfileLinkRepository())
+      ..calendars ??= this.calendars;
     this.discord = discord ?? FakeDiscordRepository();
     addTearDown(this.discord.dispose);
     this.assistant = assistant ?? FakeAssistantRepository();
@@ -139,6 +145,7 @@ class AgoraRobot {
           calendarRepositoryProvider.overrideWithValue(this.calendar),
           calendarsRepositoryProvider.overrideWithValue(this.calendars),
           groupsRepositoryProvider.overrideWithValue(this.groups),
+          profileLinkRepositoryProvider.overrideWithValue(this.profileLinks),
           discordRepositoryProvider.overrideWithValue(this.discord),
           assistantRepositoryProvider.overrideWithValue(this.assistant),
           travelRepositoryProvider.overrideWithValue(this.travel),

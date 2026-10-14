@@ -179,6 +179,39 @@ final class ContactAlreadyLinkedException extends AppException {
     : super('contact-already-linked', 'Member already linked to a contact');
 }
 
+// --- Lien de profil -----------------------------------------------------------
+
+/// Lien de profil inconnu ou supprimé : le serveur ne dit pas lequel.
+final class InvalidProfileLinkException extends AppException {
+  const InvalidProfileLinkException()
+    : super('profile-link-invalid', 'Profile link unknown or deleted');
+}
+
+/// On n'ouvre pas son propre lien de profil.
+final class OwnProfileLinkException extends AppException {
+  const OwnProfileLinkException()
+    : super('own-profile-link', 'This is your own profile link');
+}
+
+/// Vingt liens de profil au plus par personne.
+final class TooManyProfileLinksException extends AppException {
+  const TooManyProfileLinksException()
+    : super('too-many-profile-links', 'Too many profile links');
+}
+
+/// Trop de rdv à copier d'un coup (plus de 2000).
+final class ProfileTooLargeException extends AppException {
+  const ProfileTooLargeException()
+    : super('profile-too-large', 'Too many events to copy');
+}
+
+/// Le proche de cette personne est un agenda importé : la synchro
+/// écraserait une copie.
+final class ContactNotNativeException extends AppException {
+  const ContactNotNativeException()
+    : super('contact-not-native', 'That close one is an imported calendar');
+}
+
 // --- Discord ------------------------------------------------------------------
 
 /// Ce compte Discord est déjà relié à un autre compte Agora.

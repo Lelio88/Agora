@@ -12,6 +12,8 @@ enum AppRoute {
   groupSlots,
   join,
   joinByCode,
+  profileLink,
+  profileLinks,
   twin,
   eventLink,
   assistant,

@@ -321,10 +321,54 @@ sens et ne fait que préremplir l'éditeur habituel.
   déconnecté, le lien est retenu (`PendingEventLink`) et repris après la connexion, après une
   invitation et un lien de jumelage.
 
+## Lien de profil (copier l'agenda de quelqu'un)
+
+Un membre partage un lien — ou son QR code — pour qu'une personne qui a un compte se crée un
+**proche** à partir de lui. La personne reçoit une **copie figée** de ses rdv à venir ; le lien ne
+donne jamais accès à l'agenda en direct. Migration `20261014120000_profile_links.sql`, test
+`profile_link_test.sql`.
+
+- **La visibilité vit sur le partage, pas sur l'agenda.** Chaque lien a son nom (« Pour Marie »)
+  et son niveau, `details` ou `busy` (`invisible` n'aurait pas de sens : on supprime le lien).
+  Vingt liens au plus par membre. Le niveau ne change pas après coup : un autre niveau, c'est un
+  autre lien. Table `public.profile_links` : `select` et `delete` seulement, la création passe
+  par `create_profile_link`.
+- **Niveau effectif d'un rdv copié** : le plus restrictif de `(niveau du lien, calendars.visibility,
+  events.visibility)`, et pour une séance modifiée aussi `events.visibility` du rdv maître —
+  `greatest()` ignore les `null`, comme dans `resolve_group_agenda`. Un agenda sans réglage prend
+  donc le niveau du lien. Les agendas de proches du propriétaire ne sont jamais copiés.
+- **Ce qui est copié** : à `details`, titre et lieu ; à `busy`, le titre « Occupé » et pas de lieu ;
+  jamais la description. Les rdv à venir seulement (les séries entières, le worker les déplie). Une
+  séance invisible d'une série devient un `exdate` de la copie : sinon elle réapparaîtrait à
+  l'horaire normal.
+- **Ouvrir un lien** : `profile_link_preview(code)` donne le nom, `import_profile(code)` crée le
+  proche (nommé d'après le profil, `contact_user_id` = le propriétaire) ou rafraîchit celui qui
+  existe — un par personne (`calendars_contact_user_once`). Les rdv copiés portent
+  `source_uid = 'profil:<id d'origine>'` : le rafraîchissement ne refait que ceux-là et laisse les
+  rdv ajoutés à la main. Un proche iCal est refusé (`contact_not_native`) : la synchro l'écraserait.
+- **Titre « Occupé »** : écrit dans la langue de celui qui ouvre le lien (`profiles.locale`, « Busy »
+  en anglais), au moment de la copie.
+- **Débit** : un lien inconnu ou supprimé (indiscernables) revient **nul**, pas en exception — une
+  exception annulerait la transaction et la trace de l'échec (`private.profile_link_attempts`).
+  Dix échecs en une heure ferment `profile_link_preview` et `import_profile` à la personne
+  (`rate_limited`), même pour un lien valable ; les réussites ne comptent pas. Copie limitée à
+  2000 rdv (`profile_too_large`).
+- **Supprimer un lien** le ferme mais ne reprend rien de ce qui a été copié. La suppression du
+  compte du propriétaire supprime ses liens et **ne reprend pas non plus les copies** : elles sont
+  à leur destinataire, qui garde le dernier état (dit dans la politique de confidentialité).
+- **Dans l'app** (`app/lib/src/features/profile_link/`) : « Partager mon profil » dans l'onglet Moi
+  (liste, création, fenêtre avec QR code `qr_flutter` sur fond blanc, partage, copie, suppression) ;
+  le lien `…/#/profile/CODE` ouvre `OpenProfileLinkScreen` (« Créer un proche pour X ? », rien
+  n'est copié avant la confirmation) puis la page du proche. Routage : `appLinkRoute` suit
+  `#/profile/CODE` ; déconnecté, le lien est retenu (`PendingProfileLink`) et repris après la
+  connexion, en dernier. Sans adresse web dans le build, la fenêtre dit qu'il n'y a pas de lien.
+
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
+| `supabase/migrations/20261014120000_profile_links.sql` · `supabase/tests/profile_link_test.sql` | liens de profil : `profile_links`, `create_profile_link`, `profile_link_preview`, `import_profile`, `private.copy_profile_events` |
+| `app/lib/src/features/profile_link/` | domaine (`ProfileLink`, niveau, dépôt), `profile_link_providers.dart` (liste, service, lien retenu), dépôt Supabase, écrans ; tests `profile_link_test.dart`, `profile_link_flow_test.dart` |
 | `supabase/migrations/20260921185718_agenda_series.sql` | séries, exceptions, `my_agenda`, `delete_occurrence`, notification, temps réel, `series_expansions`, rôle du worker |
 | `supabase/migrations/20260921194052_replace_occurrence.sql` | `replace_occurrence` |
 | `supabase/migrations/20260921220000_calendar_management.sql` | agendas multiples : déplacement entre agendas, `delete_calendar`, `calendar_preferences` |

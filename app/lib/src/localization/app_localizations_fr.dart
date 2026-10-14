@@ -1928,4 +1928,109 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shareShortNothing => 'Rien';
+
+  @override
+  String get errorInvalidProfileLink =>
+      'Ce lien de profil n\'est plus valable.';
+
+  @override
+  String get errorOwnProfileLink =>
+      'C\'est ton propre profil : partage ce lien à quelqu\'un d\'autre.';
+
+  @override
+  String get errorTooManyProfileLinks =>
+      'Tu as déjà 20 liens de profil : supprime-en un avant d\'en créer un autre.';
+
+  @override
+  String get errorProfileTooLarge =>
+      'Cet agenda contient trop de rdv à venir pour être copié d\'un coup.';
+
+  @override
+  String get errorContactNotNative =>
+      'Cette personne est déjà l\'un de tes proches, avec un agenda importé : on ne peut pas y copier ses rdv.';
+
+  @override
+  String get profileLinksTitle => 'Partager mon profil';
+
+  @override
+  String get profileLinksTileSubtitle =>
+      'Un lien ou un QR code pour qu\'on copie mes rdv';
+
+  @override
+  String get profileLinksIntro =>
+      'Qui ouvre ton lien ou scanne le QR code crée un proche avec une copie de tes rdv à venir, au niveau de détail que tu choisis. Cette copie ne se met pas à jour, et le lien ne donne jamais accès à ton agenda en direct.';
+
+  @override
+  String get profileLinksEmpty => 'Aucun lien pour l\'instant.';
+
+  @override
+  String get profileLinkNew => 'Nouveau lien';
+
+  @override
+  String get profileLinkLabelField => 'Pour qui ?';
+
+  @override
+  String get profileLinkLabelHint => 'Par exemple : Marie';
+
+  @override
+  String get profileLinkLabelRequired => 'Donne un nom à ce lien.';
+
+  @override
+  String get profileLinkLevelQuestion => 'Que verra cette personne ?';
+
+  @override
+  String get profileLinkLevelHint =>
+      'Les agendas et les rdv que tu as cachés ou réglés sur « occupé » restent plafonnés.';
+
+  @override
+  String get profileLinkCreateButton => 'Créer le lien';
+
+  @override
+  String get profileLinkSeesDetails => 'Voit les titres et les lieux';
+
+  @override
+  String get profileLinkSeesBusy => 'Voit seulement « occupé »';
+
+  @override
+  String get profileLinkQrLabel => 'QR code de ce lien de profil';
+
+  @override
+  String get profileLinkNoWebAddress =>
+      'Cette version n\'a pas d\'adresse web : le lien n\'est pas disponible.';
+
+  @override
+  String profileLinkShareText(String link) {
+    return 'Retrouve mon agenda sur Agora : $link';
+  }
+
+  @override
+  String get profileLinkRevoke => 'Supprimer ce lien';
+
+  @override
+  String get profileLinkRevokeHint =>
+      'Ce qui a déjà été copié reste chez les personnes concernées.';
+
+  @override
+  String get profileLinkRevoked => 'Lien supprimé.';
+
+  @override
+  String get openProfileTitle => 'Lien de profil';
+
+  @override
+  String openProfileQuestion(String name) {
+    return 'Créer un proche pour $name ?';
+  }
+
+  @override
+  String openProfileBody(String name) {
+    return 'Une copie des rdv à venir de $name sera ajoutée à tes proches, au niveau de détail que cette personne a choisi. Elle ne se met pas à jour : rouvre le lien pour la rafraîchir.';
+  }
+
+  @override
+  String get openProfileConfirm => 'Créer le proche';
+
+  @override
+  String openProfileDone(String name) {
+    return '$name est dans tes proches.';
+  }
 }

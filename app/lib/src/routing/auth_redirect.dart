@@ -15,7 +15,9 @@
 /// - un lien de jumelage ouvert déconnecté ([pendingTwin]) ramène à son écran,
 ///   après une demande d'assistant et une invitation ;
 /// - un lien de rdv venu d'une autre app ([pendingEvent]) ramène de même à
-///   son écran, en dernier.
+///   son écran ;
+/// - un lien de profil ([pendingProfile]) ramène de même à son écran, en
+///   dernier.
 library;
 
 /// Écrans réservés aux visiteurs non connectés.
@@ -36,6 +38,7 @@ String? authRedirect({
   String? pendingConsent,
   String? pendingTwin,
   String? pendingEvent,
+  String? pendingProfile,
 }) {
   final isGuestOnly = guestOnlyLocations.contains(location);
   if (!isSignedIn && !isGuestOnly && !openLocations.contains(location)) {
@@ -58,16 +61,27 @@ String? authRedirect({
   if (isSignedIn && pendingEvent != null && (isGuestOnly || location == '/')) {
     return pendingEvent;
   }
+  if (isSignedIn &&
+      pendingProfile != null &&
+      (isGuestOnly || location == '/')) {
+    return '/profile/$pendingProfile';
+  }
   if (isSignedIn && isGuestOnly) return '/';
   return null;
 }
 
 final _joinPath = RegExp(r'^/join/([A-HJ-NP-Za-hj-np-z2-9]{8})$');
+final _profilePath = RegExp(r'^/profile/([A-HJ-NP-Za-hj-np-z2-9]{8})$');
 
 /// Code d'invitation d'un emplacement `/join/CODE`, en majuscules ; `null`
 /// si l'emplacement n'en est pas un ou si le code n'est pas plausible.
 String? inviteCodeInLocation(String location) =>
     _joinPath.firstMatch(location)?.group(1)?.toUpperCase();
+
+/// Code de lien de profil d'un emplacement `/profile/CODE`, en majuscules ;
+/// `null` si l'emplacement n'en est pas un ou si le code n'est pas plausible.
+String? profileLinkCodeInLocation(String location) =>
+    _profilePath.firstMatch(location)?.group(1)?.toUpperCase();
 
 /// Emplacement de l'écran de jumelage (paramètres dans la requête).
 const twinPath = '/twin';
@@ -82,13 +96,15 @@ const eventLinkPath = '/event';
 /// `https://agora.heianenterprise.com/#/join/CODE`, un lien de jumelage
 /// `…/#/twin?de=…`. Android ne filtre pas sur le fragment, l'App Link vise
 /// donc la racine, et le routeur reçoit `/` avec le fragment : c'est ce
-/// fragment qu'il faut suivre. Seuls une invitation, un lien de jumelage et
-/// un lien de rdv sont suivis : un autre fragment reste sans effet. Leurs
-/// paramètres ne sont pas jugés ici : leur écran les valide.
+/// fragment qu'il faut suivre. Seuls une invitation, un lien de profil, un
+/// lien de jumelage et un lien de rdv sont suivis : un autre fragment reste
+/// sans effet. Leurs paramètres ne sont pas jugés ici : leur écran les valide.
 String? appLinkRoute(Uri uri) {
   if (uri.path != '/' && uri.path.isNotEmpty) return null;
   final code = inviteCodeInLocation(uri.fragment);
   if (code != null) return '/join/$code';
+  final profileCode = profileLinkCodeInLocation(uri.fragment);
+  if (profileCode != null) return '/profile/$profileCode';
   final inner = Uri.tryParse(uri.fragment);
   if (inner == null) return null;
   if (inner.path != twinPath && inner.path != eventLinkPath) return null;

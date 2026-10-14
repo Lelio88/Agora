@@ -88,6 +88,7 @@ Migration de référence : `supabase/migrations/20260921120000_core_schema.sql`.
 | `group_invites` | code de 8 caractères, expiration (nulle pour l'invitation d'un jumeau), nombre d'usages | `create_invite()` (tout membre) ; `twin_group()` |
 | `group_twins` | jumeau du groupe dans une autre app (Arpente, DewDrop ; un par app) : son code d'entrée (nul = en attente) et l'invitation donnée à l'autre app | `twin_group()` (admins) ; défait avec son invitation — voir [`groups-architecture.md`](./groups-architecture.md) §Jumelage |
 | `calendars` | agenda d'une personne **ou** d'un groupe ; `kind` = `native` ou `ics` ; `visibility` ; `contact` (l'agenda d'un proche, à soi seul) et `contact_user_id` (le co-membre que ce proche désigne, lien connu du seul propriétaire) ; plusieurs par personne | l'utilisateur ; `add_ics_calendar()` ; `link_contact()`, `create_member_contact()` ; suppression par `delete_calendar()` |
+| `profile_links` | lien de profil : code de 8 caractères, nom, niveau (`details`/`busy`) ; vingt au plus par membre ; **lisible et supprimable de son seul propriétaire** — voir [`calendar-architecture.md`](./calendar-architecture.md) §Lien de profil | `create_profile_link()` ; le propriétaire supprime |
 | `calendar_preferences` | affichage **par personne** : agenda masqué dans sa propre vue (pas de la vie privée) | l'utilisateur |
 | `private.calendar_feeds` | **URL iCal (secret)**, ETag, compteur d'échecs | `add_ics_calendar()`, puis le worker |
 | `events` | rdv : horaires, `all_day`, `timezone`, `rrule`, `exdates`, `visibility` ; `series_id` + `recurrence_id` pour une occurrence modifiée ; `source_uid` pour l'iCal | l'utilisateur (natif) ; le worker (iCal) |
@@ -148,8 +149,12 @@ propriétaire, à qui la règle rend sinon ses propres rdv en détail :
 - **Discord** : l'audience d'un salon déborde du groupe, donc les rdv personnels y sont plafonnés
   à `busy`. Les rdv de groupe restent en détail.
 
-**Un seul chemin de sortie.** Le détail d'un rdv personnel n'atteint quelqu'un d'autre que son
-propriétaire que par `private.resolve_group_agenda(groupe, lecteur, de, à, plafond)` :
+**Deux chemins de sortie, et deux seulement.** Le détail d'un rdv personnel n'atteint quelqu'un
+d'autre que son propriétaire que par `private.resolve_group_agenda(groupe, lecteur, de, à,
+plafond)` — la lecture en direct — ou par la **copie d'un lien de profil**
+(`private.copy_profile_events`, voir `calendar-architecture.md` §Lien de profil), faite une fois
+à l'ouverture du lien, au niveau du lien plafonné par les mêmes réglages d'agenda et de rdv. Pour
+la lecture en direct :
 - l'app l'appelle via `public.group_agenda()` (membre obligatoire, plage ≤ 93 jours, plafond
   `details`) ;
 - le worker l'appelle en direct (lecteur `null`, plafond `busy` pour un salon Discord) ;
@@ -165,7 +170,8 @@ serveur — elle n'y voit rien de plus qu'en ouvrant chacun de ces groupes.
 
 Les tables `events` et `event_occurrences` ne sont lisibles en direct que par le propriétaire,
 ou par les membres pour un agenda de groupe. **Toute nouvelle façon de lire des rdv doit passer
-par cette fonction**, sinon elle contourne les réglages de vie privée.
+par cette fonction** — ou reprendre exactement sa règle de niveau, avec son test pgTAP, comme la
+copie d'un lien de profil — sinon elle contourne les réglages de vie privée.
 
 ### Flux typique : `POST /rest/v1/rpc/group_agenda`
 
@@ -190,7 +196,7 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   tout `TRUNCATE`, `TRIGGER` ou `REFERENCES` à `authenticated`.
 - **Écritures sensibles par RPC `SECURITY DEFINER`** (`search_path = ''`) : `create_group`,
   `create_invite`, `join_group`, `add_ics_calendar`, `set_event_visibility`, `link_contact`,
-  `create_member_contact`. Postgres donnant
+  `create_member_contact`, `create_profile_link`, `import_profile`. Postgres donnant
   `EXECUTE` à `PUBLIC` sur toute nouvelle fonction, chaque fonction est révoquée puis accordée
   explicitement.
 - **Pas d'escalade de rôle** : seul `share_level` est modifiable dans `group_members`. Le rôle ne
@@ -202,7 +208,8 @@ par cette fonction**, sinon elle contourne les réglages de vie privée.
   qu'un GRANT ajouté par mégarde n'ouvre rien (`private_schema_test.sql`). Les fonctions
   `SECURITY DEFINER` qui les lisent, propriétaires des tables, n'y sont pas soumises.
 - **Anti-énumération** : un code d'invitation inconnu, expiré ou épuisé renvoie la même erreur
-  (`invite_invalid`).
+  (`invite_invalid`) ; de même un lien de profil inconnu ou supprimé (résultat nul), avec un débit limité à dix échecs par
+  heure (`rate_limited`).
 - Le propriétaire d'un groupe ne peut pas le quitter sans l'avoir transmis. Un admin exclut les
   simples membres.
 - **Bascule de rôle du worker** : `agora_worker` peut endosser `authenticated` (`SET LOCAL ROLE`

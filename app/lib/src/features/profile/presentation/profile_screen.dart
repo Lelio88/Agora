@@ -1,6 +1,6 @@
 /// Onglet « Moi » de l'accueil : qui je suis (nom affiché, e-mail), mes
 /// réglages (langue de l'app et des e-mails, fuseau horaire, mes agendas,
-/// mon domicile pour les trajets),
+/// mon domicile pour les trajets, mes liens de profil),
 /// mes connexions (Google, Discord, assistants IA), puis la déconnexion, les
 /// pages légales et, tout en bas, la suppression du compte.
 ///
@@ -249,6 +249,14 @@ class _MePage extends ConsumerWidget {
                 subtitle: Text(home?.label ?? l10n.travelTileNoHome),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => TravelScreen.show(context),
+              ),
+              ListTile(
+                key: ProfileKeys.profileLinks,
+                leading: const Icon(Icons.qr_code_2),
+                title: Text(l10n.profileLinksTitle),
+                subtitle: Text(l10n.profileLinksTileSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoute.profileLinks.name),
               ),
               SectionTitle(l10n.meConnectionsTitle),
               const Padding(

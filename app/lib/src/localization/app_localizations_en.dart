@@ -1915,4 +1915,108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareShortNothing => 'Nothing';
+
+  @override
+  String get errorInvalidProfileLink => 'This profile link is no longer valid.';
+
+  @override
+  String get errorOwnProfileLink =>
+      'This is your own profile: share this link with someone else.';
+
+  @override
+  String get errorTooManyProfileLinks =>
+      'You already have 20 profile links: delete one before creating another.';
+
+  @override
+  String get errorProfileTooLarge =>
+      'This agenda has too many upcoming events to be copied at once.';
+
+  @override
+  String get errorContactNotNative =>
+      'This person is already one of your close ones, with an imported calendar: their events cannot be copied into it.';
+
+  @override
+  String get profileLinksTitle => 'Share my profile';
+
+  @override
+  String get profileLinksTileSubtitle =>
+      'A link or QR code so people can copy my events';
+
+  @override
+  String get profileLinksIntro =>
+      'Whoever opens your link or scans the QR code creates a close one with a copy of your upcoming events, at the level of detail you choose. This copy does not update, and the link never gives access to your live agenda.';
+
+  @override
+  String get profileLinksEmpty => 'No links yet.';
+
+  @override
+  String get profileLinkNew => 'New link';
+
+  @override
+  String get profileLinkLabelField => 'For whom?';
+
+  @override
+  String get profileLinkLabelHint => 'For example: Marie';
+
+  @override
+  String get profileLinkLabelRequired => 'Give this link a name.';
+
+  @override
+  String get profileLinkLevelQuestion => 'What will this person see?';
+
+  @override
+  String get profileLinkLevelHint =>
+      'Calendars and events you hid or set to “busy” stay capped.';
+
+  @override
+  String get profileLinkCreateButton => 'Create link';
+
+  @override
+  String get profileLinkSeesDetails => 'Sees titles and places';
+
+  @override
+  String get profileLinkSeesBusy => 'Sees only “busy”';
+
+  @override
+  String get profileLinkQrLabel => 'QR code of this profile link';
+
+  @override
+  String get profileLinkNoWebAddress =>
+      'This build has no web address: the link is not available.';
+
+  @override
+  String profileLinkShareText(String link) {
+    return 'Find my agenda on Agora: $link';
+  }
+
+  @override
+  String get profileLinkRevoke => 'Delete this link';
+
+  @override
+  String get profileLinkRevokeHint =>
+      'What has already been copied stays with the people concerned.';
+
+  @override
+  String get profileLinkRevoked => 'Link deleted.';
+
+  @override
+  String get openProfileTitle => 'Profile link';
+
+  @override
+  String openProfileQuestion(String name) {
+    return 'Create a close one for $name?';
+  }
+
+  @override
+  String openProfileBody(String name) {
+    return 'A copy of $name\'s upcoming events will be added to your close ones, at the level of detail they chose. It does not update: open the link again to refresh it.';
+  }
+
+  @override
+  String get openProfileConfirm => 'Create close one';
+
+  @override
+  String openProfileDone(String name) {
+    return '$name is now in your close ones.';
+  }
 }

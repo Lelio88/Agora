@@ -33,6 +33,12 @@ Future<T> guardPostgrest<T>(Future<T> Function() body) async {
       'twin_exists' => const TwinAlreadyLinkedException(),
       'not_a_co_member' => const NotCoMemberException(),
       'contact_already_linked' => const ContactAlreadyLinkedException(),
+      'link_invalid' => const InvalidProfileLinkException(),
+      'own_profile' => const OwnProfileLinkException(),
+      'too_many_links' => const TooManyProfileLinksException(),
+      'rate_limited' => const RateLimitedException(),
+      'profile_too_large' => const ProfileTooLargeException(),
+      'contact_not_native' => const ContactNotNativeException(),
       _ when looksLikeNetworkError(error.message) => const NetworkException(),
       _ => const UnknownException(),
     };
