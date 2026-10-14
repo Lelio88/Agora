@@ -145,11 +145,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     }
     final (:from, :to) = window;
     final byId = {for (final calendar in calendars) calendar.id: calendar};
-    return {
+    final candidates = [
       for (final item in items)
+        if (needsTravel(item, byId[item.calendarId])) item,
+    ];
+    final followUps = followUpsAtSamePlace(candidates);
+    return {
+      for (final item in candidates)
         if (item.localStart.isAfter(from) &&
             item.localStart.isBefore(to) &&
-            needsTravel(item, byId[item.calendarId]))
+            !followUps.contains(item.instanceKey))
           if (ref
                   .watch(
                     eventTravelProvider((

@@ -66,6 +66,43 @@ void main() {
     expect(needsTravel(_event(), _group), isFalse);
   });
 
+  group('followUpsAtSamePlace', () {
+    AgendaItem at(
+      String id,
+      int hour,
+      String? place, {
+      int day = 8,
+    }) => AgendaItem(
+      eventId: id,
+      calendarId: 'cal',
+      title: id,
+      location: place,
+      start: DateTime(2026, 10, day, hour).toUtc(),
+      end: DateTime(2026, 10, day, hour + 1).toUtc(),
+      isAllDay: false,
+      timezone: 'Europe/Paris',
+    );
+
+    test('the 2nd and 3rd events in a row at one place get no trip', () {
+      final skipped = followUpsAtSamePlace([
+        at('c', 14, 'Gare de Reims'),
+        at('a', 8, 'Gare de Reims'),
+        at('b', 10, ' gare  de reims '),
+      ]);
+      expect(skipped, {'b', 'c'});
+    });
+
+    test('another place in between, or another day, keeps the trip', () {
+      final skipped = followUpsAtSamePlace([
+        at('a', 8, 'Gare'),
+        at('b', 10, 'Mairie'),
+        at('c', 12, 'Gare'),
+        at('d', 8, 'Gare', day: 9),
+      ]);
+      expect(skipped, isEmpty);
+    });
+  });
+
   test('a choice is kept for the whole series', () {
     expect(travelKeyOf(_event()), 'evt');
     expect(travelKeyOf(_event(seriesId: 'serie')), 'serie');

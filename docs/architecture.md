@@ -331,7 +331,8 @@ Détail complet : [`auth-architecture.md`](./auth-architecture.md). Invariants :
   Sur la fiche : les deux durées, le mode retenu, l'heure de départ, le lieu reconnu (`TravelTimes`).
   Dans l'agenda : une bande avant chaque rdv de la page visible (`TravelEvent`, `travel_strip.dart`),
   en vues jour et semaine, et pour les deux semaines qui viennent en planning, pour les rdv perso ou importés et les rdv de groupe où l'on a
-  répondu présent ou peut-être (`needsTravel`).
+  répondu présent ou peut-être (`needsTravel`). Un rdv qui suit, le même jour, un rdv à la même
+  adresse n'a pas de bande : on y est déjà (`followUpsAtSamePlace`).
 - **Accueil** : trois onglets — Agenda, Social (dates à retenir des proches, proches, groupes ;
   un bouton « Ajouter » pour un proche, un groupe ou un code), Moi (profil et réglages).
   Proches : voir [`calendar-architecture.md`](./calendar-architecture.md) ; groupes et
