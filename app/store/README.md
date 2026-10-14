@@ -384,6 +384,16 @@ Partagez votre profil : Moi → Partager mon profil. Créez un lien (ou un QR co
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.13.1+20 (trajet)
+
+Français, envoyées sur `alpha` :
+
+```
+Trajet : quand deux rendez-vous se suivent le même jour à la même adresse, le second n'affiche plus de temps de trajet, puisque vous y êtes déjà.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
