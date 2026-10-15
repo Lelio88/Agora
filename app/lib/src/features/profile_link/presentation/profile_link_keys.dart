@@ -15,6 +15,8 @@ abstract final class ProfileLinkKeys {
   static const labelField = ValueKey('profileLinks.new.label');
   static ValueKey<String> levelOption(ProfileLinkLevel level) =>
       ValueKey('profileLinks.new.level.${level.name}');
+  static ValueKey<String> calendarOption(String id) =>
+      ValueKey('profileLinks.new.calendar.$id');
   static const create = ValueKey('profileLinks.new.create');
 
   // Fenêtre d'un lien.

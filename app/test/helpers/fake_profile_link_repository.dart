@@ -48,14 +48,17 @@ class FakeProfileLinkRepository implements ProfileLinkRepository {
   Future<ProfileLink> create({
     required String label,
     required ProfileLinkLevel level,
+    required List<String> calendarIds,
   }) async {
     _check();
+    if (calendarIds.isEmpty) throw const UnknownException();
     if (links.length >= 20) throw const TooManyProfileLinksException();
     final link = ProfileLink(
       code: 'MARCHE2${_next++}',
       label: label,
       level: level,
       createdAt: DateTime.utc(2026, 10, 14),
+      calendarIds: calendarIds,
     );
     links.insert(0, link);
     return link;

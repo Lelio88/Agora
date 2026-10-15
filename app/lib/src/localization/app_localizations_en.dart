@@ -1969,6 +1969,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Calendars and events you hid or set to “busy” stay capped.';
 
   @override
+  String get profileLinkCalendarsQuestion => 'Which calendars?';
+
+  @override
+  String get profileLinkCalendarsHint =>
+      'A calendar you add later will not be shared by this link.';
+
+  @override
+  String get profileLinkCalendarsRequired => 'Pick at least one calendar.';
+
+  @override
+  String get profileLinkAllCalendars => 'All your calendars';
+
+  @override
+  String get profileLinkNoCalendarLeft => 'No calendar shared anymore';
+
+  @override
+  String profileLinkCalendarsLine(String names) {
+    return 'Calendars: $names';
+  }
+
+  @override
   String get profileLinkCreateButton => 'Create link';
 
   @override

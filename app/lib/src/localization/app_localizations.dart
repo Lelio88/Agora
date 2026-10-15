@@ -3421,6 +3421,42 @@ abstract class AppLocalizations {
   /// **'Les agendas et les rdv que tu as cachés ou réglés sur « occupé » restent plafonnés.'**
   String get profileLinkLevelHint;
 
+  /// Question du choix des agendas partagés par un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quels agendas ?'**
+  String get profileLinkCalendarsQuestion;
+
+  /// Précision sous le choix des agendas d'un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un agenda que tu ajouteras plus tard ne sera pas partagé par ce lien.'**
+  String get profileLinkCalendarsHint;
+
+  /// Aucun agenda choisi pour un lien de profil.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisis au moins un agenda.'**
+  String get profileLinkCalendarsRequired;
+
+  /// Ligne d'un lien de profil qui partage tous les agendas (liens d'avant le choix).
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous tes agendas'**
+  String get profileLinkAllCalendars;
+
+  /// Ligne d'un lien de profil dont les agendas ont tous été supprimés.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus aucun agenda partagé'**
+  String get profileLinkNoCalendarLeft;
+
+  /// Ligne d'un lien de profil : les agendas qu'il partage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agendas : {names}'**
+  String profileLinkCalendarsLine(String names);
+
   /// Bouton de validation d'un nouveau lien de profil.
   ///
   /// In fr, this message translates to:

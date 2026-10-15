@@ -23,13 +23,14 @@ final class SupabaseProfileLinkRepository implements ProfileLinkRepository {
 
   final SupabaseClient _client;
 
-  static const _columns = 'code, label, share_level, created_at';
+  static const _columns = 'code, label, share_level, created_at, calendar_ids';
 
   ProfileLink _toLink(Map<String, dynamic> row) => ProfileLink(
     code: row['code'] as String,
     label: row['label'] as String,
     level: ProfileLinkLevel.fromCode(row['share_level'] as String?),
     createdAt: DateTime.parse(row['created_at'] as String),
+    calendarIds: (row['calendar_ids'] as List<dynamic>?)?.cast<String>(),
   );
 
   @override
@@ -45,10 +46,15 @@ final class SupabaseProfileLinkRepository implements ProfileLinkRepository {
   Future<ProfileLink> create({
     required String label,
     required ProfileLinkLevel level,
+    required List<String> calendarIds,
   }) => guardPostgrest(() async {
     final code = await _client.rpc<String>(
       'create_profile_link',
-      params: {'p_label': label, 'p_share_level': level.name},
+      params: {
+        'p_label': label,
+        'p_share_level': level.name,
+        'p_calendar_ids': calendarIds,
+      },
     );
     final row = await _client
         .from('profile_links')

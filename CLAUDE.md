@@ -96,5 +96,5 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 
 ## VIII. Contexte de Session
 
-- **Dernier focus** : lien de profil — liens nommés au niveau propre, QR code, copie figée des rdv à venir dans un proche (migration `20261014120000`, feature `profile_link`).
-- **Focus immédiat** : mise en ligne de la migration (branche `release`), puis une version en test fermé.
+- **Dernier focus** : lien de profil — liens nommés, au niveau et aux agendas choisis, QR code, copie figée des rdv à venir dans un proche (feature `profile_link`).
+- **Focus immédiat** : mise en ligne du choix des agendas (branche `release`), puis une version en test fermé.

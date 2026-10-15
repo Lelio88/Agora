@@ -8,10 +8,12 @@ abstract interface class ProfileLinkRepository {
   /// Les liens de l'utilisateur, le plus récent d'abord.
   Future<List<ProfileLink>> fetchMine();
 
-  /// Crée un lien nommé [label], au niveau [level].
+  /// Crée un lien nommé [label], au niveau [level], pour les seuls agendas
+  /// [calendarIds] (au moins un).
   Future<ProfileLink> create({
     required String label,
     required ProfileLinkLevel level,
+    required List<String> calendarIds,
   });
 
   /// Supprime le lien : il n'ouvre plus rien. Ce qui a déjà été copié reste.

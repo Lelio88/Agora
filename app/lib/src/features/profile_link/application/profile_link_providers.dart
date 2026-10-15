@@ -12,6 +12,7 @@ library;
 import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
 import 'package:agora/src/features/profile_link/domain/profile_link.dart';
 import 'package:agora/src/features/profile_link/domain/profile_link_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,19 @@ final myProfileLinksProvider = FutureProvider.autoDispose<List<ProfileLink>>((
   if (await ref.watch(currentUserIdProvider.future) == null) return const [];
   return repository.fetchMine();
 });
+
+/// Mes agendas qu'un lien peut partager : sans les proches ni les agendas
+/// invisibles, qui ne sortiraient pas.
+final shareableCalendarsProvider =
+    FutureProvider.autoDispose<List<ShareableCalendar>>((ref) async {
+      final calendars = await ref.watch(calendarsProvider.future);
+      return [
+        for (final calendar in calendars)
+          if (!calendar.isContact &&
+              calendar.visibility != EventVisibility.invisible)
+            ShareableCalendar(id: calendar.id, name: calendar.name),
+      ];
+    });
 
 /// Le nom de la personne derrière le code d'un lien reçu.
 final profileLinkNameProvider = FutureProvider.autoDispose
@@ -51,8 +65,13 @@ final class ProfileLinkService {
   Future<ProfileLink> create({
     required String label,
     required ProfileLinkLevel level,
+    required List<String> calendarIds,
   }) async {
-    final link = await _repository.create(label: label.trim(), level: level);
+    final link = await _repository.create(
+      label: label.trim(),
+      level: level,
+      calendarIds: calendarIds,
+    );
     _onLinksChanged();
     return link;
   }

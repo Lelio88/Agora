@@ -253,11 +253,11 @@ select ok(
 
 -- Droits ------------------------------------------------------------------------------------------
 select ok(
-  not has_function_privilege('anon', 'public.create_profile_link(text, public.visibility)', 'execute')
+  not has_function_privilege('anon', 'public.create_profile_link(text, public.visibility, uuid[])', 'execute')
   and not has_function_privilege('anon', 'public.profile_link_preview(text)', 'execute')
   and not has_function_privilege('anon', 'public.import_profile(text)', 'execute')
   and not has_function_privilege('authenticated',
-    'private.copy_profile_events(uuid, public.visibility, uuid)', 'execute'),
+    'private.copy_profile_events(uuid, public.visibility, uuid, uuid[])', 'execute'),
   'anon n''ouvre aucun lien de profil, et la copie n''est pas appelable en direct');
 select ok(
   not has_table_privilege('authenticated', 'private.profile_link_attempts', 'select')

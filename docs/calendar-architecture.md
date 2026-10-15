@@ -337,6 +337,16 @@ donne jamais accès à l'agenda en direct. Migration `20261014120000_profile_lin
   events.visibility)`, et pour une séance modifiée aussi `events.visibility` du rdv maître —
   `greatest()` ignore les `null`, comme dans `resolve_group_agenda`. Un agenda sans réglage prend
   donc le niveau du lien. Les agendas de proches du propriétaire ne sont jamais copiés.
+- **Quels agendas** (`20261015120000_profile_link_calendars.sql`) : chaque lien porte sa liste
+  (`calendar_ids`) — « Travail » sans « Loisirs ». À la création, chaque identifiant doit être un
+  agenda du créateur qui n'est pas un proche (`invalid_calendars`), et il en faut au moins un.
+  Une liste **nulle** veut dire « tous les agendas » : c'est le sens des liens créés avant ce choix,
+  que la migration ne change pas. La liste est un **tableau**, pas une table de liaison : un agenda
+  supprimé y laisse un identifiant mort, alors qu'une liaison en cascade viderait la liste du lien,
+  qui deviendrait indiscernable d'un lien « tous » et partagerait soudain tout. Un agenda ajouté
+  après coup n'est jamais partagé tout seul. Dans l'app, les agendas se cochent à la création
+  (tous cochés au départ, au moins un ; ni proches ni agendas invisibles), et la liste du lien les
+  nomme.
 - **Ce qui est copié** : à `details`, titre et lieu ; à `busy`, le titre « Occupé » et pas de lieu ;
   jamais la description. Les rdv à venir seulement (les séries entières, le worker les déplie). Une
   séance invisible d'une série devient un `exdate` de la copie : sinon elle réapparaîtrait à
@@ -367,6 +377,7 @@ donne jamais accès à l'agenda en direct. Migration `20261014120000_profile_lin
 
 | Fichier | Rôle |
 |---|---|
+| `supabase/migrations/20261015120000_profile_link_calendars.sql` · `supabase/tests/profile_link_calendars_test.sql` | choix des agendas d'un lien : `calendar_ids`, `create_profile_link(…, uuid[])`, copie limitée à la liste |
 | `supabase/migrations/20261014120000_profile_links.sql` · `supabase/tests/profile_link_test.sql` | liens de profil : `profile_links`, `create_profile_link`, `profile_link_preview`, `import_profile`, `private.copy_profile_events` |
 | `app/lib/src/features/profile_link/` | domaine (`ProfileLink`, niveau, dépôt), `profile_link_providers.dart` (liste, service, lien retenu), dépôt Supabase, écrans ; tests `profile_link_test.dart`, `profile_link_flow_test.dart` |
 | `supabase/migrations/20260921185718_agenda_series.sql` | séries, exceptions, `my_agenda`, `delete_occurrence`, notification, temps réel, `series_expansions`, rôle du worker |

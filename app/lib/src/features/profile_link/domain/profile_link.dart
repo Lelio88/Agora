@@ -8,6 +8,9 @@
 ///   serveur ;
 /// - il n'y a que deux niveaux : un lien « invisible » n'aurait pas de sens,
 ///   on le supprime ;
+/// - chaque lien choisit QUELS agendas il partage (« Travail » sans
+///   « Loisirs ») ; une liste absente (anciens liens) veut dire tous les
+///   agendas. Un agenda ajouté après coup n'est jamais partagé tout seul ;
 /// - la copie reçue est figée : le lien ne donne jamais accès à l'agenda en
 ///   direct, et le supprimer ne reprend rien de ce qui a été copié.
 library;
@@ -32,6 +35,7 @@ final class ProfileLink {
     required this.label,
     required this.level,
     required this.createdAt,
+    this.calendarIds,
   });
 
   /// Le secret du lien : 8 caractères.
@@ -42,6 +46,18 @@ final class ProfileLink {
 
   final ProfileLinkLevel level;
   final DateTime createdAt;
+
+  /// Les agendas partagés ; `null` : tous (les liens d'avant ce choix).
+  final List<String>? calendarIds;
+}
+
+/// Un agenda que l'on peut partager par un lien : jamais celui d'un proche,
+/// jamais un agenda invisible (il ne sortirait de toute façon pas).
+final class ShareableCalendar {
+  const ShareableCalendar({required this.id, required this.name});
+
+  final String id;
+  final String name;
 }
 
 /// Un code de lien de profil plausible (8 caractères, alphabet sans

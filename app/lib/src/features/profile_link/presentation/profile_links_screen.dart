@@ -6,7 +6,10 @@
 ///   c'est la suite évidente, il n'y a rien d'autre à en faire ;
 /// - le niveau se choisit à la création et ne change plus : pour donner plus
 ///   ou moins à quelqu'un, on crée un autre lien et on supprime le premier.
-///   Le serveur ne permet d'ailleurs pas de modifier un lien.
+///   Le serveur ne permet d'ailleurs pas de modifier un lien ;
+/// - les agendas partagés se cochent à la création, tous cochés au départ
+///   (rien ne sort qu'on n'ait vu) ; il en faut au moins un. Ceux d'un proche
+///   ou invisibles ne sont pas proposés : ils ne sortiraient pas.
 library;
 
 import 'package:agora/src/common_widgets/async_value_widget.dart';
@@ -14,6 +17,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
 import 'package:agora/src/features/profile_link/domain/profile_link.dart';
 import 'package:agora/src/features/profile_link/presentation/profile_link_keys.dart';
+import 'package:agora/src/features/profile_link/presentation/profile_link_labels.dart';
 import 'package:agora/src/features/profile_link/presentation/profile_link_sheet.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -23,17 +27,21 @@ class ProfileLinksScreen extends ConsumerWidget {
   const ProfileLinksScreen({super.key});
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final draft = await showDialog<({String label, ProfileLinkLevel level})>(
-      context: context,
-      builder: (_) => const _NewLinkDialog(),
-    );
+    final draft =
+        await showDialog<
+          ({String label, ProfileLinkLevel level, List<String> calendarIds})
+        >(context: context, builder: (_) => const _NewLinkDialog());
     if (draft == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
     try {
       final link = await ref
           .read(profileLinkServiceProvider)
-          .create(label: draft.label, level: draft.level);
+          .create(
+            label: draft.label,
+            level: draft.level,
+            calendarIds: draft.calendarIds,
+          );
       if (context.mounted) await showProfileLinkSheet(context, link);
     } on Exception catch (error) {
       messenger.showSnackBar(
@@ -45,6 +53,7 @@ class ProfileLinksScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final mine = ref.watch(shareableCalendarsProvider).value ?? const [];
     return Scaffold(
       key: ProfileLinkKeys.screen,
       appBar: AppBar(title: Text(l10n.profileLinksTitle)),
@@ -73,10 +82,13 @@ class ProfileLinksScreen extends ConsumerWidget {
                 key: ProfileLinkKeys.tile(link.code),
                 leading: const Icon(Icons.qr_code_2),
                 title: Text(link.label),
-                subtitle: Text(
-                  link.level == ProfileLinkLevel.details
-                      ? l10n.profileLinkSeesDetails
-                      : l10n.profileLinkSeesBusy,
+                isThreeLine: true,
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(levelLine(link.level, l10n)),
+                    Text(calendarsLine(link, mine, l10n)),
+                  ],
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => showProfileLinkSheet(context, link),
@@ -89,19 +101,23 @@ class ProfileLinksScreen extends ConsumerWidget {
 }
 
 /// Nom et niveau d'un nouveau lien : rend les deux, ou `null` si l'on renonce.
-class _NewLinkDialog extends StatefulWidget {
+class _NewLinkDialog extends ConsumerStatefulWidget {
   const _NewLinkDialog();
 
   @override
-  State<_NewLinkDialog> createState() => _NewLinkDialogState();
+  ConsumerState<_NewLinkDialog> createState() => _NewLinkDialogState();
 }
 
-class _NewLinkDialogState extends State<_NewLinkDialog> {
+class _NewLinkDialogState extends ConsumerState<_NewLinkDialog> {
   final _formKey = GlobalKey<FormState>();
   final _label = TextEditingController();
 
   // « Occupé » d'abord : le moins bavard des deux, jamais imposé.
   ProfileLinkLevel _level = ProfileLinkLevel.busy;
+
+  // Les agendas décochés ; tous le sont au départ.
+  final _unticked = <String>{};
+  bool _noCalendar = false;
 
   @override
   void dispose() {
@@ -109,15 +125,23 @@ class _NewLinkDialogState extends State<_NewLinkDialog> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.of(context).pop((label: _label.text.trim(), level: _level));
+  void _submit(List<ShareableCalendar> mine) {
+    final valid = _formKey.currentState?.validate() ?? false;
+    final ids = [
+      for (final calendar in mine)
+        if (!_unticked.contains(calendar.id)) calendar.id,
+    ];
+    setState(() => _noCalendar = ids.isEmpty);
+    if (!valid || ids.isEmpty) return;
+    Navigator.of(context)
+        .pop((label: _label.text.trim(), level: _level, calendarIds: ids));
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final mine = ref.watch(shareableCalendarsProvider).value ?? const [];
     return AlertDialog(
       title: Text(l10n.profileLinkNew),
       content: SingleChildScrollView(
@@ -140,7 +164,7 @@ class _NewLinkDialogState extends State<_NewLinkDialog> {
                 validator: (value) => (value ?? '').trim().isEmpty
                     ? l10n.profileLinkLabelRequired
                     : null,
-                onFieldSubmitted: (_) => _submit(),
+                onFieldSubmitted: (_) => _submit(mine),
               ),
               const SizedBox(height: 8),
               Text(
@@ -168,6 +192,39 @@ class _NewLinkDialogState extends State<_NewLinkDialog> {
                 ),
               ),
               Text(l10n.profileLinkLevelHint, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 16),
+              Text(
+                l10n.profileLinkCalendarsQuestion,
+                style: theme.textTheme.titleMedium,
+              ),
+              for (final calendar in mine)
+                CheckboxListTile(
+                  key: ProfileLinkKeys.calendarOption(calendar.id),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: !_unticked.contains(calendar.id),
+                  title: Text(calendar.name),
+                  onChanged: (ticked) => setState(() {
+                    _noCalendar = false;
+                    if (ticked ?? false) {
+                      _unticked.remove(calendar.id);
+                    } else {
+                      _unticked.add(calendar.id);
+                    }
+                  }),
+                ),
+              if (_noCalendar)
+                Text(
+                  l10n.profileLinkCalendarsRequired,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                )
+              else
+                Text(
+                  l10n.profileLinkCalendarsHint,
+                  style: theme.textTheme.bodySmall,
+                ),
             ],
           ),
         ),
@@ -179,7 +236,7 @@ class _NewLinkDialogState extends State<_NewLinkDialog> {
         ),
         FilledButton(
           key: ProfileLinkKeys.create,
-          onPressed: _submit,
+          onPressed: () => _submit(mine),
           child: Text(l10n.profileLinkCreateButton),
         ),
       ],

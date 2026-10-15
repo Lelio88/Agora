@@ -15,6 +15,7 @@ import 'package:agora/src/exceptions/app_exception_messages.dart';
 import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
 import 'package:agora/src/features/profile_link/domain/profile_link.dart';
 import 'package:agora/src/features/profile_link/presentation/profile_link_keys.dart';
+import 'package:agora/src/features/profile_link/presentation/profile_link_labels.dart';
 import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -69,10 +70,13 @@ class _LinkSheet extends ConsumerWidget {
           children: [
             Text(link.label, style: theme.textTheme.titleLarge),
             const SizedBox(height: 4),
+            Text(levelLine(link.level, l10n), style: theme.textTheme.bodySmall),
             Text(
-              link.level == ProfileLinkLevel.details
-                  ? l10n.profileLinkSeesDetails
-                  : l10n.profileLinkSeesBusy,
+              calendarsLine(
+                link,
+                ref.watch(shareableCalendarsProvider).value ?? const [],
+                l10n,
+              ),
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 16),

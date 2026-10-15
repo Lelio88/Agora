@@ -1,4 +1,6 @@
 import 'package:agora/src/features/auth/domain/app_user.dart';
+import 'package:agora/src/features/calendar/domain/event_visibility.dart';
+import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:agora/src/features/profile_link/domain/profile_link.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../helpers/agora_robot.dart';
+import '../../../../helpers/fake_calendars_repository.dart';
 import '../../../../helpers/fake_profile_link_repository.dart';
 import '../../../../helpers/fakes.dart';
 
@@ -37,7 +40,156 @@ Future<void> _createLink(
   await robot.tap(ProfileLinkKeys.create);
 }
 
+const _work = UserCalendar(
+  id: 'cal-work',
+  name: 'Travail',
+  kind: CalendarKind.native,
+);
+const _hobbies = UserCalendar(
+  id: 'cal-hobbies',
+  name: 'Loisirs',
+  kind: CalendarKind.native,
+);
+const _mum = UserCalendar(
+  id: 'cal-mum',
+  name: 'Maman',
+  kind: CalendarKind.native,
+  visibility: EventVisibility.invisible,
+  isContact: true,
+);
+const _secret = UserCalendar(
+  id: 'cal-secret',
+  name: 'Secret',
+  kind: CalendarKind.native,
+  visibility: EventVisibility.invisible,
+);
+
 void main() {
+  group('which calendars a link shares', () {
+    FakeCalendarsRepository mine() =>
+        FakeCalendarsRepository([_work, _hobbies, _mum, _secret]);
+
+    testWidgets('offers my calendars, all ticked, without close ones', (
+      tester,
+    ) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        webBaseUrl: _web,
+        calendars: mine(),
+      );
+      await _openLinks(robot);
+
+      await robot.tap(ProfileLinkKeys.newLink);
+
+      expect(find.text('Quels agendas ?'), findsOneWidget);
+      for (final id in ['cal-work', 'cal-hobbies']) {
+        final box = tester.widget<CheckboxListTile>(
+          find.byKey(ProfileLinkKeys.calendarOption(id)),
+        );
+        expect(box.value, isTrue, reason: id);
+      }
+      // Ni le proche, ni l'agenda invisible : ils ne sortiraient pas.
+      expect(
+        find.byKey(ProfileLinkKeys.calendarOption('cal-mum')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ProfileLinkKeys.calendarOption('cal-secret')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a link can share work and leave hobbies out', (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        webBaseUrl: _web,
+        calendars: mine(),
+      );
+      await _openLinks(robot);
+      await robot.tap(ProfileLinkKeys.newLink);
+      await robot.enter(ProfileLinkKeys.labelField, 'Collègues');
+
+      await robot.tap(ProfileLinkKeys.calendarOption('cal-hobbies'));
+      await robot.tap(ProfileLinkKeys.create);
+
+      expect(robot.profileLinks.links.single.calendarIds, ['cal-work']);
+      await robot.dismissSheet();
+      robot.expectText('Agendas : Travail');
+    });
+
+    testWidgets('a link must share at least one calendar', (tester) async {
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        webBaseUrl: _web,
+        calendars: mine(),
+      );
+      await _openLinks(robot);
+      await robot.tap(ProfileLinkKeys.newLink);
+      await robot.enter(ProfileLinkKeys.labelField, 'Personne');
+
+      await robot.tap(ProfileLinkKeys.calendarOption('cal-work'));
+      await robot.tap(ProfileLinkKeys.calendarOption('cal-hobbies'));
+      await robot.tap(ProfileLinkKeys.create);
+
+      expect(robot.profileLinks.links, isEmpty);
+      robot.expectText('Choisis au moins un agenda.');
+    });
+
+    testWidgets('a link made before the choice reads as all calendars', (
+      tester,
+    ) async {
+      final profileLinks = FakeProfileLinkRepository()
+        ..links.add(
+          ProfileLink(
+            code: 'ANCIEN22',
+            label: 'Papa',
+            level: ProfileLinkLevel.busy,
+            createdAt: DateTime.utc(2026, 10, 14),
+          ),
+        );
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        webBaseUrl: _web,
+        calendars: mine(),
+        profileLinks: profileLinks,
+      );
+
+      await _openLinks(robot);
+
+      robot.expectText('Tous tes agendas');
+    });
+
+    testWidgets('a deleted calendar leaves the link sharing nothing', (
+      tester,
+    ) async {
+      final profileLinks = FakeProfileLinkRepository()
+        ..links.add(
+          ProfileLink(
+            code: 'ORPHELIN',
+            label: 'Collègues',
+            level: ProfileLinkLevel.busy,
+            createdAt: DateTime.utc(2026, 10, 14),
+            calendarIds: const ['cal-gone'],
+          ),
+        );
+      final robot = AgoraRobot(tester);
+      await robot.pumpApp(
+        auth: _signedIn(),
+        webBaseUrl: _web,
+        calendars: mine(),
+        profileLinks: profileLinks,
+      );
+
+      await _openLinks(robot);
+
+      robot.expectText('Plus aucun agenda partagé');
+    });
+  });
+
   group('my links', () {
     testWidgets('start empty and explain what a link does', (tester) async {
       final robot = AgoraRobot(tester);
@@ -146,7 +298,11 @@ void main() {
     testWidgets('the twenty-link limit is explained', (tester) async {
       final repository = FakeProfileLinkRepository();
       for (var i = 0; i < 20; i++) {
-        await repository.create(label: 'Lien $i', level: ProfileLinkLevel.busy);
+        await repository.create(
+          label: 'Lien $i',
+          level: ProfileLinkLevel.busy,
+          calendarIds: const ['cal-1'],
+        );
       }
       final robot = AgoraRobot(tester);
       await robot.pumpApp(
@@ -239,6 +395,7 @@ void main() {
       final own = await profileLinks.create(
         label: 'Moi',
         level: ProfileLinkLevel.busy,
+        calendarIds: const ['cal-1'],
       );
       final robot = AgoraRobot(tester);
       await robot.pumpApp(auth: _signedIn(), profileLinks: profileLinks);

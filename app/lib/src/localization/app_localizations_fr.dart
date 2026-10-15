@@ -1983,6 +1983,27 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les agendas et les rdv que tu as cachés ou réglés sur « occupé » restent plafonnés.';
 
   @override
+  String get profileLinkCalendarsQuestion => 'Quels agendas ?';
+
+  @override
+  String get profileLinkCalendarsHint =>
+      'Un agenda que tu ajouteras plus tard ne sera pas partagé par ce lien.';
+
+  @override
+  String get profileLinkCalendarsRequired => 'Choisis au moins un agenda.';
+
+  @override
+  String get profileLinkAllCalendars => 'Tous tes agendas';
+
+  @override
+  String get profileLinkNoCalendarLeft => 'Plus aucun agenda partagé';
+
+  @override
+  String profileLinkCalendarsLine(String names) {
+    return 'Agendas : $names';
+  }
+
+  @override
   String get profileLinkCreateButton => 'Créer le lien';
 
   @override
