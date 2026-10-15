@@ -394,6 +394,16 @@ Trajet : quand deux rendez-vous se suivent le même jour à la même adresse, le
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.14.0+21 (agendas d'un lien de profil)
+
+Français, envoyées sur `alpha` :
+
+```
+Partager son profil : vous choisissez maintenant quels agendas chaque lien (ou QR code) partage. Par exemple le travail, sans les loisirs. Tous vos agendas sont cochés au départ ; un agenda ajouté plus tard n'est pas partagé tout seul. Vos liens existants continuent de tout partager.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
