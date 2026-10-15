@@ -59,7 +59,8 @@ carte du serveur partagé (IP, autres projets, sauvegardes) vit hors dépôt, da
   sur un vrai build (connexion, agenda, temps réel, Turnstile, pages légales). Elle n'autorise que
   l'origine elle-même, `api.agora` (https et websocket), Cloudflare (script et cadre de
   Turnstile) et `'wasm-unsafe-eval'` pour CanvasKit. Aucun script en ligne : celui de
-  `captcha.html` vit dans `captcha.js`. Une nouvelle origine s'ajoute à la CSP **et** à la
+  `captcha.html` vit dans `captcha.js`, la redirection des liens de partage vers le Play Store dans
+  `store_redirect.js`. Une nouvelle origine s'ajoute à la CSP **et** à la
   politique de confidentialité.
 - **Rien n'est chargé chez Google par la version web** : le build passe `--no-web-resources-cdn`
   (CanvasKit servi d'ici, et non depuis `www.gstatic.com`), l'app embarque Roboto

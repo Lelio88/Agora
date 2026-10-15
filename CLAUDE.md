@@ -60,6 +60,7 @@ bash supabase/checks/account_deletion_race.sh  # concurrence de la suppression d
 supabase migration new <slug>    # nouvelle migration
 cd app && flutter analyze && flutter test
 cd app && flutter run -d chrome --web-port 58090 --dart-define-from-file=config/local.json  # copier local.json.example (liens d'invitation sur ce port)
+node --test tools/web/store_redirect.test.mjs   # redirection Play Store des liens de partage (Android)
 cd worker && go vet ./... && go test -race ./...
 AGORA_TEST_DATABASE_URL=postgresql://agora_worker:agora-worker-local@127.0.0.1:55322/postgres \
 AGORA_TEST_ADMIN_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres \
@@ -80,6 +81,7 @@ sh deploy/rehearsal/rehearse.sh   # répète la mise en ligne en local (--keep :
 | Table, colonne, RLS ou RPC | nouvelle migration (+ GRANT) + test pgTAP + `docs/architecture.md` §2-4 |
 | Séries, exceptions, dépliage, agendas, écran d'agenda, rdv semblables, lien de profil | `docs/calendar-architecture.md` + tests pgTAP (`agenda`, `calendars`, `series_move`, `contact_calendars`, `similar_events`, `profile_link`) + tests Go de `worker/recurrence/` ; lien de profil : aussi `confidentialite.html` + `liens-inter-apps.md` du dépôt méta |
 | Groupes, invitations, rôles, agenda de groupe, rdv de groupe et réponses, créneaux communs, jumelage | `docs/groups-architecture.md` + tests pgTAP (`groups`, `group_management`, `group_lifecycle`, `group_events`, `group_twins`, `visibility`) + `free_slots_test.dart`, `twin_test.dart` ; un lien entre apps qui change (jumelage, rdv `#/event` : `docs/calendar-architecture.md` + `event_link_test.dart`) : aussi `docs/liens-inter-apps.md` du dépôt méta |
+| Lien de partage ouvert sans l'app (redirection Play Store), ou route de partage ajoutée à `appLinkRoute` | `app/web/store_redirect.js` + `tools/web/store_redirect.test.mjs` + `docs/groups-architecture.md` (§App Link) |
 | Import iCal : contrat `private.ics_*`, lecture d'un flux, garde SSRF, écrans d'import | `docs/ics-architecture.md` + `supabase/tests/ics_test.sql` + tests Go de `worker/ics/` |
 | Nouveau code d'échec de synchro | `ics_record_failure` (migration) + `FeedSyncError` + `feed_sync_labels.dart` + ARB FR/EN |
 | Règle de visibilité, ou nouvelle lecture de rdv | `docs/architecture.md` §3 + `supabase/tests/visibility_test.sql` (+ `cross_group_busy_test.sql`) |

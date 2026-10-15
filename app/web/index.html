@@ -31,6 +31,11 @@
 
   <title>Agora</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Lien de partage ouvert sous Android sans l'app : direction le Play
+       Store (voir store_redirect.js). Avant Flutter, et hors script en ligne :
+       la CSP n'autorise que 'self'. -->
+  <script src="store_redirect.js"></script>
 </head>
 <body>
   <!--

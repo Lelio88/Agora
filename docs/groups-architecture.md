@@ -80,6 +80,14 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
   domaine par `web/.well-known/assetlinks.json`, qui porte l'empreinte SHA-256 de la clé de
   signature Play (lue par l'API Play, `generatedApks`) et celle de la clé d'envoi. Une clé qui
   change impose de mettre ce fichier à jour, sinon le lien retombe dans le navigateur.
+- **Sans l'app, le lien mène au Play Store** : un lien de partage (`#/join`, `#/profile`,
+  `#/twin`, `#/event`) qui arrive dans un navigateur **Android** à la racine du site est
+  redirigé vers la fiche `id=app.agora` par `web/store_redirect.js`, chargé par `index.html` avant
+  Flutter (script externe : la CSP n'admet que `'self'`). iOS et ordinateur gardent la version
+  web. `?web` dans l'adresse la garde aussi sur Android. Les fragments suivis sont ceux de
+  `appLinkRoute` : une route de partage ajoutée là l'est dans le script. Le code n'est pas
+  transmis à l'installation : la personne rouvre le lien ou colle le code. Test :
+  `node --test tools/web/store_redirect.test.mjs`.
 - **Agenda superposé** : les créneaux de `group_agenda`, une couleur par membre (son rang
   d'arrivée dans la palette, stable d'un écran à l'autre), « occupé » plus pâle et sans titre,
   des pastilles pour masquer un membre (filtre local à l'écran). Tuiles en lecture seule : on
