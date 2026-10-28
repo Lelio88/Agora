@@ -404,6 +404,16 @@ Partager son profil : vous choisissez maintenant quels agendas chaque lien (ou Q
 Vos retours : heianenterpriseyt@gmail.com
 ```
 
+### Notes de version — 0.14.1+22 (agenda qui garde sa page)
+
+Français, envoyées sur `alpha` :
+
+```
+Agenda : en parcourant les semaines ou les mois, l'agenda ne vous ramène plus sur aujourd'hui quand il se recharge. Vous restez sur la page où vous étiez.
+
+Vos retours : heianenterpriseyt@gmail.com
+```
+
 **Aux versions suivantes, le ton change** : on n'y met que ce qui a bougé
 depuis la précédente. Et il faut incrémenter `version:` dans
 `app/pubspec.yaml` — Play refuse deux bundles portant le même `versionCode`.
