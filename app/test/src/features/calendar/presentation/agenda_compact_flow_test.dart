@@ -6,6 +6,7 @@ import 'package:agora/src/features/calendar/domain/user_calendar.dart';
 import 'package:agora/src/features/calendar/presentation/calendar_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../helpers/agora_robot.dart';
 import '../../../../helpers/fake_calendar_repository.dart';
@@ -179,6 +180,36 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(CalendarKeys.monthDayList), findsOneWidget);
+  });
+
+  testWidgets('paging out of the loaded range keeps the page, not today', (
+    tester,
+  ) async {
+    // La plage chargée couvre le mois courant et un mois de marge : à la
+    // troisième page, l'agenda se recharge. Il ne doit pas être remonté, ce
+    // qui ramenait kalender sur aujourd'hui.
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(auth: _signedIn(), screenSize: _phone);
+    await robot.chooseView(CalendarKeys.toolbar, AgendaView.month);
+
+    final label = find.descendant(
+      of: find.byKey(CalendarKeys.toolbar.period),
+      matching: find.byType(Text),
+    );
+    final current = tester.widget<Text>(label).data;
+    for (var page = 0; page < 3; page++) {
+      await tester.tap(find.byTooltip('Période suivante'));
+      await robot.settle();
+    }
+
+    final later = tester.widget<Text>(label).data;
+    expect(later, isNot(current));
+    final now = DateTime.now();
+    final expected = DateTime(now.year, now.month + 3);
+    expect(
+      later,
+      toBeginningOfSentenceCase(DateFormat.yMMMM('fr').format(expected), 'fr'),
+    );
   });
 
   testWidgets('shown calendars cover mine, my close ones and my groups', (

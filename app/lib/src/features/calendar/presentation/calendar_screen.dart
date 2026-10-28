@@ -417,7 +417,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           Expanded(
             flex: 3,
             child: AsyncValueWidget<List<AgendaItem>>(
-              value: agenda,
+              // Une nouvelle plage recharge sans démonter kalender : sa page
+              // reste celle de l'utilisateur.
+              value: keepingPrevious(agenda, _syncedItems),
               data: (_) => _phoneMonthTheme(
                 context,
                 enabled: isPhoneMonth,

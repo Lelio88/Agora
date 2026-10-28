@@ -7,6 +7,16 @@ import 'package:agora/src/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// [value], ou [previous] tant que [value] charge sans rien porter.
+///
+/// Un provider `family` dont la clé change (la plage d'un agenda) repart en
+/// `AsyncLoading` sans valeur : afficher le spinner à sa place démonte la vue
+/// qui en dépend et lui fait perdre sa position. Une erreur, elle, s'affiche.
+AsyncValue<T> keepingPrevious<T>(AsyncValue<T> value, T? previous) =>
+    value.isLoading && !value.hasValue && previous != null
+    ? AsyncData(previous)
+    : value;
+
 class AsyncValueWidget<T> extends StatelessWidget {
   const AsyncValueWidget({required this.value, required this.data, super.key});
 

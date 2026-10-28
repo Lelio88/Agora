@@ -203,7 +203,9 @@ class _GroupScreenState extends ConsumerState<GroupScreen> {
             ),
             Expanded(
               child: AsyncValueWidget<List<GroupAgendaItem>>(
-                value: agenda,
+                // Une nouvelle plage recharge sans démonter kalender : sa
+                // page reste celle de l'utilisateur.
+                value: keepingPrevious(agenda, _syncedItems),
                 data: (_) => KalenderView(
                   eventsController: _eventsController,
                   kalenderController: _kalenderController,
