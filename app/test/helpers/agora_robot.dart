@@ -30,6 +30,7 @@ import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/presentation/profile_keys.dart';
 import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
 import 'package:agora/src/logging/app_logger.dart';
+import 'package:agora/src/routing/app_router.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,6 +87,7 @@ class AgoraRobot {
     FakeRouteTimes? routeTimes,
     Uri? mcpUrl,
     String? pendingConsent,
+    String? resumedLink,
     Uri? discordBotInvite,
     List<SocialProvider> signInProviders = const [],
     Uri? webBaseUrl,
@@ -156,6 +158,8 @@ class AgoraRobot {
           pendingConsentProvider.overrideWithValue(
             PendingConsent(pendingConsent),
           ),
+          // Comme main.dart sur le web : le lien rendu par un retour d'OAuth.
+          resumedLinkProvider.overrideWithValue(ResumedLink(resumedLink)),
           discordBotInviteProvider.overrideWithValue(discordBotInvite),
           signInProvidersProvider.overrideWithValue(signInProviders),
           webBaseUrlProvider.overrideWithValue(webBaseUrl),

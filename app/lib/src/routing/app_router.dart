@@ -15,7 +15,10 @@
 /// l'adresse de la page au démarrage : voir `assistant_providers.dart`), un
 /// lien de jumelage venu d'une autre app ([PendingTwin]), un rdv préparé
 /// dans une autre app ([PendingEventLink]) et un lien de profil
-/// ([PendingProfileLink]).
+/// ([PendingProfileLink]). Sur le web, une connexion Google ou Discord
+/// recharge la page et vide ces mémoires : le lien revient par l'adresse de
+/// retour ([ResumedLink], lue par `main.dart`), et le routeur le retient
+/// comme s'il venait d'être ouvert.
 library;
 
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
@@ -49,6 +52,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// Lien rendu par le retour d'une connexion Google ou Discord (web), déjà
+/// validé par `linkRoute` ; le routeur le prend une fois.
+final class ResumedLink {
+  ResumedLink([this._location]);
+
+  String? _location;
+
+  String? take() {
+    final location = _location;
+    _location = null;
+    return location;
+  }
+}
+
+final resumedLinkProvider = Provider<ResumedLink>((ref) => ResumedLink());
+
 final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authRepositoryProvider);
   final pendingInvite = ref.watch(pendingInviteProvider);
@@ -56,6 +75,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final pendingTwin = ref.watch(pendingTwinProvider);
   final pendingEvent = ref.watch(pendingEventLinkProvider);
   final pendingProfile = ref.watch(pendingProfileLinkProvider);
+  // Retient un lien ouvert déconnecté, le temps de la connexion.
+  void retain(String location, Uri uri) {
+    if (inviteCodeInLocation(location) case final code?) {
+      pendingInvite.code = code;
+    }
+    if (location == twinPath) pendingTwin.location = uri.toString();
+    if (location == eventLinkPath) pendingEvent.location = uri.toString();
+    if (profileLinkCodeInLocation(location) case final code?) {
+      pendingProfile.code = code;
+    }
+  }
+
+  if (ref.read(resumedLinkProvider).take() case final link?) {
+    final uri = Uri.parse(link);
+    retain(uri.path, uri);
+  }
   final refresh = StreamListenable(auth.watchCurrentUser());
   final router = GoRouter(
     initialLocation: '/',
@@ -65,16 +100,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (appLinkRoute(state.uri) case final route?) return route;
       final isSignedIn = auth.currentUser != null;
       final location = state.matchedLocation;
-      final invite = inviteCodeInLocation(location);
-      if (!isSignedIn && invite != null) pendingInvite.code = invite;
-      if (!isSignedIn && location == twinPath) {
-        pendingTwin.location = state.uri.toString();
-      }
-      if (!isSignedIn && location == eventLinkPath) {
-        pendingEvent.location = state.uri.toString();
-      }
-      final profileCode = profileLinkCodeInLocation(location);
-      if (!isSignedIn && profileCode != null) pendingProfile.code = profileCode;
+      if (!isSignedIn) retain(location, state.uri);
       if (!isSignedIn && location == consentPath) {
         if (consentRequestIn(state.uri) case final id?) {
           pendingConsent.authorizationId = id;

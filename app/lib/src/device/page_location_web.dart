@@ -10,3 +10,16 @@ Uri? pageLocation() {
   final href = location?.getProperty<JSString?>('href'.toJS)?.toDart;
   return href == null ? null : Uri.tryParse(href);
 }
+
+/// Remplace l'adresse affichée (`history.replaceState`), sans recharger la
+/// page ni ajouter d'entrée à l'historique.
+void replacePageLocation(Uri location) {
+  final history = globalContext.getProperty<JSObject?>('history'.toJS);
+  // `callMethod` prend un premier argument `null` pour « aucun argument » :
+  // `replaceState()` partirait à vide et lèverait. La liste garde le `null`.
+  history?.callMethodVarArgs<JSAny?>('replaceState'.toJS, [
+    null,
+    ''.toJS,
+    location.toString().toJS,
+  ]);
+}

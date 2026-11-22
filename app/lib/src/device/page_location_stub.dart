@@ -2,3 +2,5 @@
 library;
 
 Uri? pageLocation() => null;
+
+void replacePageLocation(Uri location) {}

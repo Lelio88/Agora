@@ -20,6 +20,10 @@
 ///   auto-hébergé n'a pas d'edge runtime, et la transmission des groupes doit
 ///   se faire dans la même transaction que l'effacement.
 ///
+/// - [signInWith] demande au routeur ([resume]) où la connexion doit
+///   ramener : sur le web, le retour recharge la page, et ce lien voyage
+///   dans l'adresse de retour (`oauth_callback.dart`) ;
+///
 /// Invariant : aucune exception de GoTrue ne sort d'ici sans être traduite.
 library;
 
@@ -36,9 +40,12 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseAuthRepository implements AuthRepository {
-  const SupabaseAuthRepository(this._client);
+  const SupabaseAuthRepository(this._client, {this._resume});
 
   final SupabaseClient _client;
+
+  /// Le lien en attente d'une connexion (invitation…), à rendre au retour.
+  final String? Function()? _resume;
 
   GoTrueClient get _auth => _client.auth;
 
@@ -76,7 +83,7 @@ final class SupabaseAuthRepository implements AuthRepository {
   Future<bool> signInWith(SocialProvider provider) => _guard(
     () => _auth.signInWithOAuth(
       _oauthProvider(provider),
-      redirectTo: oauthRedirect(),
+      redirectTo: oauthRedirect(resume: _resume?.call()),
     ),
   );
 

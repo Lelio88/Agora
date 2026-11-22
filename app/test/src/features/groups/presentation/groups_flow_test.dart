@@ -124,6 +124,22 @@ void main() {
     robot.expectText('Rejoindre « Coloc » ?');
   });
 
+  testWidgets('an invitation survives the reload of a Google sign-in', (
+    tester,
+  ) async {
+    // Sur le web, le retour de Google recharge la page : l'invitation revient
+    // par l'adresse de retour (`?resume=`), relue par main.dart.
+    final robot = AgoraRobot(tester);
+    await robot.pumpApp(
+      auth: _signedIn(),
+      groups: _colocToJoin(),
+      resumedLink: '/join/ABCD2345',
+    );
+
+    robot.expectScreen(GroupKeys.joinScreen);
+    robot.expectText('Rejoindre « Coloc » ?');
+  });
+
   testWidgets('the group agenda shows details and busy slots, per member', (
     tester,
   ) async {
