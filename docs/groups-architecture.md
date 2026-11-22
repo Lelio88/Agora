@@ -60,7 +60,9 @@ Migrations : `20260921120000_core_schema.sql` (tables, RLS, `create_group`, `cre
   (`PendingInvite`) le temps de la connexion ou de l'inscription ; `authRedirect(pendingInvite:)`
   ramène ensuite à `/join/CODE` — depuis l'accueil ou un écran de compte seulement, jamais depuis
   un autre écran. L'écran « Rejoindre » consomme l'invitation. Seul un code plausible
-  (`inviteCodeInLocation`) est retenu. Une session périmée au chargement (compte disparu) perd
+  (`inviteCodeInLocation`) est retenu. Une connexion Google ou Discord sur le web recharge la
+  page : l'invitation revient alors par l'adresse de retour (`?resume=`, voir
+  `docs/auth-architecture.md`). Une session périmée au chargement (compte disparu) perd
   l'invitation : on rouvre le lien.
 - **Rejoindre** : aperçu du groupe, puis choix explicite du partage — « occupé » présélectionné,
   jamais imposé — envoyé avec l'adhésion.

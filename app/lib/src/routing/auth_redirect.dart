@@ -70,6 +70,23 @@ String? authRedirect({
   return null;
 }
 
+/// Où la connexion ramènera, d'après les liens retenus, ou `null` : la
+/// même priorité qu'[authRedirect]. Une demande d'assistant n'y est pas :
+/// elle survit déjà par le chemin de la page.
+String? pendingLinkLocation({
+  String? invite,
+  String? twin,
+  String? event,
+  String? profile,
+}) => authRedirect(
+  isSignedIn: true,
+  location: '/',
+  pendingInvite: invite,
+  pendingTwin: twin,
+  pendingEvent: event,
+  pendingProfile: profile,
+);
+
 final _joinPath = RegExp(r'^/join/([A-HJ-NP-Za-hj-np-z2-9]{8})$');
 final _profilePath = RegExp(r'^/profile/([A-HJ-NP-Za-hj-np-z2-9]{8})$');
 
@@ -101,12 +118,20 @@ const eventLinkPath = '/event';
 /// sans effet. Leurs paramètres ne sont pas jugés ici : leur écran les valide.
 String? appLinkRoute(Uri uri) {
   if (uri.path != '/' && uri.path.isNotEmpty) return null;
-  final code = inviteCodeInLocation(uri.fragment);
+  return linkRoute(uri.fragment);
+}
+
+/// L'emplacement [location] s'il est l'un des liens qu'une connexion ramène
+/// (invitation, lien de profil, jumelage, rdv), ou `null`. Sert aux App
+/// Links et au lien rendu par le retour d'une connexion Google ou Discord.
+String? linkRoute(String? location) {
+  if (location == null) return null;
+  final code = inviteCodeInLocation(location);
   if (code != null) return '/join/$code';
-  final profileCode = profileLinkCodeInLocation(uri.fragment);
+  final profileCode = profileLinkCodeInLocation(location);
   if (profileCode != null) return '/profile/$profileCode';
-  final inner = Uri.tryParse(uri.fragment);
-  if (inner == null) return null;
+  final inner = Uri.tryParse(location);
+  if (inner == null || inner.hasScheme || inner.hasAuthority) return null;
   if (inner.path != twinPath && inner.path != eventLinkPath) return null;
   return Uri(
     path: inner.path,

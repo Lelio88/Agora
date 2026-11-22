@@ -28,6 +28,7 @@ import 'package:agora/src/features/auth/application/auth_providers.dart';
 import 'package:agora/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:agora/src/features/calendar/application/agenda_providers.dart';
 import 'package:agora/src/features/calendar/application/calendars_providers.dart';
+import 'package:agora/src/features/calendar/application/event_link_providers.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendar_repository.dart';
 import 'package:agora/src/features/calendar/data/supabase_calendars_repository.dart';
 import 'package:agora/src/features/directions/application/directions_providers.dart';
@@ -37,17 +38,30 @@ import 'package:agora/src/features/directions/data/supabase_travel_repository.da
 import 'package:agora/src/features/discord/application/discord_providers.dart';
 import 'package:agora/src/features/discord/data/supabase_discord_repository.dart';
 import 'package:agora/src/features/groups/application/groups_providers.dart';
+import 'package:agora/src/features/groups/application/twin_providers.dart';
 import 'package:agora/src/features/groups/data/supabase_groups_repository.dart';
 import 'package:agora/src/features/profile/application/profile_providers.dart';
 import 'package:agora/src/features/profile/data/supabase_profile_repository.dart';
 import 'package:agora/src/features/profile_link/application/profile_link_providers.dart';
 import 'package:agora/src/features/profile_link/data/supabase_profile_link_repository.dart';
+import 'package:agora/src/routing/auth_redirect.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 List<Override> prodOverrides(SupabaseClient client) => [
-  authRepositoryProvider.overrideWith((ref) => SupabaseAuthRepository(client)),
+  authRepositoryProvider.overrideWith(
+    (ref) => SupabaseAuthRepository(
+      client,
+      // Où la connexion doit ramener : voir `oauth_callback.dart`.
+      resume: () => pendingLinkLocation(
+        invite: ref.read(pendingInviteProvider).code,
+        twin: ref.read(pendingTwinProvider).location,
+        event: ref.read(pendingEventLinkProvider).location,
+        profile: ref.read(pendingProfileLinkProvider).code,
+      ),
+    ),
+  ),
   profileRepositoryProvider.overrideWith(
     (ref) => SupabaseProfileRepository(client),
   ),

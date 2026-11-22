@@ -189,6 +189,42 @@ void main() {
     });
   });
 
+  group('linkRoute', () {
+    test('keeps only a link the sign-in may bring back', () {
+      expect(linkRoute('/join/abcd2345'), '/join/ABCD2345');
+      expect(linkRoute('/profile/abcd2345'), '/profile/ABCD2345');
+      expect(
+        linkRoute('/twin?de=arpente&code=ABC234'),
+        '/twin?de=arpente&code=ABC234',
+      );
+      expect(
+        linkRoute('/event?de=arpente&titre=Sortie'),
+        '/event?de=arpente&titre=Sortie',
+      );
+      expect(linkRoute('/groups/g-coloc'), isNull);
+      expect(linkRoute('https://ailleurs.test/#/join/ABCD2345'), isNull);
+      expect(linkRoute('/join/ABCD'), isNull);
+      expect(linkRoute(null), isNull);
+    });
+  });
+
+  group('pendingLinkLocation', () {
+    test('is where the sign-in will bring back, consent aside', () {
+      expect(pendingLinkLocation(invite: 'ABCD2345'), '/join/ABCD2345');
+      expect(pendingLinkLocation(profile: 'ABCD2345'), '/profile/ABCD2345');
+      expect(pendingLinkLocation(twin: '/twin?de=arpente'), '/twin?de=arpente');
+      expect(
+        pendingLinkLocation(event: '/event?de=arpente'),
+        '/event?de=arpente',
+      );
+      expect(
+        pendingLinkLocation(invite: 'ABCD2345', twin: '/twin?de=arpente'),
+        '/join/ABCD2345',
+      );
+      expect(pendingLinkLocation(), isNull);
+    });
+  });
+
   group('pending twin link', () {
     const twin = '/twin?de=arpente&code=ABC234&etat=abcdefghijklmnop';
 

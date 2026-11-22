@@ -1,4 +1,5 @@
-/// L'adresse réelle de la page (web), ou `null` hors du web.
+/// L'adresse réelle de la page (web), ou `null` hors du web ; et de quoi la
+/// remplacer sans recharger (`replacePageLocation`, sans effet hors du web).
 ///
 /// Choix non évident : sur le web, `Uri.base` vaut `document.baseURI`, que la
 /// balise `<base href="/">` de Flutter ramène à la racine du site — chemin et

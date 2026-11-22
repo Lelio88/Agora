@@ -12,7 +12,10 @@ servis par URL, CAPTCHA) sont au §10 de l'index.
 - **« Continuer avec Google / Discord »** (`SocialSignInButtons`, sous les formulaires de
   connexion et d'inscription) : `signInWithOAuth`, flux PKCE. Au retour, Android reçoit
   `app.agora://login-callback` et le web revient sur sa page (`oauth_callback.dart`, adresses
-  dans `ADDITIONAL_REDIRECT_URLS`). Le même geste crée le compte ou y reconnecte. Une adresse
+  dans `ADDITIONAL_REDIRECT_URLS`). Sur le web, ce retour recharge la page : un lien ouvert
+  déconnecté (invitation, jumelage, rdv, lien de profil) voyage donc dans l'adresse de retour
+  (`?resume=/join/CODE`, fourni par `pendingLinkLocation`) ; `main.dart` le valide
+  (`linkRoute`), le retire de la barre d'adresse et le remet au routeur (`ResumedLink`). Le même geste crée le compte ou y reconnecte. Une adresse
   déjà connue, vérifiée par le fournisseur, retrouve son compte : GoTrue y **relie**
   l'identité. Le profil naît du trigger d'inscription, qui prend le nom du fournisseur ; la
   langue et le fuseau retombent sur `fr` et `Europe/Paris`, réglables dans le profil. Les

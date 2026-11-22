@@ -9,7 +9,9 @@
 /// ramené à la racine par `<base href>`) est lue AVANT l'initialisation de
 /// Supabase : une demande d'accès d'un assistant IA
 /// (`/oauth/consent?authorization_id=…`) y survit au retour d'une connexion
-/// Google ou Discord, dont Supabase échange ensuite le code.
+/// Google ou Discord, dont Supabase échange ensuite le code. Un lien ouvert
+/// déconnecté (invitation…) y revient de même, par `?resume=` : il est lu,
+/// validé, puis retiré de la barre d'adresse, `?code=` laissé à Supabase.
 library;
 
 import 'package:agora/src/app.dart';
@@ -17,6 +19,9 @@ import 'package:agora/src/composition_root.dart';
 import 'package:agora/src/device/page_location.dart';
 import 'package:agora/src/exceptions/async_error_logger.dart';
 import 'package:agora/src/features/assistant/application/assistant_providers.dart';
+import 'package:agora/src/routing/app_router.dart';
+import 'package:agora/src/routing/auth_redirect.dart';
+import 'package:agora/src/supabase/oauth_callback.dart';
 import 'package:agora/src/supabase/supabase_config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +36,10 @@ Future<void> main() async {
   final config = SupabaseConfig.fromEnvironment();
   final page = pageLocation();
   final pendingConsent = page == null ? null : consentRequestIn(page);
+  final resumedLink = page == null ? null : linkRoute(resumeIn(page));
+  if (page != null) {
+    if (withoutResume(page) case final cleaned?) replacePageLocation(cleaned);
+  }
   await Supabase.initialize(
     url: config.url,
     publishableKey: config.publishableKey,
@@ -44,6 +53,7 @@ Future<void> main() async {
         pendingConsentProvider.overrideWithValue(
           PendingConsent(pendingConsent),
         ),
+        resumedLinkProvider.overrideWithValue(ResumedLink(resumedLink)),
       ],
       child: const AgoraApp(),
     ),
